@@ -1,0 +1,20 @@
+# name is the name of the test (used when generating jUnit reports)
+name: testDefault
+# module is the name or LSID of the module that you want to test
+module: GISTIC
+# params, the list of input parameters (no need to set params which already have default values)
+params: 
+    markers.file: "http://www.broadinstitute.org/mpr/publications/projects/CNS/100K_markerpositions.hg16.txt"
+    refgene.file: "hg16_20070112.mat"
+    seg.file: "http://www.broadinstitute.org/mpr/publications/projects/CNS/segmented_data_080520.seg"
+# assertions is the most finicky section
+# by default each test will fail if the job status is ERROR
+# additionally you can define the following
+assertions: 
+    # fail unless there are 7 result files
+    numFiles: 7
+    # fail unless one of the result files is named, 'all_lesions_file.gp_gistic.txt',
+    # At the moment, you must include the '!!null', however I am working on improving this
+    files: 
+        "all_lesions_file.gp_gistic.txt": !!null
+    
