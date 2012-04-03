@@ -1,0 +1,10 @@
+name: testConvertLineEndingsGpUrl
+module: ConvertLineEndings
+params: 
+    input.filename: "ftp://ftp.broad.mit.edu/pub/genepattern/all_aml/all_aml_train.res"
+assertions: 
+    numFiles: 1
+    files: 
+        "all_aml_train.cvt.res": 
+            numRows: 7129
+            numCols: 38
