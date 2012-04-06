@@ -1,12 +1,15 @@
-package org.genepattern.gpunit.yaml;
+package org.genepattern.gpunit;
 
+import java.io.File;
 import java.util.Map;
+
 
 public class GpAssertions {
     private int exitCode = 0;
     private String jobStatus = "success";
-    private int numFiles = 1;
+    private int numFiles = -1;
     private Map<String,TestFileObj> files;
+    private File outputDir = null;
 
     public int getExitCode() {
         return exitCode;
@@ -31,5 +34,11 @@ public class GpAssertions {
     }
     public void setFiles(Map<String,TestFileObj> files) {
         this.files = files;
+    }
+    public File getOutputDir() {
+        return outputDir;
+    }
+    public void setOutputDir(File out) {
+        this.outputDir = out;
     }
 }

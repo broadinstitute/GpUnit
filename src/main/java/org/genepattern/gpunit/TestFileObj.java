@@ -1,4 +1,4 @@
-package org.genepattern.gpunit.yaml;
+package org.genepattern.gpunit;
 
 public class TestFileObj {
     private int numRows = -1;

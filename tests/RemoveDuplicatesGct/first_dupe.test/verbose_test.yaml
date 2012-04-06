@@ -1,0 +1,13 @@
+name: testVerbose
+module: RemoveDuplicatesGct
+params: 
+    input.gct: !!java.io.File "first_dupe.gct"
+    verbose: "yes"
+assertions: 
+    numFiles: 2
+    files: 
+        "first_dupe.out.gct": 
+            numRows: 7129
+            numCols: 35
+        "stdout.txt": !!null
+    

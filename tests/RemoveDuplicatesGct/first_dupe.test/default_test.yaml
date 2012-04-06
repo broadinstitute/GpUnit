@@ -1,0 +1,11 @@
+name: testDefault
+module: RemoveDuplicatesGct
+params: 
+    input.gct: !!java.io.File "first_dupe.gct"
+    verbose: "no"
+assertions: 
+    numFiles: 1
+    files: 
+        "first_dupe.out.gct": !!null
+
+    
