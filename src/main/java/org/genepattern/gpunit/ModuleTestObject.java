@@ -8,8 +8,11 @@ import java.util.Map;
 public class ModuleTestObject {
     /** the name of the test */
     private String name = null;
-    /** the name or lsid of the module */
-    private String module = null;
+    /** the name of the module */
+    private String moduleName = null;
+    /** the LSID of the module */
+    private String moduleLsid = null;
+    
     /** the input parameter values to use at module run time. */
     private Map<String,Object> params = new HashMap<String,Object>();
     /** the list of assertions */
@@ -27,10 +30,10 @@ public class ModuleTestObject {
         this.name = str;
     }
     public String getModule() {
-        return module;
+        return moduleName;
     }
     public void setModule(String module) {
-        this.module = module;
+        this.moduleName = module;
     }
     public Map<String,Object> getParams() {
         return params;
