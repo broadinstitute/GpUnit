@@ -54,4 +54,16 @@ public class ModuleTestObject {
         return inputdir;
     }
     
+    public File initFileFromPath(String filepath) {
+        File file = new File(filepath);
+        if (file.isAbsolute()) {
+            return file;
+        }
+        if (inputdir != null && inputdir.isDirectory()) {
+            file = new File(inputdir, filepath);
+            return file;
+        }
+        return file;
+    }
+    
 }
