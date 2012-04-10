@@ -16,6 +16,7 @@ import org.genepattern.gpunit.ModuleTestObject;
 import org.genepattern.gpunit.TestFileObj;
 import org.genepattern.io.IOUtil;
 import org.genepattern.matrix.Dataset;
+import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobResult;
 import org.junit.Assert;
 
@@ -30,7 +31,8 @@ public class JobResultValidator {
     private File rootDownloadDir = new File("./tmp/jobResults");    
     private File downloadDir = null;
     private File[] resultFiles = null;
-    Map<String,File> resultFilesMap = new HashMap<String,File>();
+    private List<String> outputFilenames = null;
+    private Map<String,File> resultFilesMap = new HashMap<String,File>();
     
     public JobResultValidator(ModuleTestObject test, JobResult jobResult) {
         this.test = test;
@@ -83,6 +85,19 @@ public class JobResultValidator {
         return file;
     }
 
+    private void initOutputFilenames() {
+        this.outputFilenames = new ArrayList<String>();
+        for(String outputFilename : jobResult.getOutputFileNames() ) {
+            outputFilenames.add( outputFilename );
+        }
+        if (jobResult.hasStandardOut()) {
+            outputFilenames.add( GPConstants.STDOUT );
+        }
+        if (jobResult.hasStandardError()) {
+            outputFilenames.add( GPConstants.STDERR );
+        }
+    }
+
     public void validate() {
         //1) null jobResult
         Assert.assertNotNull("jobResult is null", jobResult);
@@ -96,8 +111,9 @@ public class JobResultValidator {
         
         //3) numFiles: ...
         if (assertions.getNumFiles() >= 0) {
+            initOutputFilenames();
             //Note: when numFiles < 0, it means don't run this assertion
-            Assert.assertEquals("Number of result files", assertions.getNumFiles(), jobResult.getOutputFileNames().length);
+            Assert.assertEquals("Number of result files", assertions.getNumFiles(), outputFilenames.size());
         }
 
         //4) outputDir: ...
@@ -117,13 +133,12 @@ public class JobResultValidator {
         //   (may or may not have already downloaded result files; assume that we haven't, because it doesn't make sense
         //    to include outputDir and files assertion in the same test)
         if (assertions.getFiles() != null) {
-            List<String> outputFileNames = new ArrayList<String>();
-            for(String outputFileName : jobResult.getOutputFileNames() ) {
-                outputFileNames.add( outputFileName );
+            if (outputFilenames == null) {
+                initOutputFilenames();
             }
             for(Entry<String,TestFileObj> entry : assertions.getFiles().entrySet()) {
                 String filename = entry.getKey();
-                Assert.assertTrue("Expecting result file named '"+filename+"'", outputFileNames.contains(filename));
+                Assert.assertTrue("Expecting result file named '"+filename+"'", outputFilenames.contains(filename));
                 TestFileObj testFileObj = entry.getValue();
                 if (testFileObj != null) {
                     //need to download the file ...
