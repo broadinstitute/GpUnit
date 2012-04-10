@@ -1,3 +1,0 @@
-module: HeatMapViewer
-params:
-    dataset: "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct"
