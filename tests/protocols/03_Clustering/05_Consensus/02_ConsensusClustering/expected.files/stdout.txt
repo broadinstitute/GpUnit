@@ -1,0 +1,31 @@
+WARNING: the dataset is not col-normalized (recommended with Euclidean distance)
+min sampled: 12
+max sampled: 19
+avg sampled: 16.0
+18 14 18 16 19 14 18 18 16 14 18 14 18 16 14 15 17 17 14 15 15 12 17 14 18 17 18 15 16 16 17 14 17 15 16 Number of clusters distribution:
+Num	Count
+1	0
+2	20
+3	20
+4	20
+5	20
+Reading consensus matrices from files ..
+
+	processing file 'all_aml_test.preprocessed.sub28.2.gct' ..
+
+	processing file 'all_aml_test.preprocessed.sub28.3.gct' ..
+
+	processing file 'all_aml_test.preprocessed.sub28.4.gct' ..
+
+	processing file 'all_aml_test.preprocessed.sub28.5.gct' ..
+
+Plotting statistics to 'all_aml_test.preprocessed.sub28.statistics.pdf' .. 
+
+	Lorenz curve .. done.
+
+	Gini..done.
+
+	Consensus distribution .. done.
+
+	CDF area .. done.
+

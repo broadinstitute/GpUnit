@@ -1,0 +1,21 @@
+# Created: Tue Apr 10 00:40:29 EDT 2012 by pcarr@broadinstitute.org
+# Job: 16230    server:  http://gpdev.broadinstitute.org/gp/
+# Module: SOMClustering urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00029:2
+module: SOMClustering
+params: 
+    dataset.filename: ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct
+    output.stub: all_aml_test.preprocessed
+    cluster.range: 2-3
+    seed.range: 42
+    iterations: 50000
+    cluster.by: rows
+    som.rows: 0
+    som.cols: 0
+    initialization: Random_Vectors
+    neighborhood: Bubble
+    alpha.initial: 0.1
+    alpha.final: 0.005
+    sigma.initial: 5.0
+    sigma.final: 0.5
+assertions:
+    outputDir: expected

@@ -1,0 +1,52 @@
+# Created: Tue Apr 10 00:46:08 EDT 2012 by pcarr@broadinstitute.org
+# Job: 16232    server:  http://gpdev.broadinstitute.org/gp/
+module: ConsensusClustering
+params: 
+    input.filename: ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct
+    kmax: 5
+    resampling.iterations: 20
+    seed.value: 12345
+    clustering.algorithm: HIERARCHICAL
+    distance.measure: EUCLIDEAN
+    resample: subsample
+    merge.type: average
+    descent.iterations: 2000
+    output.stub: all_aml_test.preprocessed
+    normalize.type: -n1
+    normalization.iterations: 0
+    heat.map.size: 2
+assertions:
+    numFiles: 16
+    files:
+        all_aml_test.preprocessed.sub28.2.clu:
+            diff: ./expected.files/all_aml_test.preprocessed.sub28.2.clu
+        all_aml_test.preprocessed.sub28.2.gct:
+            diff: ./expected.files/all_aml_test.preprocessed.sub28.2.gct
+        all_aml_test.preprocessed.sub28.3.clu:
+            diff: ./expected.files/all_aml_test.preprocessed.sub28.3.clu
+        all_aml_test.preprocessed.sub28.3.gct:
+            diff: ./expected.files/all_aml_test.preprocessed.sub28.3.gct
+        all_aml_test.preprocessed.sub28.4.clu:
+            diff: ./expected.files/all_aml_test.preprocessed.sub28.4.clu
+        all_aml_test.preprocessed.sub28.4.gct:
+            diff: ./expected.files/all_aml_test.preprocessed.sub28.4.gct
+        all_aml_test.preprocessed.sub28.5.clu:
+            diff: ./expected.files/all_aml_test.preprocessed.sub28.5.clu
+        all_aml_test.preprocessed.sub28.5.gct:
+            diff: ./expected.files/all_aml_test.preprocessed.sub28.5.gct
+        all_aml_test.preprocessed.sub28.clsdist:
+            diff: ./expected.files/all_aml_test.preprocessed.sub28.clsdist
+        all_aml_test.preprocessed.sub28.srt.2.gct:
+            diff: ./expected.files/all_aml_test.preprocessed.sub28.srt.2.gct
+        all_aml_test.preprocessed.sub28.srt.3.gct:
+            diff: ./expected.files/all_aml_test.preprocessed.sub28.srt.3.gct
+        all_aml_test.preprocessed.sub28.srt.4.gct:
+            diff: ./expected.files/all_aml_test.preprocessed.sub28.srt.4.gct
+        all_aml_test.preprocessed.sub28.srt.5.gct:
+            diff: ./expected.files/all_aml_test.preprocessed.sub28.srt.5.gct
+#Note: can't compare pdf using unix diff command
+        all_aml_test.preprocessed.sub28.statistics.pdf: !!null
+        all_aml_test.preprocessed.sub28.stdev:
+            diff: ./expected.files/all_aml_test.preprocessed.sub28.stdev
+        stdout.txt:
+            diff: ./expected.files/stdout.txt

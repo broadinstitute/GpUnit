@@ -1,0 +1,18 @@
+# Created: Tue Apr 10 00:24:35 EDT 2012 by pcarr@broadinstitute.org
+# Job: 16226    server:  http://gpdev.broadinstitute.org/gp/
+module: ComparativeMarkerSelection
+params: 
+    input.file: ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct
+    cls.file: ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.cls
+    test.direction: 2
+    test.statistic: 0
+    number.of.permutations: 10000
+    log.transformed.data: false
+    complete: false
+    balanced: false
+    random.seed: 779948241
+    smooth.p.values: true
+    phenotype.test: one versus all
+    output.filename: all_aml_test.preprocessed.comp.marker.odf
+assertions:
+    outputDir: expected

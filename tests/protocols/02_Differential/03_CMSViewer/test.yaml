@@ -1,0 +1,5 @@
+module: ComparativeMarkerSelectionViewer
+params:
+    comparative.marker.selection.filename: "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.comp.marker.odf"
+    dataset.filename: "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct"
+
