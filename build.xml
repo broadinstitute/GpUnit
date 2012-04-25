@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="gp-unit" default="package">
-    <property name="gp.unit.dir" location="./" />
+    <property name="gpunit.dir" location="./" />
 
     <!-- in order to compile gp-unit, and to run gp-unit tests, must download the client library -->
     <property name="gp.host" value="gpdev.broadinstitute.org" />
     <property name="gp.url" value="http://${gp.host}" />
-    <property name="local.dir" location="${gp.unit.dir}/tmp/${gp.host}" />
+    <property name="gp.user" value="jntest" />
+    <property name="gp.password" value="jntest" />
+    <property name="local.dir" location="${gpunit.dir}/tmp/${gp.host}" />
     <property name="client.lib.dir" location="${local.dir}/client" />
     <!-- if the client.dir already exists, skip the rest -->
     <available property="gp-client-lib-exists" file="${client.lib.dir}/GenePattern.jar" />
-
-    <!-- build gp-unit.jar -->
-    <property name="gp.full.jar" location="/Applications/GenePatternServer/Tomcat/webapps/gp/WEB-INF/lib/gp-full.jar" />
 
     <path id="gp.client.classpath">
         <pathelement location="${client.lib.dir}/GenePattern.jar" />
@@ -20,22 +19,20 @@
         </fileset>
     </path>
 
-    <path id="gp.unit.classpath">
-        <fileset dir="${gp.unit.dir}/lib">
+    <path id="gpunit.classpath">
+        <fileset dir="${gpunit.dir}/lib">
             <include name="**/*.jar"/>
         </fileset>
-        <pathelement location="${gp.unit.dir}/classes"/>
-        <!-- pathelement location="${gp.full.jar}" / -->
+        <pathelement location="${gpunit.dir}/classes"/>
         <path refid="gp.client.classpath" />
     </path>
 
     <target name="init">
         <tstamp />
-        <mkdir dir="${gp.unit.dir}/classes" />
-        <mkdir dir="${gp.unit.dir}/dist" />
+        <mkdir dir="${gpunit.dir}/classes" />
+        <mkdir dir="${gpunit.dir}/dist" />
         <mkdir dir="${client.lib.dir}" />
     </target>
-
 
     <target name="gp-client-lib" depends="init" unless="gp-client-lib-exists">
         <description>If necessary, download the Java Programming Library from the server, and unzip into a local directory</description>
@@ -50,18 +47,18 @@
         <javac debug="true" 
             defaultexcludes="true" 
             deprecation="true" 
-            destdir="${gp.unit.dir}/classes" 
+            destdir="${gpunit.dir}/classes" 
             optimize="false" 
             proceed="false" 
-            srcdir="${gp.unit.dir}/src/main/java" 
+            srcdir="${gpunit.dir}/src/main/java" 
             target="${java.target}" 
             source="${java.target}" 
-            classpathref="gp.unit.classpath" >
+            classpathref="gpunit.classpath" >
         </javac>
     </target>
 
     <target name="package" depends="compile">
-        <jar basedir="${gp.unit.dir}/classes" jarfile="${gp.unit.dir}/dist/gp-unit.jar" />
+        <jar basedir="${gpunit.dir}/classes" jarfile="${gpunit.dir}/dist/gp-unit.jar" />
     </target>
 
     <target name="clean">
@@ -77,13 +74,26 @@
         <sequential>
             <echo>Running test from @{test.file}</echo>
             <java classname="org.genepattern.gpunit.RunTest" fork="true"
-                classpathref="gp.unit.classpath" >
+                classpathref="gpunit.classpath" >
                 <arg value="@{test.file}" />
             </java> 
         </sequential>
     </macrodef>
 
-    <target name="gp-unit-test" depends="package">
+    <target name="gpunit-test" depends="package">
         <run-test test.file="${test.file}" />
     </target>
+    
+    <target name="junit">
+        <junit fork="yes" printsummary="false" haltonfailure="true">
+            <test name="org.genepattern.gpunit.test.BatchModuleTest" outfile="test_all"/>
+            <classpath refid="gpunit.classpath" />
+            <formatter type="xml" usefile="false" />
+            <!-- sysproperty key="testcases.files" value="${testcase.files.prop}" / -->
+            <!-- jvmarg value="-DgenePatternUrl=${gp.url}" /-->
+            <!-- jvmarg value="-Dusername=${username}"/ -->
+            <!-- jvmarg value="-Dpassword=${password}"/ -->
+        </junit>
+    </target>
+
 </project>

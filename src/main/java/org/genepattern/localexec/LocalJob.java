@@ -1,9 +1,11 @@
 package org.genepattern.localexec;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 import org.genepattern.webservice.Parameter;
@@ -15,13 +17,13 @@ public class LocalJob {
     
     private void initFromManifest(File manifest) throws FileNotFoundException, IOException {
         Properties props = new Properties();
-        FileReader fr = null;
+        InputStream in = null;
         try {
-            fr = new FileReader(manifest);
-            props.load( fr );
+            in = new FileInputStream(manifest);
+            props.load( in );
         }
         finally {
-            fr.close();
+            in.close();
         } 
         commandLineFromManifest = props.getProperty("commandLine");
     }

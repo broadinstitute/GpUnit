@@ -35,6 +35,12 @@ public class ModuleTestObject {
     public void setModule(String module) {
         this.moduleName = module;
     }
+    public String getModuleLsid() {
+        return moduleLsid;
+    }
+    public void setModuleLsid(String moduleLsid) {
+        this.moduleLsid = moduleLsid;
+    }
     public Map<String,Object> getParams() {
         return params;
     }
