@@ -4,7 +4,7 @@ params: !!map
     markers.file: "http://www.broadinstitute.org/mpr/publications/projects/CNS/100K_markerpositions.hg16.txt"
     refgene.file: "hg16_20070112.mat"
     seg.file: "http://www.broadinstitute.org/mpr/publications/projects/CNS/segmented_data_080520.seg"
-assertions: !!org.genepattern.gpunit.yaml.GpAssertions
+assertions: 
     numFiles: 7
     files: !!map
 #        "all_lesions_file.gp_gistic.txt": !!org.genepattern.gpunit.yaml.TestFileObj

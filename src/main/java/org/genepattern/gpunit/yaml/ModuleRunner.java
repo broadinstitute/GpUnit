@@ -74,9 +74,9 @@ public class ModuleRunner {
     }
 
     static public GPClient initGpClient() {
-        final String gpUrl = "http://gpdev.broadinstitute.org";
-        final String gpUsername = "jntest";
-        final String gpPassword = "jntest";
+        final String gpUrl = System.getProperty("genePatternUrl", "http://gpdev.broadinstitute.org");
+        final String gpUsername = System.getProperty("username", "jntest");
+        final String gpPassword = System.getProperty("password", "jntest");
         
         GPClient gpClient = null;
         try {

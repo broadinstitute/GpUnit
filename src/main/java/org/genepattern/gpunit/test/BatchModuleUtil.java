@@ -46,16 +46,10 @@ public class BatchModuleUtil {
             if (filenameKey.endsWith("test.yaml")) {
                 return true;
             }
-            //TODO: 'gp_execution_log.txt'
-            //if (filenameKey.equals("gp_execution_log.txt")) {
-            //    return true;
-            //}
+            if (filenameKey.equals("gp_execution_log.txt")) {
+                return true;
+            }
             return false;
-            //if (!(filenameKey.endsWith("test.yml") || filenameKey.endsWith("test.yaml"))) {
-            //    //must end with 'test.yml' or 'test.yaml'
-            //    return false;
-            //}
-            //return true;
         }
     };
 

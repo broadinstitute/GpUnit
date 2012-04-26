@@ -15,13 +15,13 @@ params:
     row.sampling.rate: "1"
     log2.transform: "0"
     output.file.format: "3"
-assertions:
-    outputDir: expected
+#assertions:
+#    outputDir: expected
 # these assertions are here for illustration
 # they are redundant because of the outputDir assertion
-    numFiles: 1
-    files: 
-        "all_aml_test.preprocessed.gct":
-            diff: "expected/all_aml_test.preprocessed.gct"
-            numRows: 5951
-            numCols: 35
+#    numFiles: 1
+#    files: 
+#        "all_aml_test.preprocessed.gct":
+#            diff: "expected/all_aml_test.preprocessed.gct"
+#            numRows: 5951
+#            numCols: 35

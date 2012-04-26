@@ -10,8 +10,9 @@ import org.genepattern.webservice.JobResult;
 public class Util {
     final static boolean deleteDownloadedResultFiles = true;
 
-    static public void runTest(File testFile) throws GpUnitException, FileNotFoundException, AssertionError {
-        ModuleTestObject testCase = ModuleTestParserYaml.parse(testFile);
+    static public void runTest(File testFile) throws GpUnitException, FileNotFoundException, AssertionError, Exception {
+        //ModuleTestObject testCase = ModuleTestParserYaml.parse(testFile);
+        ModuleTestObject testCase = initTestCase(testFile);
         ModuleRunner runner = new ModuleRunner(testCase);
         runner.setGpClient(ModuleRunner.initGpClient());
         runner.run();
@@ -27,6 +28,14 @@ public class Util {
                 }
             }
         }
+    }
+    
+    static public ModuleTestObject initTestCase(File fromFile) throws Exception {
+        if ("gp_execution_log.txt".equals(fromFile.getName().toLowerCase())) {
+            return ExecutionLogParser.parse(fromFile);
+        }
+        ModuleTestObject testCase = ModuleTestParserYaml.parse(fromFile);
+        return testCase;
     }
     
     static public void main(String[] args) {

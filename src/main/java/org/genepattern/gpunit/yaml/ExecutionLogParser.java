@@ -110,7 +110,7 @@ public class ExecutionLogParser {
             if (lineCount == 2) {
                 //set the server name, helpful for handling input parameters
                 //# Job: 16556    server:  http://gpdev.broadinstitute.org/gp/
-                String[] tokens = line.split(" ");
+                String[] tokens = line.split("\\s+");
                 if (tokens.length == 4) {
                     job = tokens[1];
                     server = tokens[3];
@@ -123,6 +123,7 @@ public class ExecutionLogParser {
             if (lineCount == 3) {
                 //parse the module name and lsid
                 //# Module: ConvertLineEndings urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:2
+                
                 String[] tokens = line.split(" ");
                 if (tokens.length < 2 || !tokens[0].startsWith("Module:")) {
                     error("Expecting '# Module: <name> <lsid>' on line 3");
@@ -167,25 +168,27 @@ public class ExecutionLogParser {
             param.name = line.substring(0, idx).trim();
             param.value = line.substring(idx + 3);
             
-            String[] tokens = param.value.toString().split(" ");
+            //HACK: this assumes exactly three space (' ') characters between each token
+            String[] tokens = param.value.toString().split("   ");
             if (tokens.length == 1) {
                 //use literal value ... only one token
                 return param;
             }
+            param.value=tokens[0];
             
             //Note: for these special cases, user must manually download the correct input file into the test directory
             //special-case for job upload files, cast to a File object
-            if (tokens[2].startsWith("/gp/getFile.jsp?")) {
-                param.value = new File(param.name);
+            if (tokens[1].startsWith("/gp/getFile.jsp?")) {
+                param.value = new File(tokens[0]);
                 return param;
             }
             //special-case for previous job result files, cast to a File object
-            if (tokens[2].startsWith( server + "jobResults/" )) {
-                param.value = new File(param.name);
+            if (tokens[1].startsWith( server + "jobResults/" )) {
+                param.value = new File(tokens[0]);
                 return param;
             }
             
-            //all other parameters are passed by value
+            //all other parameters are passed by value, use the first token
             return param;
         }
     }

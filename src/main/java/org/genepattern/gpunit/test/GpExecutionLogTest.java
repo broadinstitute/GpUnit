@@ -19,7 +19,7 @@ import org.junit.runners.Parameterized.Parameters;
  * @author pcarr
  */
 @RunWith(LabelledParameterized.class)
-public class BatchModuleTest { 
+public class GpExecutionLogTest { 
 
     /**
      * This parameterized test runs a single unit test for each test case in the Collection of TestData.
@@ -27,28 +27,22 @@ public class BatchModuleTest {
      */
     @Parameters
     public static Collection<Object[]> data() {
-        //return BatchModuleUtil.data();
-        //TODO: switch back to generic no-arg call to #data)
         return BatchModuleUtil.data(new File("./tests/saved_jobs"));
     }
 
     @BeforeClass 
     public static void beforeClass() {
-        //Note: to change the gp server and user account you have two choices:
-        //   1) launch from ant, see build.xml, and set these properties, or
-        //   2) for debugging from an IDE, uncomment the following lines and set accordingly
-        //System.setProperty("genePatternUrl", "http://genepatternbeta.broadinstitute.org");
-        //System.setProperty("username", "jntest");
-        //System.setProperty("password", "jntest");
+        //System.out.println("beforeClass");
     }
     
     @AfterClass
     public static void afterClass() {
+        //System.out.println("afterClass");
     }
 
     private File moduleTestFile;
     
-    public BatchModuleTest(File moduleTestFile) {
+    public GpExecutionLogTest(File moduleTestFile) {
         this.moduleTestFile = moduleTestFile;
     }
     
