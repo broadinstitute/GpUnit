@@ -1,0 +1,6 @@
+# Created: Mon Apr 23 16:22:18 EDT 2012 by pcarr@broadinstitute.org
+# Job: 16556    server:  http://gpdev.broadinstitute.org/gp/
+# Module: ConvertLineEndings urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:2
+# Parameters: 
+#    input.filename = all_aml_test.res   /gp/getFile.jsp?job=16556&file=pcarr%40broadinstitute.org_run3943667334821074755.tmp%2Fall_aml_test.res
+#    output.file = <input.filename_basename>.cvt.<input.filename_extension>
