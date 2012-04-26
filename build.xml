@@ -88,6 +88,9 @@
       -->
     <macrodef name="run-tests">
         <attribute name="testcases" />
+        <attribute name="numthreads" default="16" />
+        <!-- when running jobs in parallel, this is the max time in seconds to wait before finishing the test -->
+        <attribute name="shutdowntimeout" default="300" /> 
         <sequential>
             <echo>testcases: @{testcases}</echo>
             <junit fork="yes" printsummary="false" haltonfailure="true">
@@ -95,6 +98,9 @@
                 <classpath refid="gpunit.classpath" />
                 <formatter type="xml" usefile="false" />
                 <sysproperty key="gpunit.testcase.dirs" value="@{testcases}" />
+                <sysproperty key="junit.parallel.threads" value="@{numthreads}" />
+                <sysproperty key="junit.parallel.shutdown.timeout" value="@{shutdowntimeout}" />
+
                 <sysproperty key="genePatternUrl" value="${gp.url}" />
                 <sysproperty key="username" value="${gp.user}" />
                 <sysproperty key="password" value="${gp.password}" />
@@ -111,7 +117,7 @@
             <pathelement location="./tests/protocols" />
         </path>
         <property name="all-protocols.testcases" refid="all-protocols.path" /> 
-        <run-tests testcases="${all-protocols.testcases}" />
+        <run-tests testcases="${all-protocols.testcases}" numthreads="32" shutdowntimeout="30" />
     </target>
 
     <target name="gpunit-saved-jobs" depends="package">

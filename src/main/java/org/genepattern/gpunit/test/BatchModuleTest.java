@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.genepattern.gpunit.yaml.Util;
-import org.genepattern.util.junit.LabelledParameterized;
+import org.genepattern.util.junit.LabelledParallelized;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -21,7 +21,7 @@ import org.junit.runners.Parameterized.Parameters;
  * 
  * @author pcarr
  */
-@RunWith(LabelledParameterized.class)
+@RunWith(LabelledParallelized.class)
 public class BatchModuleTest { 
 
     /**
@@ -51,6 +51,11 @@ public class BatchModuleTest {
 //                //"/Broad/Projects/gp2-trunk/modules/util/gp-unit/tests/protocols/05_SNP/02_XChromosomeCorrect/test.yaml"
 //        );
 //        }
+        //for debugging ...
+        String numThreadsProp = System.getProperty("junit.parallel.threads");
+        if (numThreadsProp == null) {
+            System.setProperty("junit.parallel.threads", "32");
+        }
         String gpunitTestcaseDirsProp = System.getProperty("gpunit.testcase.dirs");
         if (gpunitTestcaseDirsProp != null) {
             System.out.println("gpunit.testcase.dirs: "+gpunitTestcaseDirsProp);
@@ -64,14 +69,9 @@ public class BatchModuleTest {
             return BatchModuleUtil.data(fileset);
         }
 
-        //TODO: switch back to generic no-arg call to #data)
-        //return BatchModuleUtil.data();
-
-        //TODO: comment this out to go back to deleting the downloaded result files after each test run
-        //System.setProperty("gpunit.deleteDownloadedResultFiles", "true");
-
         //TODO: change this back to more generic path
         return BatchModuleUtil.data(new File("./tests/saved_jobs"));
+        //return BatchModuleUtil.data(new File("./tests/protocols"));
     }
 
     @BeforeClass 
