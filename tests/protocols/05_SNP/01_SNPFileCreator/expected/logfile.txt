@@ -1,0 +1,58 @@
+0     INFO  [main] APPLICATION - Logging initialized (via properties)
+258   INFO  [main] APPLICATION - Reading CDF File: /xchip/gpprod/servers/genepattern/taskLib/SNPFileCreator.1.816//Mapping50K_Hind240.cdf
+4892  INFO  [main] APPLICATION - Processing CEL files
+4905  INFO  [main] APPLICATION - Processing...100H_primary_GBM_101N.CEL
+7407  INFO  [main] APPLICATION - Median:1232
+7407  INFO  [main] APPLICATION - Processing...100H_primary_GBM_56.CEL
+9091  INFO  [main] APPLICATION - Median:1482
+9091  INFO  [main] APPLICATION - Processing...100H_primary_GBM_56N.CEL
+10863 INFO  [main] APPLICATION - Median:3320
+10863 INFO  [main] APPLICATION - Processing...100H_primary_GBM_74.CEL
+12691 INFO  [main] APPLICATION - Median:890
+12692 INFO  [main] APPLICATION - Processing...100H_primary_GBM_74N.CEL
+14617 INFO  [main] APPLICATION - Median:874
+14617 INFO  [main] APPLICATION - Processing...100H_primary_GBM_84.CEL
+16651 INFO  [main] APPLICATION - Median:871
+16651 INFO  [main] APPLICATION - Processing...100H_primary_GBM_84N.CEL
+18967 INFO  [main] APPLICATION - Median:1897
+18967 INFO  [main] APPLICATION - Processing...100H_primary_GBM_86.CEL
+21155 INFO  [main] APPLICATION - Median:1290
+21155 INFO  [main] APPLICATION - Processing...100H_primary_GBM_86N.CEL
+23404 INFO  [main] APPLICATION - Median:820
+23405 INFO  [main] APPLICATION - Processing...100H_primary_GBM_87.CEL
+25805 INFO  [main] APPLICATION - Median:1272
+25805 INFO  [main] APPLICATION - Processing...100H_primary_GBM_87N.CEL
+28486 INFO  [main] APPLICATION - Median:2314
+28486 INFO  [main] APPLICATION - Processing...100H_primary_GBM_101.CEL
+31180 INFO  [main] APPLICATION - Median:2646
+31180 INFO  [main] APPLICATION - Processing...100H_primary_GBM_84.txt
+31180 INFO  [main] APPLICATION - Processing...100H_primary_GBM_84N.txt
+31180 INFO  [main] APPLICATION - Processing...100H_primary_GBM_86.txt
+31180 INFO  [main] APPLICATION - Processing...100H_primary_GBM_86N.txt
+31180 INFO  [main] APPLICATION - Processing...100H_primary_GBM_87.txt
+31180 INFO  [main] APPLICATION - Processing...100H_primary_GBM_87N.txt
+31180 INFO  [main] APPLICATION - Processing...100H_primary_GBM_101.txt
+31180 INFO  [main] APPLICATION - Processing...100H_primary_GBM_101N.txt
+31181 INFO  [main] APPLICATION - Processing...100H_primary_GBM_56.txt
+31181 INFO  [main] APPLICATION - Processing...100H_primary_GBM_56N.txt
+31181 INFO  [main] APPLICATION - Processing...100H_primary_GBM_74.txt
+31181 INFO  [main] APPLICATION - Processing...100H_primary_GBM_74N.txt
+31181 INFO  [main] APPLICATION - Read in 12 Files
+33379 INFO  [main] NORM - Normalizing 100H_primary_GBM_101N with reference 100H_primary_GBM_86
+42817 INFO  [main] NORM - Normalizing 100H_primary_GBM_56 with reference 100H_primary_GBM_86
+53217 INFO  [main] NORM - Normalizing 100H_primary_GBM_56N with reference 100H_primary_GBM_86
+62491 INFO  [main] NORM - Normalizing 100H_primary_GBM_74 with reference 100H_primary_GBM_86
+72714 INFO  [main] NORM - Normalizing 100H_primary_GBM_74N with reference 100H_primary_GBM_86
+82779 INFO  [main] NORM - Normalizing 100H_primary_GBM_84 with reference 100H_primary_GBM_86
+92730 INFO  [main] NORM - Normalizing 100H_primary_GBM_84N with reference 100H_primary_GBM_86
+101730 INFO  [main] APPLICATION - Baseline:100H_primary_GBM_86
+101801 INFO  [main] NORM - Normalizing 100H_primary_GBM_86N with reference 100H_primary_GBM_86
+114791 INFO  [main] NORM - Normalizing 100H_primary_GBM_87 with reference 100H_primary_GBM_86
+124984 INFO  [main] NORM - Normalizing 100H_primary_GBM_87N with reference 100H_primary_GBM_86
+134073 INFO  [main] NORM - Normalizing 100H_primary_GBM_101 with reference 100H_primary_GBM_86
+143077 INFO  [main] APPLICATION - 0
+145909 INFO  [main] APPLICATION - 10000
+148174 INFO  [main] APPLICATION - 20000
+150420 INFO  [main] APPLICATION - 30000
+152663 INFO  [main] APPLICATION - 40000
+154901 INFO  [main] APPLICATION - 50000

@@ -1,0 +1,14 @@
+# Created: Thu Apr 26 15:06:08 EDT 2012 by pcarr
+# Job: 529463    server:  http://genepattern.broadinstitute.org/gp/
+# Module: SNPFileCreator urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00086:1
+# Parameters: 
+#    chip.type = Mapping50K_Hind240.cdf
+#    network.directory.name = 
+#    zip.filename = ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/GISTIC_Hind_subset.zip
+#    normalization.method = 2
+#    reference.method = median
+#    reference.filename = 
+#    model.method = 2
+#    allele.specific = no
+#    sort.snp.file = yes
+#    output.file = GISTIC_Hind_subset.snp

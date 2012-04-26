@@ -1,0 +1,15 @@
+Normal Samples:
+100H_primary_GBM_101N
+100H_primary_GBM_56N
+100H_primary_GBM_74N
+100H_primary_GBM_84N
+100H_primary_GBM_86N
+100H_primary_GBM_87N
+
+Target Samples:
+100H_primary_GBM_56
+100H_primary_GBM_74
+100H_primary_GBM_84
+100H_primary_GBM_86
+100H_primary_GBM_87
+100H_primary_GBM_101

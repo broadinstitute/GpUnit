@@ -1,0 +1,7 @@
+# Created: Thu Apr 26 15:01:38 EDT 2012 by pcarr
+# Job: 529461    server:  http://genepattern.broadinstitute.org/gp/
+# Module: XChromosomeCorrect urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00093:3
+# Parameters: 
+#    snp.filename = ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/GISTIC_Hind_subset.snp
+#    sample.info.filename = ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/sample_info_subset.txt
+#    output.file = <snp.filename_basename>.xcorrected.snp

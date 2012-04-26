@@ -1,0 +1,5 @@
+#04_Prediction_cart_two.html
+module: PredictionResultsViewer
+params:
+    prediction.results.file: ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.cart.pred.odf
+

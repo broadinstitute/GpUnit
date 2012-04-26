@@ -1,0 +1,9 @@
+module: SNPFileCreator
+params:
+    chip.type: Mapping50K_Hind240.cdf
+    zip.filename: ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/GISTIC_Hind_subset.zip
+    output.file: GISTIC_Hind_subset.snp 
+
+# for compatibility with 3.10, use these parameters
+#params:
+#    cel.files: ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/GISTIC_Hind_subset.zip

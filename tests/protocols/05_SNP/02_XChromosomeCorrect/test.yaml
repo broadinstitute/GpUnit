@@ -1,0 +1,4 @@
+module: XChromosomeCorrect
+params:
+    snp.filename: ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/GISTIC_Hind_subset.snp
+    sample.info.filename: ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/sample_info_subset.txt

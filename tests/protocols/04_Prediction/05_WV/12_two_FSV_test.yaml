@@ -1,0 +1,5 @@
+#04_Prediction_wv_two.html
+module: FeatureSummaryViewer
+params:
+    feature.filename: ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.wvx.feat.odf
+

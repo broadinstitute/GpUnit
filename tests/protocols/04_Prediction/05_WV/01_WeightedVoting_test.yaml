@@ -1,0 +1,7 @@
+#04_Prediction_wv_classify.html
+module: WeightedVoting
+params:
+    saved.model.filename: ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.wv.model.odf
+    test.filename: ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct
+    test.class.filename: ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test_unknown.cls         
+
