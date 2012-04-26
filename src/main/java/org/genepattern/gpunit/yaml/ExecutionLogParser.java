@@ -98,13 +98,13 @@ public class ExecutionLogParser {
                 //TODO: should throw exception?
                 return;
             }
-            //strip out leading '#' and trim whitespace
+            //strip out leading '#' and whitespace
             if (line.startsWith("#")) {
                 line = line.substring(1);
                 if (line == null) {
                     return;
                 }
-                line = line.trim();
+                line = line.replaceAll("^\\s+", "");
             }
             
             if (lineCount == 2) {
@@ -145,9 +145,7 @@ public class ExecutionLogParser {
             ParamEntry paramEntry = parseParamLine(line);
             if (paramEntry != null) {
                 testCase.getParams().put(paramEntry.name, paramEntry.value);
-            }
-
-            
+            } 
         }
         
         private ParamEntry parseParamLine(String line) throws Exception {
