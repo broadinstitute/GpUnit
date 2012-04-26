@@ -34,6 +34,23 @@ public class BatchModuleUtil {
         return data;
     }
 
+    /**
+     * Create a new list of test cases from the given list of files.
+     * Directories are searched recursively for a set of 0 or more test cases,
+     * Files are simply appended to the resulting collection.
+     * 
+     * @param testCaseFiles
+     * @return
+     */
+    final static public Collection<Object[]> data(List<File> testDirList) {
+        List<Object[]> data = new ArrayList<Object[]>();
+        List<File> testcaseFiles = BatchModuleUtil.findTestcases(testDirList);
+        for(File testFile : testcaseFiles) {
+            data.add( new Object[] { testFile } );
+        }
+        return data; 
+    }
+
     final static public FileFilter testcaseFileFilter = new FileFilter() {
         public boolean accept(File arg0) {
             if (arg0.isDirectory()) {
@@ -53,6 +70,24 @@ public class BatchModuleUtil {
         }
     };
 
+    public static List<File> findTestcases(List<File> fileset) {
+        List<File> testFiles = new ArrayList<File>();
+        for(File file : fileset) {
+            if (file.isFile()) {
+                if (testcaseFileFilter.accept(file)) {
+                    testFiles.add(file);
+                }
+                else {
+                    //TODO: better logging, or throw an exception
+                    System.err.println("Warning: Ignoring testcase file: "+file.getAbsolutePath());
+                }
+            }
+            else if (file.isDirectory()) {
+                listFilesInto(testFiles, file, testcaseFileFilter);
+            }
+        }
+        return testFiles;
+    }
     public static List<File> findTestcases(File rootDir) {
         List<File> testFiles = new ArrayList<File>();
         listFilesInto(testFiles, rootDir, testcaseFileFilter);
