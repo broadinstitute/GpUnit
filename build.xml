@@ -67,7 +67,7 @@
     </target>
     <!-- END build gp-unit.jar -->
     
-    <!-- run gp-unit test -->    
+    <!-- run single gp-unit test via SOAP client request -->    
     <property name="test.file" location="./tests/protocols/01_Run/step1/test.yaml" />
     <macrodef name="run-test">
         <attribute name="test.file" />
@@ -80,22 +80,56 @@
         </sequential>
     </macrodef>
 
+    <!-- run a set of gp-unit tests via SOAP client requests 
+         use a parameterized jUnit test to submit the jobs and validate the results.
+         
+         To use the test, create a path, give it a refid, then create a property from that refid.
+         Look at the gpunit-all-protocols target for an example. 
+      -->
+    <macrodef name="run-tests">
+        <attribute name="testcases" />
+        <sequential>
+            <echo>testcases: @{testcases}</echo>
+            <junit fork="yes" printsummary="false" haltonfailure="true">
+                <test name="org.genepattern.gpunit.test.BatchModuleTest" outfile="test_all"/>
+                <classpath refid="gpunit.classpath" />
+                <formatter type="xml" usefile="false" />
+                <sysproperty key="gpunit.testcase.dirs" value="@{testcases}" />
+                <sysproperty key="genePatternUrl" value="${gp.url}" />
+                <sysproperty key="username" value="${gp.user}" />
+                <sysproperty key="password" value="${gp.password}" />
+            </junit>
+        </sequential>
+    </macrodef>
+    
     <target name="gpunit-test" depends="package">
         <run-test test.file="${test.file}" />
     </target>
     
+    <target name="gpunit-all-protocols" depends="package">
+        <path id="all-protocols.path">
+            <pathelement location="./tests/protocols" />
+        </path>
+        <property name="all-protocols.testcases" refid="all-protocols.path" /> 
+        <run-tests testcases="${all-protocols.testcases}" />
+    </target>
+
+    <target name="gpunit-saved-jobs" depends="package">
+        <path id="saved-jobs.path">
+            <pathelement location="./tests/saved_jobs" />
+        </path>
+        <property name="saved-jobs.testcases" refid="saved-jobs.path" /> 
+        <run-tests testcases="${saved-jobs.testcases}" />
+    </target>
+
     <target name="junit" depends="package">
-        <property name="cp" refid="gpunit.classpath"/>
-        <echo message="Classpath is ${cp}"/>
-        
-        <junit fork="yes" printsummary="false" haltonfailure="true">
-            <test name="org.genepattern.gpunit.test.BatchModuleTest" outfile="test_all"/>
-            <classpath refid="gpunit.classpath" />
-            <formatter type="xml" usefile="false" />
-            <sysproperty key="genePatternUrl" value="${gp.url}" />
-            <sysproperty key="username" value="${gp.user}" />
-            <sysproperty key="password" value="${gp.password}" />
-        </junit>
+        <path id="gpunit.testcase.path">
+            <pathelement location="./tests/protocols/01_Run" />
+            <pathelement location="./tests/saved_jobs" />
+            <pathelement location="./tests/protocols/02_Differential/03_CMSViewer/test.yaml"/>
+        </path>
+        <property name="gpunit.testcase.dirs" refid="gpunit.testcase.path" /> 
+        <run-tests testcases="${gpunit.testcase.dirs}" />
     </target>
 
 </project>
