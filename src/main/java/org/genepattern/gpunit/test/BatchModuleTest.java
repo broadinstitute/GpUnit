@@ -1,7 +1,10 @@
 package org.genepattern.gpunit.test;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.regex.Pattern;
 
 import org.genepattern.gpunit.yaml.Util;
 import org.genepattern.util.junit.LabelledParameterized;
@@ -27,8 +30,47 @@ public class BatchModuleTest {
      */
     @Parameters
     public static Collection<Object[]> data() {
-        //return BatchModuleUtil.data();
+        /*
+        @see build.xml file for an example of how to configure the list of test-cases from ant,
+        for example,
+        <path id="gpunit.testcase.path">
+            <pathelement location="./tests/protocols/01_Run" />
+            <pathelement location="./tests/saved_jobs" />
+            <pathelement location="./tests/protocols/02_Differential/03_CMSViewer/test.yaml">
+        </path>
+        <property name="gpunit.testcase.dirs" refid="gpunit.testcase.path" /> 
+        */
+        
+        //for debugging ...
+//        if (System.getProperty("gpunit.testcase.dirs") == null) { 
+//        System.setProperty("gpunit.testcase.dirs",
+//                // "/Broad/Projects/gp2-trunk/modules/util/gp-unit/tests/protocols/01_Run:/Broad/Projects/gp2-trunk/modules/util/gp-unit/tests/saved_jobs"
+//                //"/Broad/Projects/gp2-trunk/modules/util/gp-unit/tests/protocols/01_Run:/Broad/Projects/gp2-trunk/modules/util/gp-unit/tests/saved_jobs:/Broad/Projects/gp2-trunk/modules/util/gp-unit/tests/protocols/02_Differential/03_CMSViewer/test.yaml"
+//                //"/Broad/Projects/gp2-trunk/modules/util/gp-unit/tests/protocols/05_SNP"
+//                "/Broad/Projects/gp2-trunk/modules/util/gp-unit/tests/protocols"
+//                //"/Broad/Projects/gp2-trunk/modules/util/gp-unit/tests/protocols/05_SNP/02_XChromosomeCorrect/test.yaml"
+//        );
+//        }
+        String gpunitTestcaseDirsProp = System.getProperty("gpunit.testcase.dirs");
+        if (gpunitTestcaseDirsProp != null) {
+            System.out.println("gpunit.testcase.dirs: "+gpunitTestcaseDirsProp);
+            
+            //parse the list of one or more test cases
+            List<File> fileset = new ArrayList<File>();
+            String[] testCaseDirs = gpunitTestcaseDirsProp.split(Pattern.quote(File.pathSeparator));
+            for(String testCaseDir : testCaseDirs) {
+                fileset.add(new File(testCaseDir));
+            }
+            return BatchModuleUtil.data(fileset);
+        }
+
         //TODO: switch back to generic no-arg call to #data)
+        //return BatchModuleUtil.data();
+
+        //TODO: comment this out to go back to deleting the downloaded result files after each test run
+        //System.setProperty("gpunit.deleteDownloadedResultFiles", "true");
+
+        //TODO: change this back to more generic path
         return BatchModuleUtil.data(new File("./tests/saved_jobs"));
     }
 
@@ -37,9 +79,12 @@ public class BatchModuleTest {
         //Note: to change the gp server and user account you have two choices:
         //   1) launch from ant, see build.xml, and set these properties, or
         //   2) for debugging from an IDE, uncomment the following lines and set accordingly
+        //System.setProperty("genePatternUrl", "http://genepattern.broadinstitute.org");
         //System.setProperty("genePatternUrl", "http://genepatternbeta.broadinstitute.org");
         //System.setProperty("username", "jntest");
         //System.setProperty("password", "jntest");
+        
+        //System.setProperty("gpunit.deleteDownloadedResultFiles", "false");
     }
     
     @AfterClass
@@ -51,6 +96,11 @@ public class BatchModuleTest {
     public BatchModuleTest(File moduleTestFile) {
         this.moduleTestFile = moduleTestFile;
     }
+    
+    //@Test
+    //public void submitJob() throws Exception {
+    //    int jobId = Util.submitJob(moduleTestFile);
+    //}
     
     @Test
     public void testModule() throws Exception {

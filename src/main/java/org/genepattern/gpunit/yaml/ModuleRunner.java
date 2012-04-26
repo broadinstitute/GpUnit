@@ -22,6 +22,7 @@ public class ModuleRunner {
     private GPClient gpClient;
     private ModuleTestObject test;
     private JobResult jobResult;
+    private int jobId = -1;
 
     public ModuleRunner(ModuleTestObject test) {
         this.test = test;
@@ -39,8 +40,33 @@ public class ModuleRunner {
         return jobResult;
     }
     
-    public void run() {
+    public int getJobId() {
+        return jobId;
+    }
+    
+    public void runJobAndWait() {
         this.jobResult = runJobSoap();
+        if (jobResult != null) {
+            this.jobId = jobResult.getJobNumber();
+        }
+    }
+    
+    public void submitJob() {
+        JobResult jobResult = null;
+        String nameOrLsid = test.getModule();
+        
+        if (gpClient == null) {
+            this.gpClient = initGpClient();
+        }
+        try {
+            //GPClient gpClient = initGpClient();
+            Parameter[] params = initParams(test);
+        
+            this.jobId = gpClient.runAnalysisNoWait(nameOrLsid, params);
+        }
+        catch (Throwable t) {
+            throw new AssertionError("Error submitting job ["+test.getName()+", module='"+nameOrLsid+"']: "+t.getLocalizedMessage());
+        }
     }
     
     /**
@@ -59,9 +85,7 @@ public class ModuleRunner {
             this.gpClient = initGpClient();
         }
         try {
-            //GPClient gpClient = initGpClient();
             Parameter[] params = initParams(test);
-        
             jobResult = gpClient.runAnalysis(nameOrLsid, params);
             if (jobResult == null) {
                 throw new Exception("jobResult==null");

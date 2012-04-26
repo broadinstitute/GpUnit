@@ -3,31 +3,44 @@ package org.genepattern.gpunit.yaml;
 import java.io.File;
 import java.io.FileNotFoundException;
 
+import org.genepattern.client.GPClient;
 import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.ModuleTestObject;
 import org.genepattern.webservice.JobResult;
 
 public class Util {
-    final static boolean deleteDownloadedResultFiles = true;
-
-    static public void runTest(File testFile) throws GpUnitException, FileNotFoundException, AssertionError, Exception {
-        //ModuleTestObject testCase = ModuleTestParserYaml.parse(testFile);
+    static public int submitJob(File testFile) throws Exception {
         ModuleTestObject testCase = initTestCase(testFile);
         ModuleRunner runner = new ModuleRunner(testCase);
-        runner.setGpClient(ModuleRunner.initGpClient());
-        runner.run();
+        GPClient gpClient = ModuleRunner.initGpClient();
+        runner.setGpClient(gpClient);
+        runner.submitJob();
+        return runner.getJobId();
+    }
+
+    static public void runTest(File testFile) throws GpUnitException, FileNotFoundException, AssertionError, Exception {
+        ModuleTestObject testCase = initTestCase(testFile);
+        ModuleRunner runner = new ModuleRunner(testCase);
+        GPClient gpClient = ModuleRunner.initGpClient();
+        runner.setGpClient(gpClient);
+        runner.runJobAndWait();
         JobResult jobResult = runner.getJobResult();
         JobResultValidator validator = new JobResultValidator(testCase, jobResult);
         try {
             validator.validate();
         }
         finally {
-            if (deleteDownloadedResultFiles) {
+            if (isDeleteDownloadedResultFiles()) {
                 if (jobResult != null) {
                     validator.deleteDownloadedResultFiles();
                 }
             }
         }
+    }
+    
+    static private boolean isDeleteDownloadedResultFiles() {
+        String prop = System.getProperty("gpunit.deleteDownloadedResultFiles", "true");
+        return Boolean.valueOf(prop);
     }
     
     static public ModuleTestObject initTestCase(File fromFile) throws Exception {
@@ -36,6 +49,13 @@ public class Util {
         }
         ModuleTestObject testCase = ModuleTestParserYaml.parse(fromFile);
         return testCase;
+    }
+    
+    static public ModuleRunner initModuleRunner(File fromFile) throws Exception {
+        ModuleTestObject testCase = initTestCase(fromFile);
+        ModuleRunner runner = new ModuleRunner(testCase);
+        runner.setGpClient(ModuleRunner.initGpClient());
+        return runner;
     }
     
     static public void main(String[] args) {
