@@ -2,11 +2,11 @@
 <project name="gp-unit" default="package">
     <property name="gpunit.dir" location="./" />
 
-    <!-- in order to compile gp-unit, and to run gp-unit tests, must download the client library -->
     <property name="gp.host" value="genepatternbeta.broadinstitute.org" />
-    <property name="gp.url" value="http://${gp.host}" />
     <property name="gp.user" value="jntest" />
     <property name="gp.password" value="jntest" />
+
+    <property name="gp.url" value="http://${gp.host}" />
     <property name="local.dir" location="${gpunit.dir}/tmp/${gp.host}" />
     <property name="client.lib.dir" location="${local.dir}/client" />
     <!-- if the client.dir already exists, skip the rest -->
@@ -34,6 +34,7 @@
         <mkdir dir="${client.lib.dir}" />
     </target>
 
+    <!-- in order to compile gp-unit, and to run gp-unit tests, must download the client library -->
     <target name="gp-client-lib" depends="init" unless="gp-client-lib-exists">
         <description>If necessary, download the Java Programming Library from the server, and unzip into a local directory</description>
 
@@ -68,7 +69,6 @@
     <!-- END build gp-unit.jar -->
     
     <!-- run single gp-unit test via SOAP client request -->    
-    <property name="test.file" location="./tests/protocols/01_Run/step1/test.yaml" />
     <macrodef name="run-test">
         <attribute name="test.file" />
         <sequential>
@@ -76,6 +76,9 @@
             <java classname="org.genepattern.gpunit.RunTest" fork="true"
                 classpathref="gpunit.classpath" >
                 <arg value="@{test.file}" />
+                <sysproperty key="genePatternUrl" value="${gp.url}" />
+                <sysproperty key="username" value="${gp.user}" />
+                <sysproperty key="password" value="${gp.password}" />
             </java> 
         </sequential>
     </macrodef>
@@ -83,7 +86,7 @@
     <!-- run a set of gp-unit tests via SOAP client requests 
          use a parameterized jUnit test to submit the jobs and validate the results.
          
-         To use the test, create a path, give it a refid, then create a property from that refid.
+         To run the tests, create a path, give it a refid, then create a property from that refid.
          Look at the gpunit-all-protocols target for an example. 
       -->
     <macrodef name="run-tests">
@@ -108,6 +111,7 @@
         </sequential>
     </macrodef>
     
+    <property name="test.file" location="./tests/protocols/01_Run/01_PreprocessDataset/test.yaml" />
     <target name="gpunit-test" depends="package">
         <run-test test.file="${test.file}" />
     </target>
@@ -117,7 +121,14 @@
             <pathelement location="./tests/protocols" />
         </path>
         <property name="all-protocols.testcases" refid="all-protocols.path" /> 
-        <run-tests testcases="${all-protocols.testcases}" numthreads="32" shutdowntimeout="30" />
+        <property name="gpunit.numthreads" value="32" />
+        <!-- the max amount of time to wait, in seconds, before terminating the unit test -->
+        <property name="gpunit.shutdowntimeout" value="300" />
+        <run-tests 
+            testcases="${all-protocols.testcases}" 
+            numthreads="${gpunit.numthreads}" 
+            shutdowntimeout="${gpunit.shutdowntimeout}"
+        />
     </target>
 
     <target name="gpunit-saved-jobs" depends="package">
