@@ -102,13 +102,26 @@ public class JobResultValidator {
         //1) null jobResult
         Assert.assertNotNull("jobResult is null", jobResult);
 
-        //2) job status
-        Assert.assertFalse("job #"+jobResult.getJobNumber()+" has stderr", jobResult.hasStandardError());
         GpAssertions assertions = test.getAssertions();
         if (assertions == null) {
+            //2) job status
+            Assert.assertFalse("job #"+jobResult.getJobNumber()+" has stderr", jobResult.hasStandardError());
             return;
         }
         
+        if (assertions.getJobStatus() != null && assertions.getJobStatus().trim().length() > 0) { 
+            if ("success".equalsIgnoreCase(assertions.getJobStatus())) {
+                Assert.assertFalse("job #"+jobResult.getJobNumber()+" has stderr", jobResult.hasStandardError());
+            }
+            else {
+                Assert.assertTrue("job #"+jobResult.getJobNumber()+" has stderr", jobResult.hasStandardError());
+            }
+        }
+        else {
+            //2) job status
+            Assert.assertFalse("job #"+jobResult.getJobNumber()+" has stderr", jobResult.hasStandardError());
+        }
+
         //3) numFiles: ...
         if (assertions.getNumFiles() >= 0) {
             initOutputFilenames();
