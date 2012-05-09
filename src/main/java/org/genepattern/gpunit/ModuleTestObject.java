@@ -8,6 +8,8 @@ import java.util.Map;
 public class ModuleTestObject {
     /** the name of the test */
     private String name = null;
+    /** a description of the test */
+    private String description = null;
     /** the name of the module */
     private String moduleName = null;
     /** the LSID of the module */
@@ -28,6 +30,12 @@ public class ModuleTestObject {
     }
     public void setName(String str) {
         this.name = str;
+    }
+    public String getDescription() {
+        return this.description;
+    }
+    public void setDescription(String str) {
+        this.description = str;
     }
     public String getModule() {
         return moduleName;
