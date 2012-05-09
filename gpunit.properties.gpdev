@@ -1,0 +1,5 @@
+gp.user=test
+gp.password=test
+gp.host=gpdev.broadinstitute.org
+gpunit.testfolder=./tests/ssGSEAProjection
+#gpunit.testfolder=./tests/ssGSEAProjection/05
