@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="gp-unit" default="package">
     <property name="gpunit.dir" location="./" />
+    <property file="gpunit.properties" />
 
     <property name="gp.host" value="genepatternbeta.broadinstitute.org" />
     <property name="gp.user" value="jntest" />
@@ -96,6 +97,10 @@
         <attribute name="shutdowntimeout" default="300" /> 
         <sequential>
             <echo>testcases: @{testcases}</echo>
+
+            <property name="gpunit.classpath.prop" refid="gpunit.classpath" /> 
+            <echo>gpunit.classpath: ${gpunit.classpath.prop}</echo>
+
             <junit fork="yes" printsummary="false" haltonfailure="true">
                 <test name="org.genepattern.gpunit.test.BatchModuleTest" outfile="test_all"/>
                 <classpath refid="gpunit.classpath" />
@@ -139,6 +144,16 @@
         <run-tests testcases="${saved-jobs.testcases}" />
     </target>
 
+    <target name="gpunit" depends="package">
+        <property name="gpunit.testfolder" location="./tests" />
+        <path id="testfolder.path">
+            <pathelement location="${gpunit.testfolder}" />
+        </path>
+        <property name="testcases" refid="testfolder.path" /> 
+	<run-tests testcases="${testcases}" />
+    </target>
+
+<!--
     <target name="junit" depends="package">
         <path id="gpunit.testcase.path">
             <pathelement location="./tests/protocols/01_Run" />
@@ -148,5 +163,6 @@
         <property name="gpunit.testcase.dirs" refid="gpunit.testcase.path" /> 
         <run-tests testcases="${gpunit.testcase.dirs}" />
     </target>
+-->
 
 </project>
