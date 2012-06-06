@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="gp-unit" default="package">
     <property name="gpunit.dir" location="./" />
-    <property file="gpunit.properties" />
+    <property name="gpunit.properties" value="gpunit.properties" />
+    <property file="${gpunit.properties}" />
 
     <property name="gp.host" value="genepatternbeta.broadinstitute.org" />
     <property name="gp.user" value="jntest" />
@@ -12,6 +13,7 @@
     <property name="client.lib.dir" location="${local.dir}/client" />
     <!-- if the client.dir already exists, skip the rest -->
     <available property="gp-client-lib-exists" file="${client.lib.dir}/GenePattern.jar" />
+    <property name="report.dir" value="reports" />
 
     <path id="gp.client.classpath">
         <pathelement location="${client.lib.dir}/GenePattern.jar" />
@@ -29,10 +31,17 @@
     </path>
 
     <target name="init">
+<echo>initializing directories ...
+local.dir: ${local.dir}
+report.dir: ${report.dir} 
+</echo>
+
         <tstamp />
+
         <mkdir dir="${gpunit.dir}/classes" />
         <mkdir dir="${gpunit.dir}/dist" />
         <mkdir dir="${client.lib.dir}" />
+        <mkdir dir="${report.dir}" />
     </target>
 
     <!-- in order to compile gp-unit, and to run gp-unit tests, must download the client library -->
@@ -85,7 +94,7 @@
     </macrodef>
 
     <!-- run a set of gp-unit tests via SOAP client requests 
-         use a parameterized jUnit test to submit the jobs and validate the results.
+         use a single parameterized jUnit test to submit the jobs and validate the results.
          
          To run the tests, create a path, give it a refid, then create a property from that refid.
          Look at the gpunit-all-protocols target for an example. 
@@ -95,16 +104,17 @@
         <attribute name="numthreads" default="16" />
         <!-- when running jobs in parallel, this is the max time in seconds to wait before finishing the test -->
         <attribute name="shutdowntimeout" default="300" /> 
+        <attribute name="junit.formatter" default="brief" />
         <sequential>
             <echo>testcases: @{testcases}</echo>
 
             <property name="gpunit.classpath.prop" refid="gpunit.classpath" /> 
             <echo>gpunit.classpath: ${gpunit.classpath.prop}</echo>
 
-            <junit fork="yes" printsummary="false" haltonfailure="true">
-                <test name="org.genepattern.gpunit.test.BatchModuleTest" outfile="test_all"/>
+            <junit fork="yes" printsummary="on" haltonfailure="false" showoutput="false" logfailedtests="true" failureProperty="test.failure" >
+                <formatter type="@{junit.formatter}" usefile="false" />
+                <test name="org.genepattern.gpunit.test.BatchModuleTest" outfile="reports/TEST_all" />
                 <classpath refid="gpunit.classpath" />
-                <formatter type="xml" usefile="false" />
                 <sysproperty key="gpunit.testcase.dirs" value="@{testcases}" />
                 <sysproperty key="junit.parallel.threads" value="@{numthreads}" />
                 <sysproperty key="junit.parallel.shutdown.timeout" value="@{shutdowntimeout}" />
@@ -113,7 +123,9 @@
                 <sysproperty key="username" value="${gp.user}" />
                 <sysproperty key="password" value="${gp.password}" />
             </junit>
-        </sequential>
+
+            <fail if="test.failure" message="junit test failed" />
+        </sequential> 
     </macrodef>
     
     <property name="test.file" location="./tests/protocols/01_Run/01_PreprocessDataset/test.yaml" />
@@ -143,6 +155,18 @@
         <property name="saved-jobs.testcases" refid="saved-jobs.path" /> 
         <run-tests testcases="${saved-jobs.testcases}" />
     </target>
+    
+    <target name="gpunit-gistic-workshop" depends="package">
+        <path id="tests.path">
+            <!-- pathelement location="./tests/GISTIC/workshop_2012_06_05/from_saved_jobs/13479" / -->
+            <pathelement location="./tests/GISTIC/workshop_2012_06_05/test_cases" />
+        </path>
+        <!-- the max amount of time to wait, in seconds, before terminating the unit test -->
+        <property name="gpunit.shutdowntimeout" value="10" />
+        <property name="tests.testcases" refid="tests.path" /> 
+        <run-tests testcases="${tests.testcases}"
+            shutdowntimeout="${gpunit.shutdowntimeout}" />
+    </target>
 
     <target name="gpunit" depends="package">
         <property name="gpunit.testfolder" location="./tests" />
@@ -150,7 +174,14 @@
             <pathelement location="${gpunit.testfolder}" />
         </path>
         <property name="testcases" refid="testfolder.path" /> 
-	<run-tests testcases="${testcases}" />
+        <run-tests testcases="${testcases}" />
+
+        <junitreport todir="reports">
+            <fileset dir="reports">
+                <include name="TEST-*.xml"/>
+            </fileset>
+            <report format="frames" todir="reports/html"/>
+        </junitreport>
     </target>
 
 <!--
