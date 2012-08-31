@@ -23,10 +23,10 @@
     </path>
 
     <path id="gpunit.classpath">
+        <pathelement location="${gpunit.dir}/classes"/>
         <fileset dir="${gpunit.dir}/lib">
             <include name="**/*.jar"/>
         </fileset>
-        <pathelement location="${gpunit.dir}/classes"/>
         <path refid="gp.client.classpath" />
     </path>
 
@@ -36,8 +36,7 @@ local.dir: ${local.dir}
 report.dir: ${report.dir} 
 </echo>
 
-        <tstamp />
-
+    <tstamp />
         <mkdir dir="${gpunit.dir}/classes" />
         <mkdir dir="${gpunit.dir}/dist" />
         <mkdir dir="${client.lib.dir}" />
@@ -75,6 +74,7 @@ report.dir: ${report.dir}
     <target name="clean">
         <delete dir="${gp.annotations.dir}/classes" />
         <delete dir="${gp.annotations.dir}/dist" />
+        <delete dir="${report.dir}" />
     </target>
     <!-- END build gp-unit.jar -->
     
@@ -104,16 +104,19 @@ report.dir: ${report.dir}
         <attribute name="numthreads" default="16" />
         <!-- when running jobs in parallel, this is the max time in seconds to wait before finishing the test -->
         <attribute name="shutdowntimeout" default="300" /> 
-        <attribute name="junit.formatter" default="brief" />
+        <attribute name="junit.formatter" default="xml" /> <!-- 'brief' | 'xml' | 'html' -->
+        <attribute name="showoutput" default="true" />
+        <attribute name="usefile" default="true" />
         <sequential>
             <echo>testcases: @{testcases}</echo>
+            <echo>junit.formatter: @{junit.formatter}</echo>
 
             <property name="gpunit.classpath.prop" refid="gpunit.classpath" /> 
             <echo>gpunit.classpath: ${gpunit.classpath.prop}</echo>
 
-            <junit fork="yes" printsummary="on" haltonfailure="false" showoutput="false" logfailedtests="true" failureProperty="test.failure" >
-                <formatter type="@{junit.formatter}" usefile="false" />
-                <test name="org.genepattern.gpunit.test.BatchModuleTest" outfile="reports/TEST_all" />
+            <junit fork="yes" printsummary="on" haltonfailure="false" showoutput="@{showoutput}" logfailedtests="true" failureProperty="test.failure" >
+                <formatter type="@{junit.formatter}" usefile="@{usefile}" />
+                <test name="org.genepattern.gpunit.test.BatchModuleTest" outfile="${report.dir}/TEST-all" />
                 <classpath refid="gpunit.classpath" />
                 <sysproperty key="gpunit.testcase.dirs" value="@{testcases}" />
                 <sysproperty key="junit.parallel.threads" value="@{numthreads}" />
@@ -123,6 +126,13 @@ report.dir: ${report.dir}
                 <sysproperty key="username" value="${gp.user}" />
                 <sysproperty key="password" value="${gp.password}" />
             </junit>
+
+            <junitreport todir="${report.dir}">
+                <fileset dir="${report.dir}">
+                    <include name="TEST-*.xml"/>
+                </fileset>
+                <report format="frames" todir="${report.dir}/html"/>
+            </junitreport>
 
             <fail if="test.failure" message="junit test failed" />
         </sequential> 
@@ -159,10 +169,11 @@ report.dir: ${report.dir}
     <target name="gpunit-gistic-workshop" depends="package">
         <path id="tests.path">
             <!-- pathelement location="./tests/GISTIC/workshop_2012_06_05/from_saved_jobs/13479" / -->
-            <pathelement location="./tests/GISTIC/workshop_2012_06_05/test_cases" />
+            <!-- pathelement location="./tests/GISTIC/workshop_2012_06_05/test_cases" / -->
+            <pathelement location="./tests/GISTIC/workshop_2012_06_05/from_saved_jobs/13734" />
         </path>
         <!-- the max amount of time to wait, in seconds, before terminating the unit test -->
-        <property name="gpunit.shutdowntimeout" value="10" />
+        <property name="gpunit.shutdowntimeout" value="30" />
         <property name="tests.testcases" refid="tests.path" /> 
         <run-tests testcases="${tests.testcases}"
             shutdowntimeout="${gpunit.shutdowntimeout}" />
@@ -175,25 +186,6 @@ report.dir: ${report.dir}
         </path>
         <property name="testcases" refid="testfolder.path" /> 
         <run-tests testcases="${testcases}" />
-
-        <junitreport todir="reports">
-            <fileset dir="reports">
-                <include name="TEST-*.xml"/>
-            </fileset>
-            <report format="frames" todir="reports/html"/>
-        </junitreport>
     </target>
-
-<!--
-    <target name="junit" depends="package">
-        <path id="gpunit.testcase.path">
-            <pathelement location="./tests/protocols/01_Run" />
-            <pathelement location="./tests/saved_jobs" />
-            <pathelement location="./tests/protocols/02_Differential/03_CMSViewer/test.yaml"/>
-        </path>
-        <property name="gpunit.testcase.dirs" refid="gpunit.testcase.path" /> 
-        <run-tests testcases="${gpunit.testcase.dirs}" />
-    </target>
--->
 
 </project>
