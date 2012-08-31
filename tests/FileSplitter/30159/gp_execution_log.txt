@@ -1,0 +1,7 @@
+# Created: Wed Aug 22 20:18:27 EDT 2012 by pathseq
+# Job: 30159    server:  http://gpdev.broadinstitute.org/gp/
+# Module: FileSplitter urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00274:999999999
+# Parameters: 
+#    inputFile = test.txt   /gp/getFile.jsp?job=30159&file=pathseq_run3970707186811760361.tmp%2Ftest.txt
+#    numFiles = 4
+#    numLines = 
