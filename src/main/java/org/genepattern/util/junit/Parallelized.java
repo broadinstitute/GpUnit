@@ -1,5 +1,7 @@
 package org.genepattern.util.junit;
 
+import org.junit.runners.Parameterized;
+
 
 /**
  * Run junit tests in parallel,
@@ -7,12 +9,16 @@ package org.genepattern.util.junit;
  * 
  * @author pcarr
  */
-public class LabelledParallelized extends LabelledParameterized {
+public class Parallelized 
+    extends Parameterized 
+{
     
-    public LabelledParallelized(Class klass) throws Throwable{
+    public Parallelized(Class klass) throws Throwable{
         super(klass);
         setScheduler(new ThreadPoolScheduler());
     }
+    
+
 }
 
 

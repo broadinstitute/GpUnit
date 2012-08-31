@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import org.genepattern.client.GPClient;
 import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.ModuleTestObject;
+import org.genepattern.gpunit.test.BatchModuleTestObject;
 import org.genepattern.webservice.JobResult;
 
 public class Util {
@@ -20,7 +21,28 @@ public class Util {
 
     static public void runTest(File testFile) throws GpUnitException, FileNotFoundException, AssertionError, Exception {
         ModuleTestObject testCase = initTestCase(testFile);
+        runTest(testCase);
+    }
+
+    static public void runTest(BatchModuleTestObject testObject) throws GpUnitException, FileNotFoundException, AssertionError, Exception {
+        if (testObject == null) {
+            throw new GpUnitException("testObject is null");
+        }
+        Throwable initError = testObject.getInitException();
+        if (initError != null) {
+            throw new Exception(initError.getMessage(), initError);
+        }
+        if (testObject.getTestCase() == null) {
+            throw new Exception("testObject is null");
+        }
+        
+        runTest(testObject.getTestCase());
+    }
+    
+    
+    static public void runTest(ModuleTestObject testCase) throws GpUnitException, FileNotFoundException, AssertionError, Exception {
         ModuleRunner runner = new ModuleRunner(testCase);
+        
         GPClient gpClient = ModuleRunner.initGpClient();
         runner.setGpClient(gpClient);
         runner.runJobAndWait();
@@ -37,7 +59,7 @@ public class Util {
             }
         }
     }
-    
+
     static private boolean isDeleteDownloadedResultFiles() {
         String prop = System.getProperty("gpunit.deleteDownloadedResultFiles", "true");
         return Boolean.valueOf(prop);
@@ -48,6 +70,14 @@ public class Util {
             return ExecutionLogParser.parse(fromFile);
         }
         ModuleTestObject testCase = ModuleTestParserYaml.parse(fromFile);
+        //set the test name
+        if (testCase.getName() == null) {
+            String testName = "testName";
+            if (fromFile.getParentFile() != null) {
+                testName = fromFile.getParentFile().getName() + "/" + fromFile.getName();
+            }
+            testCase.setName(testName);
+        }
         return testCase;
     }
     

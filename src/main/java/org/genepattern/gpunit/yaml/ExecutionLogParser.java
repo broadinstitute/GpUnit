@@ -52,13 +52,25 @@ public class ExecutionLogParser {
             while((line = reader.readLine()) != null) {
                 v.nextLine(line);
             }
-            return v.getTestCase();
         }
         finally {
             if (reader != null) {
                 reader.close();
             }
         }
+        
+        ModuleTestObject testCase = v.getTestCase();
+        
+        //set the test name
+        if (testCase.getName() == null) {
+            String testName = "testName";
+            if (executionLog.getParentFile() != null) {
+                testName = executionLog.getParentFile().getName() + "/" + executionLog.getName();
+            }
+            testCase.setName(testName);
+        }
+        return testCase;
+        
     }
     
     //visitor pattern-ish, create a new instance of this object, read each line from the execution log, and build up the model

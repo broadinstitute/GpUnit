@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.genepattern.gpunit.yaml.Util;
-import org.genepattern.util.junit.LabelledParallelized;
+import org.genepattern.util.junit.Parallelized;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -21,14 +21,13 @@ import org.junit.runners.Parameterized.Parameters;
  * 
  * @author pcarr
  */
-@RunWith(LabelledParallelized.class)
+@RunWith(Parallelized.class)
 public class BatchModuleTest { 
 
     /**
-     * This parameterized test runs a single unit test for each test case in the Collection of TestData.
-     * Each Object[] element of the data array is passed as the arg to the constructor for a new testcase.
+     * This parameterized test runs a single unit test for each test case in the Collection.
      */
-    @Parameters
+    @Parameters(name="{0}")
     public static Collection<Object[]> data() {
         /*
         @see build.xml file for an example of how to configure the list of test-cases from ant,
@@ -70,8 +69,8 @@ public class BatchModuleTest {
         }
 
         //TODO: change this back to more generic path
-        return BatchModuleUtil.data(new File("./tests/saved_jobs"));
-        //return BatchModuleUtil.data(new File("./tests/protocols"));
+        //return BatchModuleUtil.data(new File("./tests/saved_jobs"));
+        return BatchModuleUtil.data(new File("./tests/protocols"));
     }
 
     @BeforeClass 
@@ -82,8 +81,7 @@ public class BatchModuleTest {
         //System.setProperty("genePatternUrl", "http://genepattern.broadinstitute.org");
         //System.setProperty("genePatternUrl", "http://genepatternbeta.broadinstitute.org");
         //System.setProperty("username", "jntest");
-        //System.setProperty("password", "jntest");
-        
+        //System.setProperty("password", "******"); 
         //System.setProperty("gpunit.deleteDownloadedResultFiles", "false");
     }
     
@@ -91,20 +89,18 @@ public class BatchModuleTest {
     public static void afterClass() {
     }
 
-    private File moduleTestFile;
+    //testname is the way to get the name for the test to show up in the junit report
+    private String testname;
+    private BatchModuleTestObject testObj;
     
-    public BatchModuleTest(File moduleTestFile) {
-        this.moduleTestFile = moduleTestFile;
+    public BatchModuleTest(String testname, BatchModuleTestObject testObj) {
+        this.testname = testname;
+        this.testObj = testObj;
     }
-    
-    //@Test
-    //public void submitJob() throws Exception {
-    //    int jobId = Util.submitJob(moduleTestFile);
-    //}
-    
+
     @Test
-    public void testModule() throws Exception {
-        Util.runTest(moduleTestFile);
+    public void runJobAndWait() throws Exception {
+        Util.runTest(testObj);
     }
 
 }

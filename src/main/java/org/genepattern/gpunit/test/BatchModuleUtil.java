@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.genepattern.gpunit.ModuleTestObject;
+import org.genepattern.gpunit.yaml.Util;
+
 
 /**
  * Utility class for dynamically creating a collection of jUnit tests as a Parameterized Test,
@@ -16,21 +19,38 @@ import java.util.List;
 public class BatchModuleUtil { 
     final static public String default_root_dir = "./tests";
 
-    final static public Collection<Object[]> data() {
+    final static private Collection<Object[]> dataFromTestcaseFiles(List<File> testcaseFiles) {
         List<Object[]> data = new ArrayList<Object[]>();
-        List<File> testcaseFiles = BatchModuleUtil.findTestcases();
         for(File testFile : testcaseFiles) {
-            data.add( new Object[] { testFile } );
+            ModuleTestObject testCase = null;
+            Throwable exception = null;
+            try {
+                testCase = Util.initTestCase(testFile);
+            }
+            catch (Throwable t) {
+                exception = t;
+            }
+            BatchModuleTestObject obj = new BatchModuleTestObject();
+            obj.setTestFile(testFile);
+            obj.setTestCase(testCase);
+            obj.setInitException(exception);
+
+            //String testName=testFile.getName();
+            String testName=obj.getTestCase().getName();
+            data.add( new Object[] { testName, obj } );
         }
         return data;
     }
 
+    final static public Collection<Object[]> data() {
+        List<File> testcaseFiles = BatchModuleUtil.findTestcases();
+        Collection<Object[]> data = dataFromTestcaseFiles(testcaseFiles);
+        return data;
+    }
+
     final static public Collection<Object[]> data(File testDir) {
-        List<Object[]> data = new ArrayList<Object[]>();
         List<File> testcaseFiles = BatchModuleUtil.findTestcases(testDir);
-        for(File testFile : testcaseFiles) {
-            data.add( new Object[] { testFile } );
-        }
+        Collection<Object[]> data = dataFromTestcaseFiles(testcaseFiles);
         return data;
     }
 
@@ -43,12 +63,9 @@ public class BatchModuleUtil {
      * @return
      */
     final static public Collection<Object[]> data(List<File> testDirList) {
-        List<Object[]> data = new ArrayList<Object[]>();
         List<File> testcaseFiles = BatchModuleUtil.findTestcases(testDirList);
-        for(File testFile : testcaseFiles) {
-            data.add( new Object[] { testFile } );
-        }
-        return data; 
+        Collection<Object[]> data = dataFromTestcaseFiles(testcaseFiles);
+        return data;
     }
 
     final static public FileFilter testcaseFileFilter = new FileFilter() {
