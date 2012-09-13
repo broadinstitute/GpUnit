@@ -1,6 +1,7 @@
 package org.genepattern.gpunit.yaml;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -113,7 +114,7 @@ public class ModuleRunner {
         return gpClient;
     }
     
-    static private Parameter[] initParams(ModuleTestObject test) throws IOException {
+    static private Parameter[] initParams(ModuleTestObject test) throws IOException, FileNotFoundException {
         List<Parameter> params = new ArrayList<Parameter>();
         for(Entry<String,Object> entry : test.getParams().entrySet()) {
             Parameter param = initParam(test, entry);
@@ -124,7 +125,7 @@ public class ModuleRunner {
         return params.toArray(new Parameter[]{});
     }
     
-    static private Parameter initParam(ModuleTestObject test, Entry<String,Object> paramEntry) throws IOException {
+    static private Parameter initParam(ModuleTestObject test, Entry<String,Object> paramEntry) throws IOException, FileNotFoundException {
         String pName = paramEntry.getKey();
         Object pValue = paramEntry.getValue();
         
@@ -139,6 +140,9 @@ public class ModuleRunner {
             if (!inputFile.isAbsolute()) {
                 //it's relative to test.inputdir
                 inputFile = new File( test.getInputdir(), inputFile.getPath() ).getCanonicalFile();
+            }
+            if (!inputFile.exists()) {
+                throw new FileNotFoundException("Input file not found. "+pName+"='"+pValue+"'");
             }
             param = new Parameter( pName, inputFile );
         }
