@@ -36,7 +36,13 @@ public class BatchModuleUtil {
             obj.setInitException(exception);
 
             //String testName=testFile.getName();
-            String testName=obj.getTestCase().getName();
+            String testName=null;
+            if (testCase != null && testCase.getName() != null) {
+                testName = obj.getTestCase().getName();
+            }
+            else if (testFile != null) {
+                testName = testFile.getName();
+            }
             data.add( new Object[] { testName, obj } );
         }
         return data;
