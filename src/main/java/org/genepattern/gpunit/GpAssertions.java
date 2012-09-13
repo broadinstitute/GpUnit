@@ -1,6 +1,7 @@
 package org.genepattern.gpunit;
 
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 
 
@@ -10,6 +11,7 @@ public class GpAssertions {
     private int numFiles = -1;
     private Map<String,TestFileObj> files;
     private File outputDir = null;
+    private List<String> diffCmd;
 
     public int getExitCode() {
         return exitCode;
@@ -40,5 +42,13 @@ public class GpAssertions {
     }
     public void setOutputDir(File out) {
         this.outputDir = out;
+    }
+    
+    //optionally set a default diff command
+    public List<String> getDiffCmd() {
+        return diffCmd;
+    }
+    public void setDiffCmd(List<String> args) {
+        this.diffCmd = args;
     }
 }

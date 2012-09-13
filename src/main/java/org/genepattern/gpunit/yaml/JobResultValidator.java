@@ -1,10 +1,13 @@
 package org.genepattern.gpunit.yaml;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.LineNumberReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -14,6 +17,8 @@ import java.util.Map.Entry;
 import org.genepattern.gpunit.GpAssertions;
 import org.genepattern.gpunit.ModuleTestObject;
 import org.genepattern.gpunit.TestFileObj;
+import org.genepattern.gpunit.diff.AbstractDiffTest;
+import org.genepattern.gpunit.diff.UnixCmdLineDiff;
 import org.genepattern.io.IOUtil;
 import org.genepattern.matrix.Dataset;
 import org.genepattern.util.GPConstants;
@@ -26,6 +31,8 @@ import org.junit.Assert;
  * @author pcarr
  */
 public class JobResultValidator {
+    final static String NL = System.getProperty("line.separator");
+
     private ModuleTestObject test = null;
     private JobResult jobResult = null;
     private File rootDownloadDir = new File("./tmp/jobResults");    
@@ -98,31 +105,88 @@ public class JobResultValidator {
         }
     }
 
+    /**
+     * Read the error message by downloading 'stderr.txt' result file and returning 
+     * a String containing the first MAX_N lines of the file.
+     * 
+     * @return
+     */
+    private String getErrorMessageFromStderrFile() {
+        String errorMessage="";
+        File stderrFile = null;
+        try {
+            stderrFile = downloadResultFile("stderr.txt");
+        }
+        catch (Throwable t) {
+            errorMessage = "There was an error downloading 'stderr.txt': "+t.getLocalizedMessage();
+        }
+        if (stderrFile != null) {
+            LineNumberReader reader=null;
+            try {
+                reader = new LineNumberReader(new FileReader(stderrFile));
+                int n=0;
+                int MAX_N=12;
+                String line;
+                while ( ((line = reader.readLine()) != null) && n<MAX_N) {
+                    ++n;
+                    if (errorMessage.length()>0) { errorMessage += NL; }
+                    errorMessage += line;
+                }
+            }
+            catch (Throwable t) {
+                if (errorMessage.length()>0) { errorMessage += NL; }
+                errorMessage += "There was an error reading 'stderr.txt': "+t.getLocalizedMessage();
+            }
+            finally {
+                if (reader!=null) {
+                    try {
+                        reader.close();
+                    }
+                    catch (IOException e) {
+                        //ignoring
+                    }
+                }
+            }
+        }
+        return errorMessage;
+    }
+    
+    private void validateJobStatus() {
+        GpAssertions assertions = test.getAssertions();
+        //boolean hasStandardError = jobResult.hasStandardError();
+        
+        boolean actualHasStdError = jobResult.hasStandardError();
+        boolean expectedHasStdError = false;
+        if (assertions != null && assertions.getJobStatus().trim().length() > 0) {
+            //check to see if it's a test-case with an expected stderr.txt output
+            expectedHasStdError = !"success".equalsIgnoreCase(assertions.getJobStatus());
+        }
+        
+        //case 1: expecting stderr
+        if (expectedHasStdError) {
+            Assert.assertFalse("job #"+jobResult.getJobNumber()+" doesn't have stderr.txt output", actualHasStdError);
+            return;
+        }
+        //case 2: unexpected stderr
+        if (actualHasStdError && !expectedHasStdError) {
+            //URL stderrLink = jobResult.getURLForFileName("stderr.txt");
+            String junitMessage = "job #"+jobResult.getJobNumber()+" has stderr.txt output: ";
+            //try to download the error message
+            String errorMessage = getErrorMessageFromStderrFile();
+            junitMessage += NL + errorMessage;
+            Assert.fail(junitMessage);
+        }
+    }
+    
     public void validate() {
         //1) null jobResult
         Assert.assertNotNull("jobResult is null", jobResult);
-
-        GpAssertions assertions = test.getAssertions();
-        if (assertions == null) {
-            //2) job status
-            Assert.assertFalse("job #"+jobResult.getJobNumber()+" has stderr", jobResult.hasStandardError());
-            return;
-        }
         
-        if (assertions.getJobStatus() != null && assertions.getJobStatus().trim().length() > 0) { 
-            if ("success".equalsIgnoreCase(assertions.getJobStatus())) {
-                Assert.assertFalse("job #"+jobResult.getJobNumber()+" has stderr", jobResult.hasStandardError());
-            }
-            else {
-                Assert.assertTrue("job #"+jobResult.getJobNumber()+" has stderr", jobResult.hasStandardError());
-            }
-        }
-        else {
-            //2) job status
-            Assert.assertFalse("job #"+jobResult.getJobNumber()+" has stderr", jobResult.hasStandardError());
-        }
+        //2) job status
+        validateJobStatus();
 
         //3) numFiles: ...
+        GpAssertions assertions = test.getAssertions();
         if (assertions.getNumFiles() >= 0) {
             initOutputFilenames();
             //Note: when numFiles < 0, it means don't run this assertion
@@ -149,6 +213,7 @@ public class JobResultValidator {
             if (outputFilenames == null) {
                 initOutputFilenames();
             }
+            List<String> defaultDiffCmd = assertions.getDiffCmd();
             for(Entry<String,TestFileObj> entry : assertions.getFiles().entrySet()) {
                 String filename = entry.getKey();
                 Assert.assertTrue("Expecting result file named '"+filename+"'", outputFilenames.contains(filename));
@@ -166,7 +231,12 @@ public class JobResultValidator {
                     String diff = testFileObj.getDiff();
                     if (diff != null) {
                         File expected = test.initFileFromPath(diff);
-                        diff(expected,actual);
+                        //diff(expected,actual);
+                        AbstractDiffTest diffTest = getDiff();
+                        diffTest.setExpected(expected);
+                        diffTest.setActual(actual);
+                        diffTest.init(defaultDiffCmd);
+                        diffTest.diff();
                     }
                     int numCols = testFileObj.getNumCols();
                     int numRows = testFileObj.getNumRows();
@@ -293,40 +363,22 @@ public class JobResultValidator {
                 Assert.fail("Expected result file not found: '"+filename+"'");
             }
             File expected = expectedFilesMap.get(filename);
-            diff(expected,actual);
+            //diff(expected,actual);
+            AbstractDiffTest diffTest = getDiff();
+            diffTest.setExpected(expected);
+            diffTest.setActual(actual);
+            final List<String> empty_args = Collections.emptyList();
+            diffTest.init(empty_args);
+            diffTest.diff();
         }
         if (resultFilesMap.size() > 0) {
             Assert.fail("More job result files than expected: "+resultFilesMap.size());
         }
     }
-
-    private static void diff(File expected, File actual) {
-        boolean hasDiff = true;
-        try {
-            hasDiff = hasDiff(expected,actual);
-        }
-        catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-            Assert.fail("Error in diff( '"+expected.getPath()+"', '"+actual.getPath()+"' ): " +e.getLocalizedMessage());
-        }
-        if (hasDiff) {
-            Assert.fail("Files differ, '"+expected.getPath()+"', '"+actual.getPath()+"'");
-        } 
-    }
     
-    private static boolean hasDiff(File expected, File actual) throws InterruptedException, IOException {
-        //diff -q <arg0> <arg1> 
-        String[] cmd = {"diff", "-q", expected.getAbsolutePath(), actual.getAbsolutePath()};
-        Runtime runtime = Runtime.getRuntime();
-        Process process = runtime.exec(cmd);
-        int exitCode = process.waitFor();
-        if (exitCode == 0) {
-            return false;
-        }
-        return true;
+    private AbstractDiffTest getDiff() {
+        AbstractDiffTest diffTest = new UnixCmdLineDiff();
+        return diffTest;
     }
-
 }
+

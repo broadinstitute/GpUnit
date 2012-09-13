@@ -4,6 +4,7 @@ public class TestFileObj {
     private int numRows = -1;
     private int numCols = -1;
     private String diff = null;
+    private String diffCmd = null;
 
     public int getNumRows() {
         return numRows;
@@ -22,5 +23,11 @@ public class TestFileObj {
     }
     public void setDiff(String diff) {
         this.diff = diff;
+    }
+    public String getDiffCmd() {
+        return diffCmd;
+    }
+    public void setDiffCmd(String diffCmd) {
+        this.diffCmd = diffCmd;
     }
 }

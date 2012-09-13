@@ -70,7 +70,8 @@ public class BatchModuleTest {
 
         //TODO: change this back to more generic path
         //return BatchModuleUtil.data(new File("./tests/saved_jobs"));
-        return BatchModuleUtil.data(new File("./tests/protocols"));
+        //return BatchModuleUtil.data(new File("./tests/protocols"));
+        return BatchModuleUtil.data(new File("./tests/DiffTest"));
     }
 
     @BeforeClass 
@@ -79,9 +80,9 @@ public class BatchModuleTest {
         //   1) launch from ant, see build.xml, and set these properties, or
         //   2) for debugging from an IDE, uncomment the following lines and set accordingly
         //System.setProperty("genePatternUrl", "http://genepattern.broadinstitute.org");
-        //System.setProperty("genePatternUrl", "http://genepatternbeta.broadinstitute.org");
-        //System.setProperty("username", "jntest");
-        //System.setProperty("password", "******"); 
+        System.setProperty("genePatternUrl", "http://genepatternbeta.broadinstitute.org");
+        System.setProperty("username", "test");
+        System.setProperty("password", "test"); 
         //System.setProperty("gpunit.deleteDownloadedResultFiles", "false");
     }
     
