@@ -1,0 +1,8 @@
+Here is an input file.
+
+
+THE FILES DIFFER
+
+It has some lines.
+This is another line.
+This is an other line.

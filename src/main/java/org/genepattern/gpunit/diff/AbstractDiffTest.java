@@ -1,6 +1,7 @@
 package org.genepattern.gpunit.diff;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -18,9 +19,21 @@ import java.util.List;
  * @author pcarr
  */
 public abstract class AbstractDiffTest {
+    protected File inputDir;
+    protected List<String> args;
     protected File expected;
     protected File actual;
-    
+
+    public void setInputDir(File f) {
+        this.inputDir = f;
+    }
+    public void setArgs(final List<String> in) {
+        //set by copy
+        this.args = new ArrayList<String>();
+        for(String arg : in) {
+            this.args.add(arg);
+        }
+    }
     public void setExpected(File expected) {
         this.expected = expected;
     }
@@ -35,8 +48,8 @@ public abstract class AbstractDiffTest {
      * 
      * @param args
      */
-    public void init(List<String> args) {
-    }
+    //public void init(List<String> args) {
+    //}
 
     /**
      * This method is the junit test case. Use the junit Assert class to indicate a failed test case.

@@ -1,0 +1,10 @@
+#
+# This is a failing test-case, the job should fail if the input file is not uploaded from the client
+#
+module: ConvertLineEndings
+params: 
+    # in order to upload files from the client machine, you must cast to a File, e.g.
+    #        input.filename: !!java.io.File Input.txt
+    input.filename: Input.txt
+assertions:
+    jobStatus: error

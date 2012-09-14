@@ -2,7 +2,6 @@ package org.genepattern.gpunit.diff;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 import org.junit.Assert;
 
@@ -19,33 +18,49 @@ assertions:
  *
  */
 public class CmdLineDiff extends AbstractDiffTest {
-    protected String[] cmd_args;
-    
-    public void init(List<String> args) {
-        //I don't feel like reading the doc for 'System.arraycopy(arg0, arg1, arg2, arg3, arg4)' --pcarr
-        if (args != null) {
-            cmd_args = new String[args.size()];
-            int i=0;
-            for(String arg : args) {
-                cmd_args[i++] = arg;
-            }
-        }
-    }
-    
+
     protected String[] getCmdLine() {
         int K = 2;
-        if (cmd_args != null) {
-            K+= cmd_args.length;
+        if (args != null) {
+            K+= args.size();
         }
         String[] cmd = new String[K];
         int i=0;
-        if (cmd_args != null) {
-            for(String arg : cmd_args) {
+        if (args != null) {
+            for(String arg : args) {
                 cmd[i++] = arg;
             }
         }
         cmd[i++] = expected.getAbsolutePath();
         cmd[i++] = actual.getAbsolutePath();
+        
+        //special-case for first arg
+        if (cmd.length > 2) {
+            String exec = cmd[0];
+            // if it's a file, with a relative path, force it to be an FQ path, relative to the inputdir
+            File execFile = new File(exec);
+            if (!execFile.isAbsolute()) {
+                
+            }
+            if (!execFile.isAbsolute() && inputDir != null) {
+                //it's relative to test.inputdir
+                try {
+                    execFile = new File( inputDir, execFile.getPath() ).getCanonicalFile();
+                }
+                catch (IOException e) {
+                    Assert.fail("Error initializing execFile for '"+execFile.getPath()+"': "+e.getLocalizedMessage());
+                }
+                if (execFile.canExecute()) {
+                    try {
+                        cmd[0] = execFile.getCanonicalPath();
+                    }
+                    catch (IOException e) {
+                        Assert.fail("Error initializing custom executable for diff command: "+e.getLocalizedMessage());
+                    }
+                }
+            }
+        }
+        
         return cmd;
     }
 

@@ -80,7 +80,8 @@ public class BatchModuleTest {
         //   1) launch from ant, see build.xml, and set these properties, or
         //   2) for debugging from an IDE, uncomment the following lines and set accordingly
         //System.setProperty("genePatternUrl", "http://genepattern.broadinstitute.org");
-        System.setProperty("genePatternUrl", "http://genepatternbeta.broadinstitute.org");
+        //System.setProperty("genePatternUrl", "http://genepatternbeta.broadinstitute.org");
+        System.setProperty("genePatternUrl", "http://127.0.0.1:8080");
         System.setProperty("username", "test");
         System.setProperty("password", "test"); 
         //System.setProperty("gpunit.deleteDownloadedResultFiles", "false");

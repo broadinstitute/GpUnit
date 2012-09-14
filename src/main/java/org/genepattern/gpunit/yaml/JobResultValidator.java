@@ -164,7 +164,7 @@ public class JobResultValidator {
         
         //case 1: expecting stderr
         if (expectedHasStdError) {
-            Assert.assertFalse("job #"+jobResult.getJobNumber()+" doesn't have stderr.txt output", actualHasStdError);
+            Assert.assertTrue("job #"+jobResult.getJobNumber()+" doesn't have stderr.txt output", actualHasStdError);
             return;
         }
         //case 2: unexpected stderr
@@ -213,7 +213,6 @@ public class JobResultValidator {
             if (outputFilenames == null) {
                 initOutputFilenames();
             }
-            List<String> defaultDiffCmd = assertions.getDiffCmd();
             for(Entry<String,TestFileObj> entry : assertions.getFiles().entrySet()) {
                 String filename = entry.getKey();
                 Assert.assertTrue("Expecting result file named '"+filename+"'", outputFilenames.contains(filename));
@@ -232,10 +231,10 @@ public class JobResultValidator {
                     if (diff != null) {
                         File expected = test.initFileFromPath(diff);
                         //diff(expected,actual);
-                        AbstractDiffTest diffTest = getDiff();
+                        AbstractDiffTest diffTest = getDiff(testFileObj);
+                        diffTest.setInputDir(test.getInputdir());
                         diffTest.setExpected(expected);
                         diffTest.setActual(actual);
-                        diffTest.init(defaultDiffCmd);
                         diffTest.diff();
                     }
                     int numCols = testFileObj.getNumCols();
@@ -364,11 +363,10 @@ public class JobResultValidator {
             }
             File expected = expectedFilesMap.get(filename);
             //diff(expected,actual);
-            AbstractDiffTest diffTest = getDiff();
+            AbstractDiffTest diffTest = getDiff( (TestFileObj) null);
+            diffTest.setInputDir(test.getInputdir());
             diffTest.setExpected(expected);
             diffTest.setActual(actual);
-            final List<String> empty_args = Collections.emptyList();
-            diffTest.init(empty_args);
             diffTest.diff();
         }
         if (resultFilesMap.size() > 0) {
@@ -376,9 +374,78 @@ public class JobResultValidator {
         }
     }
     
-    private AbstractDiffTest getDiff() {
-        AbstractDiffTest diffTest = new UnixCmdLineDiff();
-        return diffTest;
+    private AbstractDiffTest getDiff(TestFileObj resultFileObj) {
+        
+        List<String> customDiffCmdArgs = null;
+        //for debugging
+        Object customDiffCmdObj = null;
+        GpAssertions assertions = test.getAssertions();
+
+        //1) if there is a custom diff cmd for the individual result file 
+        if (resultFileObj != null && resultFileObj.getDiffCmdArgs() != null) {
+            customDiffCmdArgs = resultFileObj.getDiffCmdArgs();
+            customDiffCmdObj = resultFileObj.getDiffCmd();
+        }
+        //2) else if there is a custom diff cmd for the test-case (all files)
+        else if (assertions.getDiffCmdArgs() != null) {
+            customDiffCmdArgs = assertions.getDiffCmdArgs();
+            customDiffCmdObj = assertions.getDiffCmd();
+        }
+        //else default case
+        else {
+            AbstractDiffTest diffTest = new UnixCmdLineDiff();
+            List<String> args = Collections.emptyList();
+            diffTest.setArgs(args);
+            return diffTest;
+        }
+        AbstractDiffTest customDiff = null;
+        try {
+            customDiff = initDiffTestFromCmdArgs(customDiffCmdArgs);
+        }
+        catch (Throwable t) {
+            String message="Error initializing custom diff command, test: "+customDiffCmdObj+". Error: "+t.getLocalizedMessage();
+            Assert.fail(message);
+        }
+        if (customDiff == null) {
+            Assert.fail("Error initializing custom diff command, test: "+customDiffCmdObj);
+        }
+        return customDiff;
+    }
+    
+    // return null to indicate an exception
+    private AbstractDiffTest initDiffTestFromCmdArgs(List<String> args) throws ClassNotFoundException, Exception {
+        if (args == null) {
+            throw new IllegalArgumentException("diffCmd==null");
+        }
+        if (args.size() == 0) {
+            throw new IllegalArgumentException("diffCmd.size()==0");
+        }
+        //the first arg must be a classname, for a class which can be cast to AbstractDiffTest
+        String classname = args.get(0);
+        // use reflection 
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        Class<?> diffClass = Class.forName(classname, false, classLoader);
+        if (!AbstractDiffTest.class.isAssignableFrom(diffClass)) {
+            throw new Exception("diffCmd class cannot be cast to AbstractDiffTest, classname="+diffClass);
+        }
+        try {
+            AbstractDiffTest customDiff = (AbstractDiffTest) diffClass.newInstance();
+            List<String> extraArgs;
+            if (args.size()>1) {
+                extraArgs = args.subList(1, args.size());
+            }
+            else {
+                extraArgs = Collections.emptyList();
+            }
+            customDiff.setArgs(extraArgs);
+            return customDiff;
+        }
+        catch (InstantiationException e) {
+            return null;
+        }
+        catch (IllegalAccessException e) {
+            return null;
+        }   
     }
 }
 

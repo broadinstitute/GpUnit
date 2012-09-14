@@ -1,5 +1,6 @@
 package org.genepattern.gpunit.diff;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -11,7 +12,13 @@ import java.util.List;
  * @author pcarr
  */
 public class UnixCmdLineDiff extends CmdLineDiff {
-    public void init(List<String> args) {
-        cmd_args = new String[]{"diff", "-q"};
+    public UnixCmdLineDiff() {
+        this.args = new ArrayList<String>();
+        this.args.add("diff");
+        this.args.add("-q");
+    }
+    
+    //ignore setArgs in this class, they're hard-coded in the constructor
+    public void setArgs(final List<String> in) {
     }
 }
