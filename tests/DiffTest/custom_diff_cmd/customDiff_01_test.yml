@@ -1,0 +1,19 @@
+#
+# example test-case, showing how to use a custom 'diff' command
+# to compare the actual result files with the expected result files
+#
+#
+module: ConvertLineEndings
+params: 
+    input.filename: !!java.io.File ../Input.txt
+assertions:
+    # declare custom diff cmd, to apply to all result files listed in
+    # the assertions.files section
+    #
+    # your command must return a 0 exitCode if there are no diffs and a non-zero exit code if there are diffs
+    #     That is how you tell gp-unit that your custom diff command detected a *significant* difference.
+    #     A significant different means, the test-case should fail.
+    diffCmd: ./myDiff.sh
+    files:
+        Input.cvt.txt:
+            diff: ../Input.cvt.txt

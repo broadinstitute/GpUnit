@@ -5,11 +5,14 @@
 #
 module: ConvertLineEndings
 params: 
+    # note, the !!java.io.File casts the input.filename param from a String to a File type
+    #    a File means, 'upload the file from my client machine to the server as part of the SOAP call to submit the job'
+    #    by default, for file input parameters, a String, means 'this is a server file path', passed literally to the server
     input.filename: !!java.io.File ../Input.txt
 assertions:
+    # declare custom diff cmd, to apply to an individual result file
+    # in this case, use a List<String> arg for the diffCmd
+    diffCmd: [org.genepattern.gpunit.diff.CmdLineDiff, diff, -q]
     files:
         Input.cvt.txt:
-            # declare custom diff cmd, to apply to an individual result file
-            # in this case, use a List<String> arg for the diffCmd
-            diffCmd: [org.genepattern.gpunit.diff.CmdLineDiff, diff, -q]
             diff: ../Input.cvt.txt

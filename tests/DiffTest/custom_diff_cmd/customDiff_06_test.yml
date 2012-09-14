@@ -1,0 +1,16 @@
+#
+# example test-case, showing how to use a custom 'diff' command
+# to compare the actual result files with the expected result files
+#
+#
+module: ConvertLineEndings
+params: 
+    input.filename: !!java.io.File ../Input.txt
+assertions:
+    # see customDiff_01 for more doc
+    # explicitly declare the CmdLineDiff class
+    # note: this is the default behavior, so is unnecessary
+    diffCmd: org.genepattern.gpunit.diff.CmdLineDiff diff -q
+    files:
+        Input.cvt.txt:
+            diff: ../Input.cvt.txt

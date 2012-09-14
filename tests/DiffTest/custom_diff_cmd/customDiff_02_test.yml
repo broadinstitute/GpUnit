@@ -1,0 +1,15 @@
+#
+# example test-case, showing how to use a custom 'diff' command
+# to compare the actual result files with the expected result files
+#
+#
+module: ConvertLineEndings
+params: 
+    input.filename: !!java.io.File ../Input.txt
+assertions:
+    # see customDiff_01 for more doc
+    # relative path to the executable, relative to where this test-case file is
+    diffCmd: ../copyOfmyDiff.sh
+    files:
+        Input.cvt.txt:
+            diff: ../Input.cvt.txt

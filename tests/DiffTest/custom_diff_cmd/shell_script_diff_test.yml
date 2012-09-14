@@ -10,9 +10,12 @@ assertions:
     # declare custom diff cmd, to apply to all result files listed in
     # the assertions.files section
     # in this case, use a single String value for the diffCmd
-    #diffCmd: org.genepattern.gpunit.diff.CmdLineDiff /Broad/Projects/gp2-trunk/modules/util/gp-unit/tests/DiffTest/custom_diff_cmd/myDiff.sh
-    diffCmd: org.genepattern.gpunit.diff.CmdLineDiff ./myDiff.sh
-    #diffCmd: ../myDiff.sh
+    # the myDiff.sh is the shell script to execute. The './' prefix is required. It means,
+    #    When validating the job results using this custom diff command, look for my executable shell file
+    #    in the same directory as this test-case file.
+    #diffCmd: org.genepattern.gpunit.diff.CmdLineDiff ./myDiff.sh
+    diffCmd: org.genepattern.gpunit.diff.CmdLineDiff diff -q
+    # diffCmd: org.genepattern.gpunit.diff.CmdLineDiff ../copyOfmyDiff.sh
     files:
         Input.cvt.txt:
             diff: ../Input.cvt.txt
