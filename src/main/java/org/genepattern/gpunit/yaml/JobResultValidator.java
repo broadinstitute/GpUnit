@@ -18,6 +18,7 @@ import org.genepattern.gpunit.GpAssertions;
 import org.genepattern.gpunit.ModuleTestObject;
 import org.genepattern.gpunit.TestFileObj;
 import org.genepattern.gpunit.diff.AbstractDiffTest;
+import org.genepattern.gpunit.diff.CmdLineDiff;
 import org.genepattern.gpunit.diff.UnixCmdLineDiff;
 import org.genepattern.io.IOUtil;
 import org.genepattern.matrix.Dataset;
@@ -412,8 +413,7 @@ public class JobResultValidator {
         return customDiff;
     }
     
-    // return null to indicate an exception
-    private AbstractDiffTest initDiffTestFromCmdArgs(List<String> args) throws ClassNotFoundException, Exception {
+    private AbstractDiffTest initDiffTestFromCmdArgs(List<String> args) throws Exception {
         if (args == null) {
             throw new IllegalArgumentException("diffCmd==null");
         }
@@ -421,10 +421,27 @@ public class JobResultValidator {
             throw new IllegalArgumentException("diffCmd.size()==0");
         }
         //the first arg must be a classname, for a class which can be cast to AbstractDiffTest
+        //if the first arg is not a classname, use the CmdLineDiff class
         String classname = args.get(0);
         // use reflection 
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        Class<?> diffClass = Class.forName(classname, false, classLoader);
+        
+        Class<?> diffClass = null;
+        try {
+            diffClass = Class.forName(classname, false, classLoader);
+        }
+        catch (ClassNotFoundException e) {
+            //assume that we want to use the CmdLineDiff class instead
+            classname = CmdLineDiff.class.getName();
+            //hack: add this to the arg list so that we deal with the arg list consistently
+            args.add(0, classname);
+        }
+        try {
+            diffClass = Class.forName(classname, false, classLoader);
+        }
+        catch (ClassNotFoundException e) {
+            throw e;
+        }
         if (!AbstractDiffTest.class.isAssignableFrom(diffClass)) {
             throw new Exception("diffCmd class cannot be cast to AbstractDiffTest, classname="+diffClass);
         }
@@ -441,10 +458,10 @@ public class JobResultValidator {
             return customDiff;
         }
         catch (InstantiationException e) {
-            return null;
+            throw e;
         }
         catch (IllegalAccessException e) {
-            return null;
+            throw e;
         }   
     }
 }

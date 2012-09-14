@@ -2,65 +2,101 @@ package org.genepattern.gpunit.diff;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Assert;
 
 /**
- * Example entry in _test.yaml file, 
+ * Default way to customize the diff command for validating job result files for a given module test case.
+ * To declare a custom diff algorithm for a test case, add an enty to the assertions section.
+ * 
+ * Option 1: Applies to all defined result files:
  * <pre>
 assertions:
-    diffCmd: org.genepattern.gpunit.diff diff -q
+    diffCmd: diff -q
     files:
         example_diff_input.cvt.txt:
             diff: ./expected.files/all_aml_test.preprocessed.sub28.2.clu
  * </pre>
+ * 
+ * Option 2: Applies on a per-file basis
+ * <pre>
+assertions:
+    files:
+        example_diff_input.cvt.txt:
+            diffCmd: diff -q
+            diff: ./expected.files/all_aml_test.preprocessed.sub28.2.clu
+ * </pre>
+ * 
+ * There are several ways to define the custom diff command.
+<pre>
+assertions:
+    # it's an executable (script) saved in the same directory as this test-case file
+    diffCmd: ./myDiff.sh
+    # can be a relative path to this test-case file
+    diffCmd: ../copyOfmyDiff.sh
+    # can be an executable, must be on the exec PATH
+    diffCmd: diff -q
+    # can be a fully qualified path to an executable
+    diffCmd: /usr/bin/diff
+    # can be a different java class which extends the AbstractDiffTest class
+    diffCmd: org.genepattern.gpunit.diff.UnixCmdLineDiff
+    # the 'org.genepattern.gpunit.diff.CmdLineDiff' is optional, but it works
+    diffCmd: org.genepattern.gpunit.diff.CmdLineDiff diff -q
+</pre>
  * @author pcarr
  *
  */
 public class CmdLineDiff extends AbstractDiffTest {
 
     protected String[] getCmdLine() {
-        int K = 2;
-        if (args != null) {
-            K+= args.size();
+        //must have at least one arg
+        if (args==null) {
+            Assert.fail("invalid custom diff command: args==null");
         }
-        String[] cmd = new String[K];
-        int i=0;
-        if (args != null) {
-            for(String arg : args) {
-                cmd[i++] = arg;
-            }
+        if (args.size()==0) {
+            Assert.fail("invalid custom diff command: args.size==0");
         }
-        cmd[i++] = expected.getAbsolutePath();
-        cmd[i++] = actual.getAbsolutePath();
         
-        //special-case for first arg
-        if (cmd.length > 2) {
-            String exec = cmd[0];
-            // if it's a file, with a relative path, force it to be an FQ path, relative to the inputdir
-            File execFile = new File(exec);
-            if (!execFile.isAbsolute()) {
-                
-            }
+        //must have a valid executable
+        String exec = args.get(0);
+        File execFile = new File(exec);
+        if (execFile.getParent() != null) {
+            //special-case for relative paths, it's relative to test.inputdir 
             if (!execFile.isAbsolute() && inputDir != null) {
-                //it's relative to test.inputdir
                 try {
                     execFile = new File( inputDir, execFile.getPath() ).getCanonicalFile();
                 }
                 catch (IOException e) {
                     Assert.fail("Error initializing execFile for '"+execFile.getPath()+"': "+e.getLocalizedMessage());
                 }
-                if (execFile.canExecute()) {
-                    try {
-                        cmd[0] = execFile.getCanonicalPath();
-                    }
-                    catch (IOException e) {
-                        Assert.fail("Error initializing custom executable for diff command: "+e.getLocalizedMessage());
-                    }
-                }
+            }
+            if (!execFile.canExecute()) {
+                Assert.fail("invalid custom diff command: can't execute command, execFile="+execFile.toString());
+            }
+            try {
+                exec = execFile.getCanonicalPath();
+            }
+            catch (IOException e) {
+                Assert.fail("Error initializing custom executable for diff command: "+e.getLocalizedMessage());
             }
         }
         
+        List<String> cmdLine = new ArrayList<String>();
+        cmdLine.add(exec);
+        for(int i=1; i<args.size(); ++i) {
+            cmdLine.add( args.get(i) );
+        }
+        cmdLine.add(expected.getAbsolutePath());
+        cmdLine.add(actual.getAbsolutePath());
+        
+        //List to Array (should be more concise)
+        String[] cmd = new String[ cmdLine.size() ];
+        int i=0;
+        for(String a : cmdLine) {
+            cmd[i++] = a;
+        }
         return cmd;
     }
 
