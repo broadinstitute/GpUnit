@@ -11,4 +11,3 @@ assertions:
         Input.cvt.txt:
             #diff: ./expected.results/Input.cvt.txt
             diff: Input.cvt.txt
-        

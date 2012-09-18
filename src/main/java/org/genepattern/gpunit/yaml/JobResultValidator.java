@@ -14,14 +14,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+//import org.broadinstitute.io.IOUtilThreadSafe;
+import org.broadinstitute.matrix.Dataset;
 import org.genepattern.gpunit.GpAssertions;
 import org.genepattern.gpunit.ModuleTestObject;
 import org.genepattern.gpunit.TestFileObj;
 import org.genepattern.gpunit.diff.AbstractDiffTest;
 import org.genepattern.gpunit.diff.CmdLineDiff;
+import org.genepattern.gpunit.diff.IOUtilThreadSafe;
+import org.genepattern.gpunit.diff.NumRowsColsDiff;
 import org.genepattern.gpunit.diff.UnixCmdLineDiff;
-import org.genepattern.io.IOUtil;
-import org.genepattern.matrix.Dataset;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobResult;
 import org.junit.Assert;
@@ -55,7 +57,7 @@ public class JobResultValidator {
         this.rootDownloadDir = file;
     }
     
-    private void initDownloadDir() throws Exception {
+    private synchronized void initDownloadDir() throws Exception {
         if (this.jobResult==null) {
             throw new IllegalArgumentException("jobResult==null");
         }
@@ -73,7 +75,7 @@ public class JobResultValidator {
         }
     }
     
-    private void downloadResultFiles() throws Exception {
+    private synchronized void downloadResultFiles() throws Exception {
         initDownloadDir();
         //TODO: could be a lengthy operation, consider running in an interruptible thread
         this.resultFiles = jobResult.downloadFiles(downloadDir.getAbsolutePath());
@@ -233,6 +235,9 @@ public class JobResultValidator {
                         File expected = test.initFileFromPath(diff);
                         //diff(expected,actual);
                         AbstractDiffTest diffTest = getDiff(testFileObj);
+                        if (jobResult != null) {
+                            diffTest.setJobId(""+jobResult.getJobNumber());
+                        }
                         diffTest.setInputDir(test.getInputdir());
                         diffTest.setExpected(expected);
                         diffTest.setActual(actual);
@@ -241,20 +246,33 @@ public class JobResultValidator {
                     int numCols = testFileObj.getNumCols();
                     int numRows = testFileObj.getNumRows();
                     if (numCols >= 0 || numRows >= 0) {
-                        Dataset dataset = null;
-                        try {
-                            dataset = IOUtil.readDataset(actual.getAbsolutePath());
-                        }
-                        catch (Throwable t) {
-                            Assert.fail("Error reading dataset for file='"+actual.getAbsolutePath()+"': "+t.getLocalizedMessage());
-                        }
-                        Assert.assertNotNull(dataset);
-                        if (numRows >= 0) {
-                            Assert.assertEquals("'"+actual.getName()+"'[numRows]", numRows, dataset.getRowCount());
-                        }
+                        NumRowsColsDiff nf = new NumRowsColsDiff();
                         if (numCols >= 0) {
-                            Assert.assertEquals("'"+actual.getName()+"'[numCols]", numCols, dataset.getColumnCount());
+                            nf.setExpectedNumCols(numCols);
                         }
+                        if (numRows >= 0) {
+                            nf.setExpectedNumRows(numRows);
+                        }
+                        nf.setInputDir(test.getInputdir());
+                        //nf.setExpected(expected);
+                        nf.setActual(actual);
+                        nf.diff();
+                        //Dataset dataset = null;
+                        //try {
+                        //    String pathname = actual.getAbsolutePath();
+                        //    dataset = IOUtilThreadSafe.Singleton.instance().readDataset(pathname);
+                        //}
+                        //catch (Throwable t) {
+                        //    t.printStackTrace();
+                        //    Assert.fail("Error reading dataset for file='"+actual.getAbsolutePath()+"': "+t.getLocalizedMessage());
+                        //}
+                        //Assert.assertNotNull(dataset);
+                        //if (numRows >= 0) {
+                        //    Assert.assertEquals("'"+actual.getName()+"'[numRows]", numRows, dataset.getRowCount());
+                        //}
+                        //if (numCols >= 0) {
+                        //    Assert.assertEquals("'"+actual.getName()+"'[numCols]", numCols, dataset.getColumnCount());
+                        //}
                     }
                 }
             }
@@ -365,6 +383,9 @@ public class JobResultValidator {
             File expected = expectedFilesMap.get(filename);
             //diff(expected,actual);
             AbstractDiffTest diffTest = getDiff( (TestFileObj) null);
+            if (jobResult != null) {
+                diffTest.setJobId(""+jobResult.getJobNumber());
+            }
             diffTest.setInputDir(test.getInputdir());
             diffTest.setExpected(expected);
             diffTest.setActual(actual);

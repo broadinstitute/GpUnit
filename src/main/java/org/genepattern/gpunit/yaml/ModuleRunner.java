@@ -98,7 +98,7 @@ public class ModuleRunner {
         return jobResult;
     }
 
-    static public GPClient initGpClient() {
+    synchronized static public GPClient initGpClient() {
         final String gpUrl = System.getProperty("genePatternUrl", "http://gpdev.broadinstitute.org");
         final String gpUsername = System.getProperty("username", "jntest");
         final String gpPassword = System.getProperty("password", "jntest");

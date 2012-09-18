@@ -10,21 +10,24 @@ import org.genepattern.gpunit.test.BatchModuleTestObject;
 import org.genepattern.webservice.JobResult;
 
 public class Util {
-    static public int submitJob(File testFile) throws Exception {
-        ModuleTestObject testCase = initTestCase(testFile);
-        ModuleRunner runner = new ModuleRunner(testCase);
-        GPClient gpClient = ModuleRunner.initGpClient();
-        runner.setGpClient(gpClient);
-        runner.submitJob();
-        return runner.getJobId();
-    }
-
-    static public void runTest(File testFile) throws GpUnitException, FileNotFoundException, AssertionError, Exception {
-        ModuleTestObject testCase = initTestCase(testFile);
-        runTest(testCase);
-    }
-
-    static public void runTest(BatchModuleTestObject testObject) throws GpUnitException, FileNotFoundException, AssertionError, Exception {
+//    static public int submitJob(GPClient gpClient, File testFile) throws Exception {
+//        ModuleTestObject testCase = initTestCase(testFile);
+//        ModuleRunner runner = new ModuleRunner(testCase);
+//        //GPClient gpClient = ModuleRunner.initGpClient();
+//        runner.setGpClient(gpClient);
+//        runner.submitJob();
+//        return runner.getJobId();
+//    }
+//
+//    static public void runTest(File testFile) throws GpUnitException, FileNotFoundException, AssertionError, Exception {
+//        ModuleTestObject testCase = initTestCase(testFile);
+//        runTest(testCase);
+//    }
+//
+    static public void runTest(GPClient gpClient, BatchModuleTestObject testObject) throws GpUnitException, FileNotFoundException, AssertionError, Exception {
+        if (gpClient == null) {
+            throw new GpUnitException("gpClient is null");
+        }
         if (testObject == null) {
             throw new GpUnitException("testObject is null");
         }
@@ -36,18 +39,21 @@ public class Util {
             throw new Exception("testObject is null");
         }
         
-        runTest(testObject.getTestCase());
+        runTest(gpClient, testObject.getTestCase());
     }
     
     
-    static public void runTest(ModuleTestObject testCase) throws GpUnitException, FileNotFoundException, AssertionError, Exception {
+    static private void runTest(GPClient gpClient, ModuleTestObject testCase) throws GpUnitException, FileNotFoundException, AssertionError, Exception {
         ModuleRunner runner = new ModuleRunner(testCase);
         
-        GPClient gpClient = ModuleRunner.initGpClient();
+        //GPClient gpClient = ModuleRunner.initGpClient();
         runner.setGpClient(gpClient);
         runner.runJobAndWait();
         JobResult jobResult = runner.getJobResult();
         JobResultValidator validator = new JobResultValidator(testCase, jobResult);
+        if (System.getProperty("gpunit.rootDownloadDir") != null) {
+            validator.setRootDownloadDir(new File(System.getProperty("gpunit.rootDownloadDir")));
+        }
         try {
             validator.validate();
         }
@@ -88,21 +94,21 @@ public class Util {
         return runner;
     }
     
-    static public void main(String[] args) {
-        String testFilepath = "./tests/protocols/01_Run/step1/test.yaml";
-        if (args.length > 0) {
-            //first arg is an optional test file
-            testFilepath = args[0];
-        }
-        File testFile = new File(testFilepath);
-        try {
-            System.out.println("starting test "+testFile+" ... ");
-            runTest(testFile);
-            System.out.println("Success!");
-        }
-        catch (Throwable t) {
-            System.err.println("Failure!");
-            t.printStackTrace();
-        }
-    }
+//    static public void main(String[] args) {
+//        String testFilepath = "./tests/protocols/01_Run/step1/test.yaml";
+//        if (args.length > 0) {
+//            //first arg is an optional test file
+//            testFilepath = args[0];
+//        }
+//        File testFile = new File(testFilepath);
+//        try {
+//            System.out.println("starting test "+testFile+" ... ");
+//            runTest(testFile);
+//            System.out.println("Success!");
+//        }
+//        catch (Throwable t) {
+//            System.err.println("Failure!");
+//            t.printStackTrace();
+//        }
+//    }
 }

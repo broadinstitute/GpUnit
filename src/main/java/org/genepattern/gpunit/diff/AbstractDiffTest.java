@@ -23,7 +23,12 @@ public abstract class AbstractDiffTest {
     protected List<String> args;
     protected File expected;
     protected File actual;
+    //may be helpful for sending an error message
+    protected String jobId;
 
+    public void setJobId(String jobId) {
+        this.jobId = jobId;
+    }
     public void setInputDir(File f) {
         this.inputDir = f;
     }
