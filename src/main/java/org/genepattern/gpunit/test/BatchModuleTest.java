@@ -6,6 +6,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.genepattern.client.GPClient;
+import org.genepattern.gpunit.yaml.ModuleRunner;
 import org.genepattern.gpunit.yaml.Util;
 import org.genepattern.util.junit.Parallelized;
 import org.junit.AfterClass;
@@ -23,6 +25,7 @@ import org.junit.runners.Parameterized.Parameters;
  */
 @RunWith(Parallelized.class)
 public class BatchModuleTest { 
+    static GPClient gpClient;
 
     /**
      * This parameterized test runs a single unit test for each test case in the Collection.
@@ -81,10 +84,14 @@ public class BatchModuleTest {
         //   2) for debugging from an IDE, uncomment the following lines and set accordingly
         //System.setProperty("genePatternUrl", "http://genepattern.broadinstitute.org");
         //System.setProperty("genePatternUrl", "http://genepatternbeta.broadinstitute.org");
+        // these are here for debugging the gpunit test framework
         //System.setProperty("genePatternUrl", "http://127.0.0.1:8080");
         //System.setProperty("username", "test");
         //System.setProperty("password", "test"); 
         //System.setProperty("gpunit.deleteDownloadedResultFiles", "false");
+        //System.setProperty("gpunit.rootDownloadDir", "/Users/pcarr/tmp/jobResults");
+        
+        gpClient = ModuleRunner.initGpClient();
     }
     
     @AfterClass
@@ -102,7 +109,7 @@ public class BatchModuleTest {
 
     @Test
     public void runJobAndWait() throws Exception {
-        Util.runTest(testObj);
+        Util.runTest(gpClient,testObj);
     }
 
 }
