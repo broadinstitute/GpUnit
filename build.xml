@@ -4,11 +4,12 @@
     <property name="gpunit.properties" value="gpunit.properties" />
     <property file="${gpunit.properties}" />
 
-    <property name="gp.host" value="genepatternbeta.broadinstitute.org" />
-    <property name="gp.user" value="jntest" />
-    <property name="gp.password" value="jntest" />
+    <property name="gp.host" value="gpdev.broadinstitute.org" />
+    <property name="gp.port" value="" />
+    <property name="gp.user" value="test" />
+    <property name="gp.password" value="test" />
 
-    <property name="gp.url" value="http://${gp.host}" />
+    <property name="gp.url" value="http://${gp.host}${gp.port}" />
     <property name="local.dir" location="${gpunit.dir}/tmp/${gp.host}" />
     <property name="client.lib.dir" location="${local.dir}/client" />
     <!-- if the client.dir already exists, skip the rest -->
@@ -77,21 +78,6 @@ report.dir: ${report.dir}
         <delete dir="${report.dir}" />
     </target>
     <!-- END build gp-unit.jar -->
-    
-    <!-- run single gp-unit test via SOAP client request -->    
-    <macrodef name="run-test">
-        <attribute name="test.file" />
-        <sequential>
-            <echo>Running test from @{test.file}</echo>
-            <java classname="org.genepattern.gpunit.RunTest" fork="true"
-                classpathref="gpunit.classpath" >
-                <arg value="@{test.file}" />
-                <sysproperty key="genePatternUrl" value="${gp.url}" />
-                <sysproperty key="username" value="${gp.user}" />
-                <sysproperty key="password" value="${gp.password}" />
-            </java> 
-        </sequential>
-    </macrodef>
 
     <!-- run a set of gp-unit tests via SOAP client requests 
          use a single parameterized jUnit test to submit the jobs and validate the results.
@@ -137,11 +123,6 @@ report.dir: ${report.dir}
             <fail if="test.failure" message="junit test failed" />
         </sequential> 
     </macrodef>
-    
-    <property name="test.file" location="./tests/protocols/01_Run/01_PreprocessDataset/test.yaml" />
-    <target name="gpunit-test" depends="package">
-        <run-test test.file="${test.file}" />
-    </target>
     
     <target name="gpunit-all-protocols" depends="package">
         <path id="all-protocols.path">
