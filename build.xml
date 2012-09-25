@@ -168,5 +168,20 @@ report.dir: ${report.dir}
         <property name="testcases" refid="testfolder.path" /> 
         <run-tests testcases="${testcases}" />
     </target>
+    
+    <target name="gpunit-cufflinks" depends="package">
+        <path id="testfolder.path">
+            <pathelement location="${gpunit.testfolder}" />
+        </path>
+        <property name="testcases" refid="testfolder.path" />
+        <property name="gpunit.numthreads" value="32" />
+        <!-- the max amount of time to wait, in seconds, before terminating the unit test -->
+        <property name="gpunit.shutdowntimeout" value="1800" />
+        <run-tests 
+            testcases="${testcases}" 
+            numthreads="${gpunit.numthreads}" 
+            shutdowntimeout="${gpunit.shutdowntimeout}"
+        />
+    </target>
 
 </project>
