@@ -73,8 +73,9 @@ public class BatchModuleTest {
 
         //TODO: change this back to more generic path
         //return BatchModuleUtil.data(new File("./tests/saved_jobs"));
-        //return BatchModuleUtil.data(new File("./tests/protocols"));
-        return BatchModuleUtil.data(new File("./tests/DiffTest"));
+        return BatchModuleUtil.data(new File("./tests/protocols"));
+        //return BatchModuleUtil.data(new File("./tests/DiffTest"));
+        //return BatchModuleUtil.data(new File("/Broad/dev/gp-trunk/test/gp-unit"));
     }
 
     @BeforeClass 
