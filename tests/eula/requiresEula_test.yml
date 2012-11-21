@@ -1,0 +1,10 @@
+#
+# This is a failing test-case, the job should fail if the current user
+# has not agreed to the EULA
+#
+# module name: pcarrTestLicense
+module: "urn:lsid:9090.gpdev.gpint01:genepatternmodules:759:1"
+params: 
+    arg: val
+assertions:
+    jobStatus: error
