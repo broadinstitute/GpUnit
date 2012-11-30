@@ -1,0 +1,15 @@
+# This is a failing test-case using RemoveCopyNumberOutliers, the job should fail with an lsf out of memory error
+# Module: copyOfRemoveCopyNumberOutliersMemory urn:lsid:9090.gpdev.gpint01:genepatternmodules:856:1
+
+module: "urn:lsid:9090.gpdev.gpint01:genepatternmodules:759:1"
+
+params:
+    input.file: /xchip/gpdev/servers/genepatterntest/jobResults/23439/large_input2.pip3avg.log_mdQUAD.RData
+    num.probes: 5
+    outlier.probe.replacement:  NA
+    multiplicative.threshold: 4
+    additive.threshold: 0.3
+    output.prefix: <input.file_basename>
+
+assertions:
+    jobStatus: error
