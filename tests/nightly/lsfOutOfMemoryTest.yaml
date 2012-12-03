@@ -1,7 +1,7 @@
 # This is a failing test-case using RemoveCopyNumberOutliers, the job should fail with an lsf out of memory error
-# Module: copyOfRemoveCopyNumberOutliersMemory urn:lsid:9090.gpdev.gpint01:genepatternmodules:856:1
-
-module: "urn:lsid:9090.gpdev.gpint01:genepatternmodules:759:1"
+# Module: RemoveCopyNumberOutliers urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00169:0.16
+# Note: ran test as user 'test' on gpdev, which, at the time had version 0.16 installed as the latest version
+module: "RemoveCopyNumberOutliers"
 
 params:
     input.file: /xchip/sqa/TestFiles/RemoveCopyNumberOutliers/large_input1/large_input2.pip3avg.log_mdQUAD.RData
