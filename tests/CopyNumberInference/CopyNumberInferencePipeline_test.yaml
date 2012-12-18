@@ -1,0 +1,13 @@
+#
+# Example run of CopyNumberInferencePipeline, as run on the gpprod server, 
+# circa the public release of v1.
+#
+# It took about 2 hrs 10 min to run.
+#
+name: testCopyNumberInferencePipeline
+module: CopyNumberInferencePipeline
+params: 
+    "CopyNumberInferencePipeline.Part1of21.SNPFileCreator_SNP62.cel.files": ftp://ftp.broad.mit.edu/pub/genepattern/example_files/SNPFileCreator_SNP6/snp6_sample_data.zip
+    "CopyNumberInferencePipeline.Part1of21.ConvertLineEndings1.input.filename": ftp://ftp.broad.mit.edu/pub/genepattern/example_files/SNPFileCreator_SNP6/snp6_sample_data.sif.txt
+    "CopyNumberInferencePipeline.Part1of21.TangentNormalization9.output.files": cnv
+    "CopyNumberInferencePipeline.Part2of2.Wrapper4.CopyNumberInferencePipeline.Part2of21.InsertGenomicLocations3.genome.annotation": hg19
