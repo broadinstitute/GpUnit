@@ -15,6 +15,7 @@
     <!-- if the client.dir already exists, skip the rest -->
     <available property="gp-client-lib-exists" file="${client.lib.dir}/GenePattern.jar" />
     <property name="report.dir" value="reports" />
+    
 
     <path id="gp.client.classpath">
         <pathelement location="${client.lib.dir}/GenePattern.jar" />
@@ -37,11 +38,16 @@ local.dir: ${local.dir}
 report.dir: ${report.dir} 
 </echo>
 
-    <tstamp />
+        <tstamp />
         <mkdir dir="${gpunit.dir}/classes" />
         <mkdir dir="${gpunit.dir}/dist" />
         <mkdir dir="${client.lib.dir}" />
         <mkdir dir="${report.dir}" />
+        
+        <!-- initialize properties for a batch run -->
+        <property name="gpunit.outputdir" value="./jobResults" />
+        <property name="gpunit.batch.name" value="run_${DSTAMP}_${TSTAMP}" />
+        <property name="gpunit.save.downloads" value="false" />
     </target>
 
     <!-- in order to compile gp-unit, and to run gp-unit tests, must download the client library -->
@@ -111,6 +117,10 @@ report.dir: ${report.dir}
                 <sysproperty key="genePatternUrl" value="${gp.url}" />
                 <sysproperty key="username" value="${gp.user}" />
                 <sysproperty key="password" value="${gp.password}" />
+                
+                <sysproperty key="gpunit.outputdir" value="${gpunit.outputdir}" />
+                <sysproperty key="gpunit.batch.name" value="${gpunit.batch.name}" />
+                <sysproperty key="gpunit.save.downloads" value="${gpunit.save.downloads}" />
             </junit>
 
             <junitreport todir="${report.dir}">

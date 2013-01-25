@@ -22,8 +22,8 @@ public class GpExecutionLogTest extends BatchModuleTest {
         return BatchModuleUtil.data(new File("./tests/saved_jobs"));
     }
     
-    public GpExecutionLogTest(String testname, BatchModuleTestObject testObj) {
-        super(testname, testObj);
+    public GpExecutionLogTest(final int batchIdx, final String testname, final BatchModuleTestObject testObj) {
+        super(batchIdx, testname, testObj);
     }
 
 }

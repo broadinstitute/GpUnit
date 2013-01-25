@@ -21,8 +21,8 @@ public class ProtocolsTest extends BatchModuleTest {
         return BatchModuleUtil.data(new File("./tests/protocols"));
     }
     
-    public ProtocolsTest(String testname, BatchModuleTestObject testObj) {
-        super(testname, testObj);
+    public ProtocolsTest(final int batchIdx, final String testname, final BatchModuleTestObject testObj) {
+        super(batchIdx, testname, testObj);
     }
 
 }

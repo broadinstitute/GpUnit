@@ -13,15 +13,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
-//import org.broadinstitute.io.IOUtilThreadSafe;
-import org.broadinstitute.matrix.Dataset;
 import org.genepattern.gpunit.GpAssertions;
 import org.genepattern.gpunit.ModuleTestObject;
 import org.genepattern.gpunit.TestFileObj;
 import org.genepattern.gpunit.diff.AbstractDiffTest;
 import org.genepattern.gpunit.diff.CmdLineDiff;
-import org.genepattern.gpunit.diff.IOUtilThreadSafe;
 import org.genepattern.gpunit.diff.NumRowsColsDiff;
 import org.genepattern.gpunit.diff.UnixCmdLineDiff;
 import org.genepattern.util.GPConstants;
@@ -36,76 +34,106 @@ import org.junit.Assert;
 public class JobResultValidator {
     final static String NL = System.getProperty("line.separator");
 
-    private ModuleTestObject test = null;
-    private JobResult jobResult = null;
-    private File rootDownloadDir = new File("./tmp/jobResults");    
-    private File downloadDir = null;
-    private File[] resultFiles = null;
-    private List<String> outputFilenames = null;
-    private Map<String,File> resultFilesMap = new HashMap<String,File>();
+    final private ModuleTestObject test;
+    final private JobResult jobResult;
+    final private File downloadDir;
+    final private List<String> outputFilenames;
+    private boolean saveResultFiles=false;
+
+    final private Map<String,File> downloadedResultFilesMap = new ConcurrentHashMap<String,File>();
     
-    public JobResultValidator(ModuleTestObject test, JobResult jobResult) {
-        this.test = test;
-        this.jobResult = jobResult;
-        
-        if (this.test == null) {
+    public JobResultValidator(final ModuleTestObject test, final JobResult jobResult, final File downloadDir) {
+        if (test==null) {
             throw new IllegalArgumentException("test==null");
         }
-    }
-
-    public void setRootDownloadDir(File file) {
-        this.rootDownloadDir = file;
-    }
-    
-    private synchronized void initDownloadDir() throws Exception {
-        if (this.jobResult==null) {
+        if (jobResult==null) {
             throw new IllegalArgumentException("jobResult==null");
         }
         if (jobResult.getJobNumber() < 0) {
             throw new IllegalArgumentException("jobNumber=="+jobResult.getJobNumber());
         }
-        //1) init downloadDir, create a new dir, relative to the rootDownloadDir 
-        this.downloadDir = new File(rootDownloadDir, ""+jobResult.getJobNumber());
-        this.downloadDir = this.downloadDir.getCanonicalFile();
+        if (downloadDir==null) {
+            throw new IllegalArgumentException("downloadDir==null");
+        }
+        this.test = test;
+        this.jobResult = jobResult;
+        this.downloadDir = downloadDir;
+        this.outputFilenames=_initOutputFilenames();
+    }
+
+    public void setSaveResultFiles(boolean b) {
+        this.saveResultFiles=b;
+    }
+    
+    private List<String> _initOutputFilenames() {
+        List<String> rval = new ArrayList<String>();
+        for(String outputFilename : jobResult.getOutputFileNames() ) {
+            rval.add( outputFilename );
+        }
+        if (jobResult.hasStandardOut()) {
+            rval.add( GPConstants.STDOUT );
+        }
+        if (jobResult.hasStandardError()) {
+            rval.add( GPConstants.STDERR );
+        }
+        return rval;
+    }
+    
+    private boolean downloadDirInited=false;
+    private boolean downloadDirCreated=false;
+    private synchronized void _initDownloadDir() {
+        if (downloadDirInited) {
+            return;
+        }
+        if (downloadDir==null) {
+            Assert.fail("downloadDir=null");
+        }
         if (!downloadDir.exists()) {
-            boolean success = downloadDir.mkdirs();
-            if (!success) {
-                throw new Exception("Unable to create local download directory for jobNumber="+jobResult.getJobNumber()+", downloadDir="+downloadDir.getAbsolutePath());
+            boolean downloadDirCreated = downloadDir.mkdirs();
+            if (!downloadDirCreated) {
+                Assert.fail("Unable to create local download directory for jobNumber="+jobResult.getJobNumber()+", downloadDir="+downloadDir.getAbsolutePath());
             }
         }
+        downloadDirInited=true;
     }
     
-    private synchronized void downloadResultFiles() throws Exception {
-        initDownloadDir();
-        //TODO: could be a lengthy operation, consider running in an interruptible thread
-        this.resultFiles = jobResult.downloadFiles(downloadDir.getAbsolutePath());
-        
-        this.resultFilesMap.clear();
-        if (this.resultFiles != null) {
-            for(File file : this.resultFiles) {
-                this.resultFilesMap.put(file.getName(), file);
-            }
+    private File getResultFile(String filename) {
+        _initDownloadDir();
+        File file=downloadedResultFilesMap.get(filename);
+        if (file != null) {
+            return file;
         }
-    }
-    
-    private File downloadResultFile(String filename) throws Exception {
-        initDownloadDir();
-        File file = jobResult.downloadFile(filename, this.downloadDir.getAbsolutePath());
-        resultFilesMap.put(file.getName(), file);
+        try {
+            file = jobResult.downloadFile(filename, this.downloadDir.getAbsolutePath());
+        }
+        catch (IOException e) {
+            Assert.fail("Error downloading result file '"+filename+"': "+e.getLocalizedMessage());
+        }
+        downloadedResultFilesMap.put(filename, file);
         return file;
     }
 
-    private void initOutputFilenames() {
-        this.outputFilenames = new ArrayList<String>();
-        for(String outputFilename : jobResult.getOutputFileNames() ) {
-            outputFilenames.add( outputFilename );
+    private boolean downloadedFiles=false;
+    private synchronized void downloadResultFiles() {
+        if (downloadedFiles) {
+            return;
         }
-        if (jobResult.hasStandardOut()) {
-            outputFilenames.add( GPConstants.STDOUT );
+        _initDownloadDir();
+        
+        File[] resultFiles=null;
+        try {
+            //TODO: could be a lengthy operation, consider running in an interruptible thread
+            resultFiles=jobResult.downloadFiles(downloadDir.getAbsolutePath());
         }
-        if (jobResult.hasStandardError()) {
-            outputFilenames.add( GPConstants.STDERR );
+        catch (IOException e) {
+            Assert.fail("Exception thrown while downloading result files for jobNumber="+jobResult.getJobNumber()+": "+e.getLocalizedMessage());
         }
+        if (resultFiles != null) {
+            for(File file : resultFiles) {
+                downloadedResultFilesMap.put(file.getName(), file);
+            }
+        }
+        downloadedFiles=true;
     }
 
     /**
@@ -118,7 +146,7 @@ public class JobResultValidator {
         String errorMessage="";
         File stderrFile = null;
         try {
-            stderrFile = downloadResultFile("stderr.txt");
+            stderrFile = this.getResultFile("stderr.txt");
         }
         catch (Throwable t) {
             errorMessage = "There was an error downloading 'stderr.txt': "+t.getLocalizedMessage();
@@ -187,18 +215,22 @@ public class JobResultValidator {
         
         //2) job status
         validateJobStatus();
+        
+        //if necessary, download result files
+        if (this.saveResultFiles) {
+            downloadResultFiles();
+        }
 
         //3) numFiles: ...
         GpAssertions assertions = test.getAssertions();
         if (assertions.getNumFiles() >= 0) {
-            initOutputFilenames();
+            //initOutputFilenames();
             //Note: when numFiles < 0, it means don't run this assertion
             Assert.assertEquals("Number of result files", assertions.getNumFiles(), outputFilenames.size());
         }
 
         //4) outputDir: ...
         if (assertions.getOutputDir() != null) {
-            File expectedOutputDir = assertions.getOutputDir();
             try {
                 downloadResultFiles();
             }
@@ -206,6 +238,7 @@ public class JobResultValidator {
                     t.printStackTrace();
                     Assert.fail("Error downloading result files for job='"+jobResult.getJobNumber()+"': "+t.getLocalizedMessage());
             }
+            File expectedOutputDir = assertions.getOutputDir();
             directoryDiff(expectedOutputDir, downloadDir);
         }
         
@@ -213,9 +246,9 @@ public class JobResultValidator {
         //   (may or may not have already downloaded result files; assume that we haven't, because it doesn't make sense
         //    to include outputDir and files assertion in the same test)
         if (assertions.getFiles() != null) {
-            if (outputFilenames == null) {
-                initOutputFilenames();
-            }
+            //if (outputFilenames == null) {
+            //    initOutputFilenames();
+            //}
             for(Entry<String,TestFileObj> entry : assertions.getFiles().entrySet()) {
                 String filename = entry.getKey();
                 Assert.assertTrue("Expecting result file named '"+filename+"'", outputFilenames.contains(filename));
@@ -224,7 +257,7 @@ public class JobResultValidator {
                     //need to download the file ...
                     File actual = null;
                     try {
-                        actual = downloadResultFile(filename);
+                        actual = this.getResultFile(filename);
                     }
                     catch (Throwable t) {
                         t.printStackTrace();
@@ -254,64 +287,88 @@ public class JobResultValidator {
                             nf.setExpectedNumRows(numRows);
                         }
                         nf.setInputDir(test.getInputdir());
-                        //nf.setExpected(expected);
                         nf.setActual(actual);
                         nf.diff();
-                        //Dataset dataset = null;
-                        //try {
-                        //    String pathname = actual.getAbsolutePath();
-                        //    dataset = IOUtilThreadSafe.Singleton.instance().readDataset(pathname);
-                        //}
-                        //catch (Throwable t) {
-                        //    t.printStackTrace();
-                        //    Assert.fail("Error reading dataset for file='"+actual.getAbsolutePath()+"': "+t.getLocalizedMessage());
-                        //}
-                        //Assert.assertNotNull(dataset);
-                        //if (numRows >= 0) {
-                        //    Assert.assertEquals("'"+actual.getName()+"'[numRows]", numRows, dataset.getRowCount());
-                        //}
-                        //if (numCols >= 0) {
-                        //    Assert.assertEquals("'"+actual.getName()+"'[numCols]", numCols, dataset.getColumnCount());
-                        //}
                     }
                 }
             }
         }
     }
 
-    public boolean deleteDownloadedResultFiles() {
-        if (jobResult == null) {
-            throw new IllegalArgumentException("jobResult==null");
+    public void clean() {
+        //optionally, clean downloaded result files
+        if (!saveResultFiles) {
+            cleanDownloadedFiles();
         }
-        if (jobResult.getJobNumber() < 0) {
-            throw new IllegalArgumentException("jobNumber=="+jobResult.getJobNumber());
-        }
-        //hard-coded path to root download dir
-        File downloadDir = new File(rootDownloadDir, ""+jobResult.getJobNumber());
-        boolean success = deleteDir(downloadDir);        
-        return success;
+        //optionally, remove job from server
+        // TODO: implement this method
     }
     
-    /**
-     * Deletes all files and subdirectories under dir.
-     * Returns true if all deletions were successful.
-     * If a deletion fails, the method stops attempting to delete and returns false.
-     * 
-     * @param dir
-     * @return
-     */
-    private static boolean deleteDir(File dir) {
-        if (dir.isDirectory()) {
-            for(String child : dir.list()) {
-                boolean success = deleteDir(new File(dir, child));
+    private void cleanDownloadedFiles() {
+        //only going to clean files which were downloaded within the validation step
+        List<File> not_deleted=new ArrayList<File>();
+        for(File file : downloadedResultFilesMap.values()) {
+            if (file.isFile()) {
+                boolean success=file.delete();
                 if (!success) {
-                    return false;
+                    not_deleted.add(file);
                 }
             }
+            else {
+                not_deleted.add(file);
+            }
         }
-        // The directory is now empty so delete it
-        return dir.delete();
+        
+        if (downloadDirCreated) {
+            boolean success=downloadDir.delete();
+            if (!success) {
+                not_deleted.add(downloadDir);
+            }
+        }
+        if (not_deleted.size()>0) {
+            Assert.fail("failed to clean up job result directory: "+downloadDir);
+        }
+        
+        //boolean success = deleteDir(downloadDir);
+        //if (!success) {
+        //    Assert.fail("failed to clean up job result directory: "+downloadDir);
+        //}
     }
+    
+//    private boolean deleteDownloadedResultFiles() {
+//        //if (jobResult == null) {
+//        //    throw new IllegalArgumentException("jobResult==null");
+//        //}
+//        //if (jobResult.getJobNumber() < 0) {
+//        //    throw new IllegalArgumentException("jobNumber=="+jobResult.getJobNumber());
+//        //}
+//        //hard-coded path to root download dir
+//        //File downloadDir = new File(rootDownloadDir, ""+jobResult.getJobNumber());
+//        boolean success = deleteDir(downloadDir);
+//        //TODO: alert end-user or throw exception when we can't delete the result files
+//        return success;
+//    }
+    
+//    /**
+//     * Deletes all files and subdirectories under dir.
+//     * Returns true if all deletions were successful.
+//     * If a deletion fails, the method stops attempting to delete and returns false.
+//     * 
+//     * @param dir
+//     * @return
+//     */
+//    private static boolean deleteDir(File dir) {
+//        if (dir.isDirectory()) {
+//            for(String child : dir.list()) {
+//                boolean success = deleteDir(new File(dir, child));
+//                if (!success) {
+//                    return false;
+//                }
+//            }
+//        }
+//        // The directory is now empty so delete it
+//        return dir.delete();
+//    }
     
     private static Comparator<File> filenameComparator = new Comparator<File>() {
         public int compare(File arg0, File arg1) {

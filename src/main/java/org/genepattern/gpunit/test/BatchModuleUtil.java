@@ -19,9 +19,11 @@ import org.genepattern.gpunit.yaml.Util;
 public class BatchModuleUtil { 
     final static public String default_root_dir = "./tests";
 
-    final static private Collection<Object[]> dataFromTestcaseFiles(List<File> testcaseFiles) {
+    final static private Collection<Object[]> dataFromTestcaseFiles(final List<File> testcaseFiles) {
+        int batchIdx=-1;
         List<Object[]> data = new ArrayList<Object[]>();
         for(File testFile : testcaseFiles) {
+            ++batchIdx;
             ModuleTestObject testCase = null;
             Throwable exception = null;
             try {
@@ -43,7 +45,7 @@ public class BatchModuleUtil {
             else if (testFile != null) {
                 testName = testFile.getName();
             }
-            data.add( new Object[] { testName, obj } );
+            data.add( new Object[] { batchIdx, testName, obj } );
         }
         return data;
     }
@@ -54,7 +56,7 @@ public class BatchModuleUtil {
         return data;
     }
 
-    final static public Collection<Object[]> data(File testDir) {
+    final static public Collection<Object[]> data(final File testDir) {
         List<File> testcaseFiles = BatchModuleUtil.findTestcases(testDir);
         Collection<Object[]> data = dataFromTestcaseFiles(testcaseFiles);
         return data;
@@ -68,7 +70,7 @@ public class BatchModuleUtil {
      * @param testCaseFiles
      * @return
      */
-    final static public Collection<Object[]> data(List<File> testDirList) {
+    final static public Collection<Object[]> data(final List<File> testDirList) {
         List<File> testcaseFiles = BatchModuleUtil.findTestcases(testDirList);
         Collection<Object[]> data = dataFromTestcaseFiles(testcaseFiles);
         return data;
