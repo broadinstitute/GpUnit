@@ -32,20 +32,20 @@ public class BatchModuleUtil {
             catch (Throwable t) {
                 exception = t;
             }
-            BatchModuleTestObject obj = new BatchModuleTestObject();
-            obj.setTestFile(testFile);
-            obj.setTestCase(testCase);
-            obj.setInitException(exception);
+            BatchModuleTestObject batchTestObj = new BatchModuleTestObject();
+            batchTestObj.setTestFile(testFile);
+            batchTestObj.setTestCase(testCase);
+            batchTestObj.setInitException(exception);
 
             //String testName=testFile.getName();
             String testName=null;
             if (testCase != null && testCase.getName() != null) {
-                testName = obj.getTestCase().getName();
+                testName = batchTestObj.getTestCase().getName();
             }
             else if (testFile != null) {
                 testName = testFile.getName();
             }
-            data.add( new Object[] { batchIdx, testName, obj } );
+            data.add( new Object[] { batchIdx, testName, batchTestObj } );
         }
         return data;
     }

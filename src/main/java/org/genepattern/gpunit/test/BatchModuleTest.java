@@ -3,7 +3,10 @@ package org.genepattern.gpunit.test;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.genepattern.client.GPClient;
@@ -31,32 +34,35 @@ import org.junit.runners.Parameterized.Parameters;
 public class BatchModuleTest { 
     static GPClient gpClient;
     static BatchProperties batchProps;
-    
+
     final static private String PROP_TESTCASE_DIRS="gpunit.testcase.dirs";
 
     /**
      * This parameterized test runs a single unit test for each test case in the Collection.
      * Each Object[] instance in the collection is used to call the BatchModuleTest constructor,
      *     e.g. new BatchModuleTest(Object[0], Object[1], Object[2])
-     */
-    @Parameters(name="{1}")
-    public static Collection<Object[]> data() {
-        //BatchProperties batchRun=BatchProperties.Factory.initFromProps();
-        /*
-        @see build.xml file for an example of how to configure the list of test-cases from ant,
-        for example,
+     *     
+     * see the build.xml file for an example of how to configure the list of test-cases from ant,
+     * for example,
+     * <pre>
         <path id="gpunit.testcase.path">
             <pathelement location="./tests/protocols/01_Run" />
             <pathelement location="./tests/saved_jobs" />
             <pathelement location="./tests/protocols/02_Differential/03_CMSViewer/test.yaml">
         </path>
         <property name="gpunit.testcase.dirs" refid="gpunit.testcase.path" /> 
-        */
-        
+        </pre>
+     *
+     */
+    @Parameters(name="{1}")
+    public static Collection<Object[]> data() throws GpUnitException {
         String numThreadsProp = System.getProperty("junit.parallel.threads");
         if (numThreadsProp == null) {
             System.setProperty("junit.parallel.threads", "32");
         }
+        
+        Collection<Object[]> testCases;
+
         String gpunitTestcaseDirsProp = System.getProperty(PROP_TESTCASE_DIRS);
         if (gpunitTestcaseDirsProp != null) { 
             //parse the list of one or more test cases
@@ -65,21 +71,39 @@ public class BatchModuleTest {
             for(String testCaseDir : testCaseDirs) {
                 fileset.add(new File(testCaseDir));
             }
-            return BatchModuleUtil.data(fileset);
+            testCases=BatchModuleUtil.data(fileset);
         }
-
-        //TODO: change this back to more generic path
-        final String path="./tests/protocols";
-        //final String path="./tests/protocols/01_Run"; 
-        return BatchModuleUtil.data(new File(path));
+        else {
+            //TODO: change this back to more generic path
+            final String path="./tests/protocols";
+            //final String path="./tests/protocols/01_Run"; 
+            testCases=BatchModuleUtil.data(new File(path));
+        }
+        
+        
+        //validate the testCases, make sure we have a unique download dir for each test
+        Set<String> testNames=new HashSet<String>();
+        for(Object[] row : testCases) {
+            final BatchModuleTestObject batchTestObj=(BatchModuleTestObject) row[2];
+            final File testFile=batchTestObj.getTestFile();
+            final String testName=Util.getTestNameFromFile(testFile);
+            boolean added=testNames.add(testName);
+            if (!added) {
+                //error, duplicate testName
+                throw new GpUnitException("Error duplicate testName, testName="+testName+", testFile="+batchTestObj.getTestFile().getAbsolutePath());
+            }
+        }
+        return testCases;
     }
 
     @BeforeClass 
     public static void beforeClass() throws GpUnitException {
-        //TODO: comment out custom config before checking in this class
+        //keep these settings
+
+        //TODO: comment out all settings below this line, they are here for debugging
         //Note: to change the gp server and user account you have two choices:
         //   1) launch from ant, see build.xml, and set these properties, or
-        //   2) for debugging from an IDE, uncomment the following lines and set accordingly
+        //   2) for debugging from an IDE, set some system properties
         
         //final String gpUrl="http://genepattern.broadinstitute.org";
         //final String gpUrl="http://genepatternbeta.broadinstitute.org";
@@ -91,7 +115,7 @@ public class BatchModuleTest {
         //System.setProperty("password", "jntest"); 
 
         //System.setProperty(BatchProperties.PROP_OUTPUT_DIR, "./jobResults"); 
-        //System.setProperty(BatchProperties.PROP_BATCH_NAME, "test-"+new Date().getTime()); 
+        //System.setProperty(BatchProperties.PROP_BATCH_NAME, "run-"+new Date().getTime()); 
         //System.setProperty(BatchProperties.PROP_SAVE_DOWNLOADS, "false"); 
 
         gpClient = ModuleRunner.initGpClient();

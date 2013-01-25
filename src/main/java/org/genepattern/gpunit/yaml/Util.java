@@ -14,15 +14,18 @@ public class Util {
     static public void runTest(GPClient gpClient, BatchModuleTestObject testObject) throws GpUnitException, FileNotFoundException, AssertionError, Exception {
         runTest(gpClient, null, testObject);
     }
-    static public void runTest(GPClient gpClient, BatchProperties batch, BatchModuleTestObject testObject) throws GpUnitException, FileNotFoundException, AssertionError, Exception {
+    static public void runTest(GPClient gpClient, BatchProperties batchProps, BatchModuleTestObject testObject) throws GpUnitException, FileNotFoundException, AssertionError, Exception {
         if (gpClient == null) {
             throw new GpUnitException("gpClient is null");
         }
-        if (batch == null) {
-            throw new GpUnitException("batch is null");
+        if (batchProps == null) {
+            throw new GpUnitException("batchProps is null");
         }
         if (testObject == null) {
             throw new GpUnitException("testObject is null");
+        }
+        if (testObject.getTestCase() == null) {
+            throw new GpUnitException("testObject.testCase is null");
         }
         Throwable initError = testObject.getInitException();
         if (initError != null) {
@@ -31,22 +34,18 @@ public class Util {
         if (testObject.getTestCase() == null) {
             throw new Exception("testObject is null");
         }
-        
-        runTest(gpClient, batch, testObject.getTestCase());
-    }
 
-    static private void runTest(final GPClient gpClient, final BatchProperties batch, final ModuleTestObject testCase) throws GpUnitException, FileNotFoundException, AssertionError, Exception {
-        ModuleRunner runner = new ModuleRunner(testCase);
+        ModuleRunner runner = new ModuleRunner(testObject.getTestCase());
         
         runner.setGpClient(gpClient);
         runner.runJobAndWait();
         JobResult jobResult = runner.getJobResult();
         
-        File jobResultDir=batch.getJobResultDir(testCase, jobResult);
+        File jobResultDir=batchProps.getJobResultDir(testObject, jobResult);
         
-        JobResultValidator validator = new JobResultValidator(testCase, jobResult, jobResultDir);
-        validator.setSaveResultFiles(batch.getSaveDownloads());
-        validator.setDeleteCompletedJobs(batch.getDeleteJobs());
+        JobResultValidator validator = new JobResultValidator(testObject, jobResult, jobResultDir);
+        validator.setSaveResultFiles(batchProps.getSaveDownloads());
+        validator.setDeleteCompletedJobs(batchProps.getDeleteJobs());
         try {
             validator.validate();
         }
@@ -63,7 +62,7 @@ public class Util {
      * @param file
      * @return
      */
-    static private String dropExtension(File file) {
+    static public String dropExtension(File file) {
         if (file==null || file.getName()==null) {
             throw new IllegalArgumentException("file==null");
         }
@@ -81,24 +80,30 @@ public class Util {
         return name.substring(0, idx);
     }
     
+    static public String getTestNameFromFile(final File testCaseFile) {
+        if (testCaseFile==null) {
+            throw new IllegalArgumentException("testCaseFile==null");
+        }
+        String dirname;
+        //by default save output files into a directory based on the test case file
+        String basename=Util.dropExtension(testCaseFile);            
+        if (testCaseFile.getParentFile() != null) {
+            dirname = testCaseFile.getParentFile().getName() + "_" + basename;
+        }
+        else {
+            dirname = basename;
+        }
+        return dirname;
+    }
+
     static public ModuleTestObject initTestCase(File fromFile) throws Exception {
         if ("gp_execution_log.txt".equals(fromFile.getName().toLowerCase())) {
             return ExecutionLogParser.parse(fromFile);
         }
         ModuleTestObject testCase = ModuleTestParserYaml.parse(fromFile);
-        //set the test name
+        //optionally set the test name based on the fromFile path
         if (testCase.getName() == null) {
-            String testName = "testName";
-            
-            String basename=dropExtension(fromFile);
-            
-            if (fromFile.getParentFile() != null) {
-                testName = fromFile.getParentFile().getName() + "/" + basename;
-            }
-            else {
-                testName = basename;
-            }
-            //drop the extension from the name
+            String testName=getTestNameFromFile(fromFile);
             testCase.setName(testName);
         }
         return testCase;

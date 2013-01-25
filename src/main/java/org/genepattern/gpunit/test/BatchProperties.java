@@ -4,10 +4,11 @@ import java.io.File;
 
 import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.ModuleTestObject;
+import org.genepattern.gpunit.yaml.Util;
 import org.genepattern.webservice.JobResult;
 
 /**
- * Helper class to for setting shared properties for a single run of a batch of gp-unit tests.
+ * Helper class for setting shared properties of a single run of a batch of gp-unit tests.
  */
 public class BatchProperties {
     final static public class Factory {
@@ -22,7 +23,7 @@ public class BatchProperties {
     final static public String PROP_SAVE_DOWNLOADS="gpunit.save.downloads";
     final static public String PROP_DELETE_JOBS="gpunit.delete.jobs";
     
-    private String downloadDir="./tmp/jobResults";
+    private String outputDir="./jobResults";
     private String batchName="latest";
     
     /**
@@ -40,9 +41,12 @@ public class BatchProperties {
     
     public BatchProperties() throws GpUnitException {
         //initialize values from system properties
-        this.downloadDir=System.getProperty(PROP_OUTPUT_DIR, downloadDir);
-        this.batchName=System.getProperty(PROP_BATCH_NAME, batchName);
-        
+        if (System.getProperties().containsKey(PROP_OUTPUT_DIR)) {
+            this.outputDir=System.getProperty(PROP_OUTPUT_DIR, outputDir);
+        }
+        if (System.getProperties().containsKey(PROP_BATCH_NAME)) {
+            this.batchName=System.getProperty(PROP_BATCH_NAME, batchName);
+        }
         //options for handling result files
         if (System.getProperties().containsKey(PROP_SAVE_DOWNLOADS)) {
             this.saveDownloads=Boolean.getBoolean(PROP_SAVE_DOWNLOADS);
@@ -66,13 +70,13 @@ public class BatchProperties {
     //if necessary, create the top level download directory
     //    for all jobs in the batch
     private File _initBatchOutputDir() throws GpUnitException {
-        String path=downloadDir;
-        if (batchName != null) {
-            if (!downloadDir.endsWith("/")) {
-                path = downloadDir + "/" + batchName;
+        String path=outputDir;
+        if (batchName != null && batchName.length()>0) {
+            if (!outputDir.endsWith("/")) {
+                path = outputDir + "/" + batchName;
             }
             else {
-                path = downloadDir + batchName;
+                path = outputDir + batchName;
             }
         }
         File rval=new File(path);
@@ -99,26 +103,43 @@ public class BatchProperties {
      * 
      * Rule for creating the download directory for a test-case.
      *     if (batch.name is set) {
-     *         <download.dir>/<batch.name>/<test.name | job.name>
+     *         <gpunit.outputdir>/<gpunit.batch.name>/<testfile.parentdir.name>/<testfile.basename>
      *     }
      *     else {
-     *         <download.dir>/<test.name | job.name>
+     *         <gpunit.outputdir>/<testfile.parentdir.name>/<testfile.basename>
      *     }
      *     
      * @return a directory into which to download job results for the given completed test
      */
-    public File getJobResultDir(final ModuleTestObject testCase, final JobResult jobResult) throws GpUnitException {
-        String dirname;
-        if (testCase != null && testCase.getName() != null && testCase.getName().length() > 0) {
-            dirname = testCase.getName();
+    public File getJobResultDir(final BatchModuleTestObject batchTestCase, final JobResult jobResult) throws GpUnitException {
+        File testCaseFile=null;
+        String testName=null;
+        if (batchTestCase != null) {
+            testCaseFile=batchTestCase.getTestFile();
+            ModuleTestObject testCase=batchTestCase.getTestCase();
+            if (testCase != null) {
+                testName=testCase.getName();
+                if (testName != null && testName.length()==0) {
+                    testName=null;
+                }
+            }
+        }
+        
+        String dirname=null;
+        if (testCaseFile != null) {
+            dirname=Util.getTestNameFromFile(testCaseFile);
+        }
+        else if (testName != null) {
+            //otherwise, use the testname
+            dirname = testName;
         }
         else if (jobResult != null) {
+            //otherwise, use the job id
             dirname = ""+jobResult.getJobNumber();
         }
         else {
             throw new IllegalArgumentException("Can't create job result directory, testCase and jobResult are not set!");
         }
-        
         File jobResultDir=new File(batchOutputDir, dirname);
         return jobResultDir;
     }

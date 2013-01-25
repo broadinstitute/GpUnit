@@ -87,7 +87,7 @@ report.dir: ${report.dir}
     </target>
     <!-- END build gp-unit.jar -->
 
-    <!-- run a set of gp-unit tests via SOAP client requests 
+    <!-- run a batch of gp-unit tests via SOAP client requests 
          use a single parameterized jUnit test to submit the jobs and validate the results.
          
          To run the tests, create a path, give it a refid, then create a property from that refid.

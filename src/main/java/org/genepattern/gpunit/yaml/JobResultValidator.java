@@ -23,6 +23,7 @@ import org.genepattern.gpunit.diff.AbstractDiffTest;
 import org.genepattern.gpunit.diff.CmdLineDiff;
 import org.genepattern.gpunit.diff.NumRowsColsDiff;
 import org.genepattern.gpunit.diff.UnixCmdLineDiff;
+import org.genepattern.gpunit.test.BatchModuleTestObject;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobResult;
 import org.junit.Assert;
@@ -35,18 +36,19 @@ import org.junit.Assert;
 public class JobResultValidator {
     final static String NL = System.getProperty("line.separator");
 
-    final private ModuleTestObject test;
+    final private ModuleTestObject testCase;
+    final private BatchModuleTestObject batchTestObject;
     final private JobResult jobResult;
     final private File downloadDir;
     final private List<String> outputFilenames;
     private boolean saveResultFiles=false;
     private boolean deleteCompletedJobs=true;
 
-    final private Map<String,File> downloadedResultFilesMap = new ConcurrentHashMap<String,File>();
+    final private Map<String,File> resultFilesMap = new ConcurrentHashMap<String,File>();
     
-    public JobResultValidator(final ModuleTestObject test, final JobResult jobResult, final File downloadDir) {
-        if (test==null) {
-            throw new IllegalArgumentException("test==null");
+    public JobResultValidator(final BatchModuleTestObject batchTestObject, final JobResult jobResult, final File downloadDir) {
+        if (batchTestObject==null) {
+            throw new IllegalArgumentException("batchTestObject==null");
         }
         if (jobResult==null) {
             throw new IllegalArgumentException("jobResult==null");
@@ -57,7 +59,11 @@ public class JobResultValidator {
         if (downloadDir==null) {
             throw new IllegalArgumentException("downloadDir==null");
         }
-        this.test = test;
+        this.batchTestObject = batchTestObject;
+        this.testCase = batchTestObject.getTestCase();
+        if (this.testCase==null) {
+            throw new IllegalArgumentException("testCase==null");
+        }
         this.jobResult = jobResult;
         this.downloadDir = downloadDir;
         this.outputFilenames=_initOutputFilenames();
@@ -95,7 +101,7 @@ public class JobResultValidator {
             Assert.fail("downloadDir=null");
         }
         if (!downloadDir.exists()) {
-            boolean downloadDirCreated = downloadDir.mkdirs();
+            downloadDirCreated = downloadDir.mkdirs();
             if (!downloadDirCreated) {
                 Assert.fail("Unable to create local download directory for jobNumber="+jobResult.getJobNumber()+", downloadDir="+downloadDir.getAbsolutePath());
             }
@@ -105,7 +111,7 @@ public class JobResultValidator {
     
     private File getResultFile(String filename) {
         _initDownloadDir();
-        File file=downloadedResultFilesMap.get(filename);
+        File file=resultFilesMap.get(filename);
         if (file != null) {
             return file;
         }
@@ -115,7 +121,7 @@ public class JobResultValidator {
         catch (IOException e) {
             Assert.fail("Error downloading result file '"+filename+"': "+e.getLocalizedMessage());
         }
-        downloadedResultFilesMap.put(filename, file);
+        resultFilesMap.put(filename, file);
         return file;
     }
 
@@ -136,7 +142,7 @@ public class JobResultValidator {
         }
         if (resultFiles != null) {
             for(File file : resultFiles) {
-                downloadedResultFilesMap.put(file.getName(), file);
+                resultFilesMap.put(file.getName(), file);
             }
         }
         downloadedFiles=true;
@@ -189,7 +195,7 @@ public class JobResultValidator {
     }
     
     private void validateJobStatus() {
-        GpAssertions assertions = test.getAssertions();
+        GpAssertions assertions = testCase.getAssertions();
         //boolean hasStandardError = jobResult.hasStandardError();
         
         boolean actualHasStdError = jobResult.hasStandardError();
@@ -228,7 +234,7 @@ public class JobResultValidator {
         }
 
         //3) numFiles: ...
-        GpAssertions assertions = test.getAssertions();
+        GpAssertions assertions = testCase.getAssertions();
         if (assertions.getNumFiles() >= 0) {
             //initOutputFilenames();
             //Note: when numFiles < 0, it means don't run this assertion
@@ -271,13 +277,13 @@ public class JobResultValidator {
                     }
                     String diff = testFileObj.getDiff();
                     if (diff != null) {
-                        File expected = test.initFileFromPath(diff);
+                        File expected = testCase.initFileFromPath(diff);
                         //diff(expected,actual);
                         AbstractDiffTest diffTest = getDiff(testFileObj);
                         if (jobResult != null) {
                             diffTest.setJobId(""+jobResult.getJobNumber());
                         }
-                        diffTest.setInputDir(test.getInputdir());
+                        diffTest.setInputDir(testCase.getInputdir());
                         diffTest.setExpected(expected);
                         diffTest.setActual(actual);
                         diffTest.diff();
@@ -292,7 +298,7 @@ public class JobResultValidator {
                         if (numRows >= 0) {
                             nf.setExpectedNumRows(numRows);
                         }
-                        nf.setInputDir(test.getInputdir());
+                        nf.setInputDir(testCase.getInputdir());
                         nf.setActual(actual);
                         nf.diff();
                     }
@@ -324,8 +330,11 @@ public class JobResultValidator {
     
     private void cleanDownloadedFiles() {
         //only going to clean files which were downloaded within the validation step
-        List<File> not_deleted=new ArrayList<File>();
-        for(File file : downloadedResultFilesMap.values()) {
+        List<File> not_deleted=new ArrayList<File>(); 
+        
+        for(Entry<String,File> entry : resultFilesMap.entrySet()) {
+            String filename=entry.getKey();
+            File file=entry.getValue();
             if (file.isFile()) {
                 boolean success=file.delete();
                 if (!success) {
@@ -336,7 +345,6 @@ public class JobResultValidator {
                 not_deleted.add(file);
             }
         }
-        
         if (downloadDirCreated) {
             boolean success=downloadDir.delete();
             if (!success) {
@@ -347,41 +355,6 @@ public class JobResultValidator {
             Assert.fail("failed to clean up job result directory: "+downloadDir);
         }
     }
-    
-//    private boolean deleteDownloadedResultFiles() {
-//        //if (jobResult == null) {
-//        //    throw new IllegalArgumentException("jobResult==null");
-//        //}
-//        //if (jobResult.getJobNumber() < 0) {
-//        //    throw new IllegalArgumentException("jobNumber=="+jobResult.getJobNumber());
-//        //}
-//        //hard-coded path to root download dir
-//        //File downloadDir = new File(rootDownloadDir, ""+jobResult.getJobNumber());
-//        boolean success = deleteDir(downloadDir);
-//        //TODO: alert end-user or throw exception when we can't delete the result files
-//        return success;
-//    }
-    
-//    /**
-//     * Deletes all files and subdirectories under dir.
-//     * Returns true if all deletions were successful.
-//     * If a deletion fails, the method stops attempting to delete and returns false.
-//     * 
-//     * @param dir
-//     * @return
-//     */
-//    private static boolean deleteDir(File dir) {
-//        if (dir.isDirectory()) {
-//            for(String child : dir.list()) {
-//                boolean success = deleteDir(new File(dir, child));
-//                if (!success) {
-//                    return false;
-//                }
-//            }
-//        }
-//        // The directory is now empty so delete it
-//        return dir.delete();
-//    }
     
     private static Comparator<File> filenameComparator = new Comparator<File>() {
         public int compare(File arg0, File arg1) {
@@ -415,7 +388,7 @@ public class JobResultValidator {
         if (!expectedDir.isAbsolute()) {
             //it's relative to test.inputdir
             try {
-                expectedDir = new File( test.getInputdir(), expectedDir.getPath() ).getCanonicalFile();
+                expectedDir = new File( testCase.getInputdir(), expectedDir.getPath() ).getCanonicalFile();
             }
             catch (IOException e) {
                 Assert.fail("Error initializing expectedDir for '"+expectedDir.getPath()+"': "+e.getLocalizedMessage());
@@ -456,7 +429,7 @@ public class JobResultValidator {
             if (jobResult != null) {
                 diffTest.setJobId(""+jobResult.getJobNumber());
             }
-            diffTest.setInputDir(test.getInputdir());
+            diffTest.setInputDir(testCase.getInputdir());
             diffTest.setExpected(expected);
             diffTest.setActual(actual);
             diffTest.diff();
@@ -471,7 +444,7 @@ public class JobResultValidator {
         List<String> customDiffCmdArgs = null;
         //for debugging
         Object customDiffCmdObj = null;
-        GpAssertions assertions = test.getAssertions();
+        GpAssertions assertions = testCase.getAssertions();
 
         //1) if there is a custom diff cmd for the individual result file 
         if (resultFileObj != null && resultFileObj.getDiffCmdArgs() != null) {
