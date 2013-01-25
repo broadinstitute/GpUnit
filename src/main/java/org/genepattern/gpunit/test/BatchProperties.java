@@ -79,11 +79,9 @@ public class BatchProperties {
     }
     
     /**
-     * Get the parent directory into which to download result files for all gp-unit tests in this batch.
+     * Get a job result directory for the given testCase and jobResult.
+     * You download job result files from the server and into this directory.
      * 
-     *     gpunit.download.dir, default=./tmp/jobResults
-     *     gpunit.batch.name, default=latest
-     *     
      * Rule for creating the download directory for a test-case.
      *     if (batch.name is set) {
      *         <download.dir>/<batch.name>/<test.name | job.name>
@@ -92,7 +90,7 @@ public class BatchProperties {
      *         <download.dir>/<test.name | job.name>
      *     }
      *     
-     * @return a directory into which to download job results for the given completed 
+     * @return a directory into which to download job results for the given completed test
      */
     public File getJobResultDir(final ModuleTestObject testCase, final JobResult jobResult) throws GpUnitException {
         String dirname;
@@ -106,7 +104,6 @@ public class BatchProperties {
             throw new IllegalArgumentException("Can't create job result directory, testCase and jobResult are not set!");
         }
         
-        //File parentDir=initParentDir();
         File jobResultDir=new File(batchOutputDir, dirname);
         return jobResultDir;
     }
