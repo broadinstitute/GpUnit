@@ -46,12 +46,13 @@ public class Util {
         
         JobResultValidator validator = new JobResultValidator(testCase, jobResult, jobResultDir);
         validator.setSaveResultFiles(batch.getSaveDownloads());
+        validator.setDeleteCompletedJobs(batch.getDeleteJobs());
         try {
             validator.validate();
         }
         finally {
             if (jobResult != null) {
-                validator.clean();
+                validator.clean(runner);
             }
         }
     }

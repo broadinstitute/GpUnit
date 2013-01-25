@@ -20,6 +20,7 @@ public class BatchProperties {
     final static public String PROP_OUTPUT_DIR="gpunit.outputdir";
     final static public String PROP_BATCH_NAME="gpunit.batch.name";
     final static public String PROP_SAVE_DOWNLOADS="gpunit.save.downloads";
+    final static public String PROP_DELETE_JOBS="gpunit.delete.jobs";
     
     private String downloadDir="./tmp/jobResults";
     private String batchName="latest";
@@ -29,7 +30,13 @@ public class BatchProperties {
      * When this property is set to true, gp-unit will download all result files from the GP server
      * into a new directory on the local file system.
      */
-    boolean saveDownloads=false;
+    private boolean saveDownloads=false;
+    
+    /**
+     * By default delete the job from the GP server after each successful run of the test.
+     */
+    private boolean deleteJobs=true;
+    
     
     public BatchProperties() throws GpUnitException {
         //initialize values from system properties
@@ -37,13 +44,21 @@ public class BatchProperties {
         this.batchName=System.getProperty(PROP_BATCH_NAME, batchName);
         
         //options for handling result files
-        this.saveDownloads=Boolean.getBoolean(PROP_SAVE_DOWNLOADS);
-        
+        if (System.getProperties().containsKey(PROP_SAVE_DOWNLOADS)) {
+            this.saveDownloads=Boolean.getBoolean(PROP_SAVE_DOWNLOADS);
+        }
+        if (System.getProperties().containsKey(PROP_DELETE_JOBS)) {
+            this.deleteJobs=Boolean.getBoolean(PROP_DELETE_JOBS);
+        }
         this.batchOutputDir=_initBatchOutputDir();
     }
     
     public boolean getSaveDownloads() {
         return saveDownloads;
+    }
+    
+    public boolean getDeleteJobs() {
+        return deleteJobs;
     }
     
     private boolean createdBatchOutputDir=false;

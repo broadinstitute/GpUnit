@@ -16,6 +16,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.genepattern.gpunit.GpAssertions;
+import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.ModuleTestObject;
 import org.genepattern.gpunit.TestFileObj;
 import org.genepattern.gpunit.diff.AbstractDiffTest;
@@ -39,6 +40,7 @@ public class JobResultValidator {
     final private File downloadDir;
     final private List<String> outputFilenames;
     private boolean saveResultFiles=false;
+    private boolean deleteCompletedJobs=true;
 
     final private Map<String,File> downloadedResultFilesMap = new ConcurrentHashMap<String,File>();
     
@@ -61,8 +63,12 @@ public class JobResultValidator {
         this.outputFilenames=_initOutputFilenames();
     }
 
-    public void setSaveResultFiles(boolean b) {
+    public void setSaveResultFiles(final boolean b) {
         this.saveResultFiles=b;
+    }
+    
+    public void setDeleteCompletedJobs(final boolean b) {
+        this.deleteCompletedJobs=b;
     }
     
     private List<String> _initOutputFilenames() {
@@ -295,13 +301,25 @@ public class JobResultValidator {
         }
     }
 
-    public void clean() {
+    public void clean(final ModuleRunner runner) throws GpUnitException {
         //optionally, clean downloaded result files
         if (!saveResultFiles) {
             cleanDownloadedFiles();
         }
         //optionally, remove job from server
-        // TODO: implement this method
+        if (deleteCompletedJobs) {
+            deleteJob(runner);
+        }
+    }
+    
+    private void deleteJob(final ModuleRunner runner) throws GpUnitException {
+        if (jobResult==null) {
+            return;
+        }
+        if (jobResult.getJobNumber()<0) {
+            return;
+        }
+        runner.deleteJob(jobResult.getJobNumber());
     }
     
     private void cleanDownloadedFiles() {
@@ -328,11 +346,6 @@ public class JobResultValidator {
         if (not_deleted.size()>0) {
             Assert.fail("failed to clean up job result directory: "+downloadDir);
         }
-        
-        //boolean success = deleteDir(downloadDir);
-        //if (!success) {
-        //    Assert.fail("failed to clean up job result directory: "+downloadDir);
-        //}
     }
     
 //    private boolean deleteDownloadedResultFiles() {

@@ -48,6 +48,8 @@ report.dir: ${report.dir}
         <property name="gpunit.outputdir" value="./jobResults" />
         <property name="gpunit.batch.name" value="run_${DSTAMP}_${TSTAMP}" />
         <property name="gpunit.save.downloads" value="false" />
+        <property name="gpunit.delete.jobs" value="true" />
+        
     </target>
 
     <!-- in order to compile gp-unit, and to run gp-unit tests, must download the client library -->
@@ -121,6 +123,8 @@ report.dir: ${report.dir}
                 <sysproperty key="gpunit.outputdir" value="${gpunit.outputdir}" />
                 <sysproperty key="gpunit.batch.name" value="${gpunit.batch.name}" />
                 <sysproperty key="gpunit.save.downloads" value="${gpunit.save.downloads}" />
+                <sysproperty key="gpunit.delete.jobs" value="${gpunit.delete.jobs}" />
+                
             </junit>
 
             <junitreport todir="${report.dir}">
