@@ -34,12 +34,6 @@ public class Util {
         
         runTest(gpClient, batch, testObject.getTestCase());
     }
-    
-//    static private File getJobResultDir(final BatchRun batch, final ModuleTestObject testCase) {
-//        File parentDir=batch.getJobResultDir();
-//        File downloadDir=new File(parentDir,testCase.getName());
-//        return downloadDir;
-//    }
 
     static private void runTest(final GPClient gpClient, final BatchProperties batch, final ModuleTestObject testCase) throws GpUnitException, FileNotFoundException, AssertionError, Exception {
         ModuleRunner runner = new ModuleRunner(testCase);
@@ -48,19 +42,8 @@ public class Util {
         runner.runJobAndWait();
         JobResult jobResult = runner.getJobResult();
         
-        //optional properties for handling job result files
-        //File jobResultDir=batch.getJobResultDir();
-        //String rootDownloadDirProp;
-        //String batchNameProp;
-        //boolean deleteDownloadedResultFiles=true;
-        //boolean downloadAndKeepResultFiles=false;
-        
-        //if (System.getProperty("gpunit.rootDownloadDir") != null) {
-        //    validator.setRootDownloadDir(new File(System.getProperty("gpunit.rootDownloadDir")));
-        //}
         File jobResultDir=batch.getJobResultDir(testCase, jobResult);
         
-        //File jobResultDir=getJobResultDir(batch,testCase);
         JobResultValidator validator = new JobResultValidator(testCase, jobResult, jobResultDir);
         validator.setSaveResultFiles(batch.getSaveDownloads());
         try {
@@ -70,21 +53,8 @@ public class Util {
             if (jobResult != null) {
                 validator.clean();
             }
-            
-            
-            //if (isDeleteDownloadedResultFiles()) {
-            //    validator.clean();
-            //    if (jobResult != null) {
-            //        validator.deleteDownloadedResultFiles();
-            //    }
-            //}
         }
     }
-
-//    static private boolean isDeleteDownloadedResultFiles() {
-//        String prop = System.getProperty("gpunit.deleteDownloadedResultFiles", "true");
-//        return Boolean.valueOf(prop);
-//    }
 
     /**
      * Get the basename of the testcase file, only if the extension is 3 or 4 characters.
@@ -140,21 +110,4 @@ public class Util {
         return runner;
     }
     
-//    static public void main(String[] args) {
-//        String testFilepath = "./tests/protocols/01_Run/step1/test.yaml";
-//        if (args.length > 0) {
-//            //first arg is an optional test file
-//            testFilepath = args[0];
-//        }
-//        File testFile = new File(testFilepath);
-//        try {
-//            System.out.println("starting test "+testFile+" ... ");
-//            runTest(testFile);
-//            System.out.println("Success!");
-//        }
-//        catch (Throwable t) {
-//            System.err.println("Failure!");
-//            t.printStackTrace();
-//        }
-//    }
 }
