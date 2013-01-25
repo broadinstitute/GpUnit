@@ -37,7 +37,7 @@ public class BatchModuleTest {
     /**
      * This parameterized test runs a single unit test for each test case in the Collection.
      * Each Object[] instance in the collection is used to call the BatchModuleTest constructor,
-     *     e.g. new BatchModuleTest(Object[0], Object[1])
+     *     e.g. new BatchModuleTest(Object[0], Object[1], Object[2])
      */
     @Parameters(name="{1}")
     public static Collection<Object[]> data() {
