@@ -38,11 +38,14 @@ public class JobResultValidator {
 
     final private ModuleTestObject testCase;
     final private BatchModuleTestObject batchTestObject;
-    final private JobResult jobResult;
+    final private int jobNumber;
     final private File downloadDir;
     final private List<String> outputFilenames;
     private boolean saveResultFiles=false;
     private boolean deleteCompletedJobs=true;
+    final private boolean actualHasStdError;
+    
+    private JobResultDownloader downloader;
 
     final private Map<String,File> resultFilesMap = new ConcurrentHashMap<String,File>();
     
@@ -64,9 +67,28 @@ public class JobResultValidator {
         if (this.testCase==null) {
             throw new IllegalArgumentException("testCase==null");
         }
-        this.jobResult = jobResult;
         this.downloadDir = downloadDir;
-        this.outputFilenames=_initOutputFilenames();
+        this.jobNumber=jobResult.getJobNumber();
+        this.outputFilenames=_initOutputFilenames(jobResult);
+        this.actualHasStdError = jobResult.hasStandardError();
+        
+        this.downloader=_initJobResultDownloader(jobResult);
+    }
+    
+    private JobResultDownloader _initJobResultDownloader(final JobResult jobResult) {
+        return new JobResultDownloader() {
+
+            public File downloadFile(String filename, File downloadDir) throws IOException {
+                final File file = jobResult.downloadFile(filename, downloadDir.getAbsolutePath());
+                return file;
+            }
+
+            public File[] downloadFiles(File downloadDir) throws IOException {
+                //TODO: could be a lengthy operation, consider running in an interruptible thread
+                final File[] resultFiles=jobResult.downloadFiles(downloadDir.getAbsolutePath());
+                return resultFiles;
+            }
+        };
     }
 
     public void setSaveResultFiles(final boolean b) {
@@ -77,7 +99,7 @@ public class JobResultValidator {
         this.deleteCompletedJobs=b;
     }
     
-    private List<String> _initOutputFilenames() {
+    private List<String> _initOutputFilenames(final JobResult jobResult) {
         List<String> rval = new ArrayList<String>();
         for(String outputFilename : jobResult.getOutputFileNames() ) {
             rval.add( outputFilename );
@@ -103,7 +125,7 @@ public class JobResultValidator {
         if (!downloadDir.exists()) {
             downloadDirCreated = downloadDir.mkdirs();
             if (!downloadDirCreated) {
-                Assert.fail("Unable to create local download directory for jobNumber="+jobResult.getJobNumber()+", downloadDir="+downloadDir.getAbsolutePath());
+                Assert.fail("Unable to create local download directory for jobNumber="+jobNumber+", downloadDir="+downloadDir.getAbsolutePath());
             }
         }
         downloadDirInited=true;
@@ -116,7 +138,7 @@ public class JobResultValidator {
             return file;
         }
         try {
-            file = jobResult.downloadFile(filename, this.downloadDir.getAbsolutePath());
+            file = downloader.downloadFile(filename, this.downloadDir);
         }
         catch (IOException e) {
             Assert.fail("Error downloading result file '"+filename+"': "+e.getLocalizedMessage());
@@ -134,11 +156,10 @@ public class JobResultValidator {
         
         File[] resultFiles=null;
         try {
-            //TODO: could be a lengthy operation, consider running in an interruptible thread
-            resultFiles=jobResult.downloadFiles(downloadDir.getAbsolutePath());
+            resultFiles=downloader.downloadFiles(downloadDir);
         }
         catch (IOException e) {
-            Assert.fail("Exception thrown while downloading result files for jobNumber="+jobResult.getJobNumber()+": "+e.getLocalizedMessage());
+            Assert.fail("Exception thrown while downloading result files for jobNumber="+jobNumber+": "+e.getLocalizedMessage());
         }
         if (resultFiles != null) {
             for(File file : resultFiles) {
@@ -196,9 +217,7 @@ public class JobResultValidator {
     
     private void validateJobStatus() {
         GpAssertions assertions = testCase.getAssertions();
-        //boolean hasStandardError = jobResult.hasStandardError();
         
-        boolean actualHasStdError = jobResult.hasStandardError();
         boolean expectedHasStdError = false;
         if (assertions != null && assertions.getJobStatus().trim().length() > 0) {
             //check to see if it's a test-case with an expected stderr.txt output
@@ -207,13 +226,12 @@ public class JobResultValidator {
         
         //case 1: expecting stderr
         if (expectedHasStdError) {
-            Assert.assertTrue("job #"+jobResult.getJobNumber()+" doesn't have stderr.txt output", actualHasStdError);
+            Assert.assertTrue("job #"+jobNumber+" doesn't have stderr.txt output", actualHasStdError);
             return;
         }
         //case 2: unexpected stderr
         if (actualHasStdError && !expectedHasStdError) {
-            //URL stderrLink = jobResult.getURLForFileName("stderr.txt");
-            String junitMessage = "job #"+jobResult.getJobNumber()+" has stderr.txt output: ";
+            String junitMessage = "job #"+jobNumber+" has stderr.txt output: ";
             //try to download the error message
             String errorMessage = getErrorMessageFromStderrFile();
             junitMessage += NL + errorMessage;
@@ -223,7 +241,7 @@ public class JobResultValidator {
     
     public void validate() {
         //1) null jobResult
-        Assert.assertNotNull("jobResult is null", jobResult);
+        //Assert.assertNotNull("jobResult is null", jobResult);
         
         //2) job status
         validateJobStatus();
@@ -248,7 +266,7 @@ public class JobResultValidator {
             }
             catch (Throwable t) {
                     t.printStackTrace();
-                    Assert.fail("Error downloading result files for job='"+jobResult.getJobNumber()+"': "+t.getLocalizedMessage());
+                    Assert.fail("Error downloading result files for job='"+jobNumber+"': "+t.getLocalizedMessage());
             }
             File expectedOutputDir = assertions.getOutputDir();
             directoryDiff(expectedOutputDir, downloadDir);
@@ -280,9 +298,7 @@ public class JobResultValidator {
                         File expected = testCase.initFileFromPath(diff);
                         //diff(expected,actual);
                         AbstractDiffTest diffTest = getDiff(testFileObj);
-                        if (jobResult != null) {
-                            diffTest.setJobId(""+jobResult.getJobNumber());
-                        }
+                        diffTest.setJobId(""+jobNumber);
                         diffTest.setInputDir(testCase.getInputdir());
                         diffTest.setExpected(expected);
                         diffTest.setActual(actual);
@@ -319,13 +335,10 @@ public class JobResultValidator {
     }
     
     private void deleteJob(final ModuleRunner runner) throws GpUnitException {
-        if (jobResult==null) {
+        if (jobNumber<0) {
             return;
         }
-        if (jobResult.getJobNumber()<0) {
-            return;
-        }
-        runner.deleteJob(jobResult.getJobNumber());
+        runner.deleteJob(jobNumber);
     }
     
     private void cleanDownloadedFiles() {
@@ -426,9 +439,7 @@ public class JobResultValidator {
             File expected = expectedFilesMap.get(filename);
             //diff(expected,actual);
             AbstractDiffTest diffTest = getDiff( (TestFileObj) null);
-            if (jobResult != null) {
-                diffTest.setJobId(""+jobResult.getJobNumber());
-            }
+            diffTest.setJobId(""+jobNumber);
             diffTest.setInputDir(testCase.getInputdir());
             diffTest.setExpected(expected);
             diffTest.setActual(actual);
