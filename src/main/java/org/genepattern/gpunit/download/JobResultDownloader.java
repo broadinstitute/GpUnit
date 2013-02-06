@@ -1,4 +1,4 @@
-package org.genepattern.gpunit.yaml;
+package org.genepattern.gpunit.download;
 
 import java.io.File;
 import java.io.IOException;

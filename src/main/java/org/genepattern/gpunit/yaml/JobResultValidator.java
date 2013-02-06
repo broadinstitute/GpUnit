@@ -23,6 +23,8 @@ import org.genepattern.gpunit.diff.AbstractDiffTest;
 import org.genepattern.gpunit.diff.CmdLineDiff;
 import org.genepattern.gpunit.diff.NumRowsColsDiff;
 import org.genepattern.gpunit.diff.UnixCmdLineDiff;
+import org.genepattern.gpunit.download.JobResultDownloader;
+import org.genepattern.gpunit.download.soap.v1.DownloaderV1;
 import org.genepattern.gpunit.test.BatchModuleTestObject;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobResult;
@@ -37,7 +39,6 @@ public class JobResultValidator {
     final static String NL = System.getProperty("line.separator");
 
     final private ModuleTestObject testCase;
-    final private BatchModuleTestObject batchTestObject;
     final private int jobNumber;
     final private File downloadDir;
     final private List<String> outputFilenames;
@@ -62,7 +63,6 @@ public class JobResultValidator {
         if (downloadDir==null) {
             throw new IllegalArgumentException("downloadDir==null");
         }
-        this.batchTestObject = batchTestObject;
         this.testCase = batchTestObject.getTestCase();
         if (this.testCase==null) {
             throw new IllegalArgumentException("testCase==null");
@@ -72,23 +72,7 @@ public class JobResultValidator {
         this.outputFilenames=_initOutputFilenames(jobResult);
         this.actualHasStdError = jobResult.hasStandardError();
         
-        this.downloader=_initJobResultDownloader(jobResult);
-    }
-    
-    private JobResultDownloader _initJobResultDownloader(final JobResult jobResult) {
-        return new JobResultDownloader() {
-
-            public File downloadFile(String filename, File downloadDir) throws IOException {
-                final File file = jobResult.downloadFile(filename, downloadDir.getAbsolutePath());
-                return file;
-            }
-
-            public File[] downloadFiles(File downloadDir) throws IOException {
-                //TODO: could be a lengthy operation, consider running in an interruptible thread
-                final File[] resultFiles=jobResult.downloadFiles(downloadDir.getAbsolutePath());
-                return resultFiles;
-            }
-        };
+        this.downloader=new DownloaderV1(jobResult);
     }
 
     public void setSaveResultFiles(final boolean b) {
