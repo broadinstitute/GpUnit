@@ -43,7 +43,7 @@ public class Util {
         
         File jobResultDir=batchProps.getJobResultDir(testObject, jobResult);
         
-        JobResultValidator validator = new JobResultValidator(testObject, jobResult, jobResultDir);
+        JobResultValidator validator = new JobResultValidator(batchProps, testObject, jobResult, jobResultDir);
         validator.setSaveResultFiles(batchProps.getSaveDownloads());
         validator.setDeleteCompletedJobs(batchProps.getDeleteJobs());
         try {

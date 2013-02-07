@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.genepattern.client.GPClient;
 import org.genepattern.gpunit.GpAssertions;
 import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.ModuleTestObject;
@@ -24,8 +25,9 @@ import org.genepattern.gpunit.diff.CmdLineDiff;
 import org.genepattern.gpunit.diff.NumRowsColsDiff;
 import org.genepattern.gpunit.diff.UnixCmdLineDiff;
 import org.genepattern.gpunit.download.JobResultDownloader;
-import org.genepattern.gpunit.download.soap.v1.DownloaderV1;
+import org.genepattern.gpunit.download.soap.v2.DownloaderV2;
 import org.genepattern.gpunit.test.BatchModuleTestObject;
+import org.genepattern.gpunit.test.BatchProperties;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobResult;
 import org.junit.Assert;
@@ -50,7 +52,7 @@ public class JobResultValidator {
 
     final private Map<String,File> resultFilesMap = new ConcurrentHashMap<String,File>();
     
-    public JobResultValidator(final BatchModuleTestObject batchTestObject, final JobResult jobResult, final File downloadDir) {
+    public JobResultValidator(final BatchProperties props, final BatchModuleTestObject batchTestObject, final JobResult jobResult, final File downloadDir) {
         if (batchTestObject==null) {
             throw new IllegalArgumentException("batchTestObject==null");
         }
@@ -72,7 +74,7 @@ public class JobResultValidator {
         this.outputFilenames=_initOutputFilenames(jobResult);
         this.actualHasStdError = jobResult.hasStandardError();
         
-        this.downloader=new DownloaderV1(jobResult);
+        this.downloader=new DownloaderV2(props, jobResult);
     }
 
     public void setSaveResultFiles(final boolean b) {

@@ -3,7 +3,6 @@ package org.genepattern.gpunit.test;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -74,9 +73,8 @@ public class BatchModuleTest {
             testCases=BatchModuleUtil.data(fileset);
         }
         else {
-            //TODO: change this back to more generic path
             final String path="./tests/protocols";
-            //final String path="./tests/protocols/01_Run"; 
+            //final String path="./tests/testGpUnit"; 
             testCases=BatchModuleUtil.data(new File(path));
         }
         
@@ -98,8 +96,6 @@ public class BatchModuleTest {
 
     @BeforeClass 
     public static void beforeClass() throws GpUnitException {
-        //keep these settings
-
         //TODO: comment out all settings below this line, they are here for debugging
         //Note: to change the gp server and user account you have two choices:
         //   1) launch from ant, see build.xml, and set these properties, or

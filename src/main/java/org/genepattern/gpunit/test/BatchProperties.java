@@ -18,11 +18,19 @@ public class BatchProperties {
     }
     
     // list of properties, configurable via System.setProperty 
+    final static public String PROP_GP_URL="genePatternUrl";
+    final static public String PROP_GP_USERNAME="username";
+    final static public String PROP_GP_PASSWORD="password";
+    
     final static public String PROP_OUTPUT_DIR="gpunit.outputdir";
     final static public String PROP_BATCH_NAME="gpunit.batch.name";
     final static public String PROP_SAVE_DOWNLOADS="gpunit.save.downloads";
     final static public String PROP_DELETE_JOBS="gpunit.delete.jobs";
     
+    private String gpUrl = "http://127.0.0.1:8080";
+    private String gpUsername =  "test";
+    private String gpPassword = "test";
+
     private String outputDir="./jobResults";
     private String batchName="latest";
     
@@ -41,6 +49,16 @@ public class BatchProperties {
     
     public BatchProperties() throws GpUnitException {
         //initialize values from system properties
+        if (System.getProperties().containsKey(PROP_GP_URL)) {
+            this.gpUrl=System.getProperty(PROP_GP_URL);
+        }
+        if (System.getProperties().containsKey(PROP_GP_USERNAME)) {
+            this.gpUsername=System.getProperty(PROP_GP_USERNAME);
+        }
+        if (System.getProperties().containsKey(PROP_GP_PASSWORD)) {
+            this.gpPassword=System.getProperty(PROP_GP_PASSWORD);
+        }
+
         if (System.getProperties().containsKey(PROP_OUTPUT_DIR)) {
             this.outputDir=System.getProperty(PROP_OUTPUT_DIR, outputDir);
         }
@@ -55,6 +73,19 @@ public class BatchProperties {
             this.deleteJobs=Boolean.getBoolean(PROP_DELETE_JOBS);
         }
         this.batchOutputDir=_initBatchOutputDir();
+    }
+    
+
+    public String getGpUrl() {
+        return gpUrl;
+    }
+    
+    public String getGpUsername() {
+        return gpUsername;
+    }
+
+    public String getGpPassword() {
+        return gpPassword;
     }
     
     public boolean getSaveDownloads() {
