@@ -1,9 +1,10 @@
 package org.genepattern.gpunit.download;
 
 import java.io.File;
-import java.io.IOException;
+
+import org.genepattern.gpunit.GpUnitException;
 
 public interface JobResultDownloader {
-    File downloadFile(String filename, File downloadDir) throws IOException;
-    File[] downloadFiles(File downloadDir) throws IOException;
+    File downloadFile(String filename, File downloadDir) throws GpUnitException;
+    File[] downloadFiles(File downloadDir) throws GpUnitException;
 }

@@ -3,6 +3,7 @@ package org.genepattern.gpunit.download.soap.v1;
 import java.io.File;
 import java.io.IOException;
 
+import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.download.JobResultDownloader;
 import org.genepattern.webservice.JobResult;
 
@@ -19,14 +20,24 @@ public class DownloaderV1 implements JobResultDownloader {
         this.jobResult=jobResult;
     }
     
-    public File downloadFile(String filename, File downloadDir) throws IOException {
-        final File file = jobResult.downloadFile(filename, downloadDir.getAbsolutePath());
-        return file;
+    public File downloadFile(String filename, File downloadDir) throws GpUnitException {
+        try {
+            final File file = jobResult.downloadFile(filename, downloadDir.getAbsolutePath());
+            return file;
+        }
+        catch (Throwable t) {
+            throw new GpUnitException(t);
+        }
     }
 
-    public File[] downloadFiles(File downloadDir) throws IOException {
+    public File[] downloadFiles(File downloadDir) throws GpUnitException {
         //TODO: could be a lengthy operation, consider running in an interruptible thread
-        final File[] resultFiles=jobResult.downloadFiles(downloadDir.getAbsolutePath());
-        return resultFiles;
+        try {
+            final File[] resultFiles=jobResult.downloadFiles(downloadDir.getAbsolutePath());
+            return resultFiles;
+        }
+        catch (Throwable t) {
+            throw new GpUnitException(t);
+        } 
     }
 }

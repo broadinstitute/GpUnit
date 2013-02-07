@@ -1,12 +1,15 @@
 package org.genepattern.gpunit.download.soap.v2;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
+import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.download.JobResultDownloader;
 import org.genepattern.gpunit.test.BatchProperties;
 import org.genepattern.util.GPConstants;
@@ -22,33 +25,69 @@ import org.genepattern.webservice.JobResult;
 public class DownloaderV2 implements JobResultDownloader {
     final private BatchProperties props;
     final private int jobNumber;
-    final private String[] outputFileNames;
+    final private List<String> outputFileNames;
+    final private File downloadDir;
+    final private Map<String,File> resultFilesMap = new ConcurrentHashMap<String,File>();
     
-    public DownloaderV2(final BatchProperties props, final JobResult jobResult) {
+    public DownloaderV2(final File downloadDir, final BatchProperties props, final JobResult jobResult) {
+        this.downloadDir=downloadDir;
         this.props=props;
         this.jobNumber=jobResult.getJobNumber();
-        
-        int numFiles=jobResult.getOutputFileNames().length;
-        if (jobResult.hasStandardOut()) {
-            ++numFiles;
-        }
-        if (jobResult.hasStandardError()) {
-            ++numFiles;
-        }
-        this.outputFileNames=new String[numFiles];
-        int i=0;
-        for(final String filename : jobResult.getOutputFileNames()) {
-            this.outputFileNames[i++]=filename;
+        this.outputFileNames=_initOutputFilenames(jobResult);
+    }
+
+    private List<String> _initOutputFilenames(final JobResult jobResult) {
+        List<String> rval = new ArrayList<String>();
+        for(String outputFilename : jobResult.getOutputFileNames() ) {
+            rval.add( outputFilename );
         }
         if (jobResult.hasStandardOut()) {
-            this.outputFileNames[i++]=GPConstants.STDOUT;
+            rval.add( GPConstants.STDOUT );
         }
         if (jobResult.hasStandardError()) {
-            this.outputFileNames[i++]=GPConstants.STDERR;
-        }        
-     }
+            rval.add( GPConstants.STDERR );
+        }
+        return rval;
+    }
     
-    public File downloadFile(final String filename, final File downloadDir) throws IOException {
+    public int getNumResultFiles() {
+        return outputFileNames.size();
+    }
+    
+    public boolean hasResultFile(final String filename) {
+        return outputFileNames.contains(filename);
+    }
+
+    private boolean downloadDirInited=false;
+    private boolean downloadDirCreated=false;
+    private synchronized void _initDownloadDir() throws GpUnitException {
+        if (downloadDirInited) {
+            return;
+        }
+        if (downloadDir==null) {
+            throw new IllegalArgumentException("downloadDir=null");
+        }
+        if (!downloadDir.exists()) {
+            downloadDirCreated = downloadDir.mkdirs();
+            if (!downloadDirCreated) {
+                throw new GpUnitException("Unable to create local download directory for jobNumber="+jobNumber+", downloadDir="+downloadDir.getAbsolutePath());
+            }
+        }
+        downloadDirInited=true;
+    }
+
+    public File getResultFile(String filename) throws GpUnitException {
+        File file=resultFilesMap.get(filename);
+        if (file != null) {
+            return file;
+        }
+        file = downloadFile(filename, this.downloadDir);
+        resultFilesMap.put(filename, file);
+        return file;
+    }
+    
+    public File downloadFile(final String filename, final File downloadDir) throws GpUnitException {
+        _initDownloadDir();
         final File toFile=new File(downloadDir, filename);
         final String encodedFilename=encodeURIcomponent(filename);
         
@@ -62,11 +101,31 @@ public class DownloaderV2 implements JobResultDownloader {
             server=server.substring(0, server.length()-3);
         }
         JobDownloader d = new JobDownloader(server, props.getGpUsername(), props.getGpPassword());
-        d.download(url, toFile);
-        return toFile;
+        try {
+            d.download(url, toFile);
+            return toFile;
+        }
+        catch (Throwable t) {
+            throw new GpUnitException(t);
+        }
+    }
+    
+    private boolean downloadedFiles=false;
+    public synchronized void downloadResultFiles() throws GpUnitException {
+        if (downloadedFiles) {
+            return;
+        } 
+        File[] resultFiles=downloadFiles(downloadDir);
+        if (resultFiles != null) {
+            for(File file : resultFiles) {
+                resultFilesMap.put(file.getName(), file);
+            }
+        }
+        downloadedFiles=true;
     }
 
-    public File[] downloadFiles(final File downloadDir) throws IOException {
+
+    public File[] downloadFiles(final File downloadDir) throws GpUnitException {
         //TODO: could be a lengthy operation, consider running in an interruptible thread
         final List<File> downloadedFiles=new ArrayList<File>();
         for(final String filename : outputFileNames) {
@@ -83,7 +142,6 @@ public class DownloaderV2 implements JobResultDownloader {
             encoded = URLEncoder.encode(str, "UTF-8");
         }
         catch (UnsupportedEncodingException e) {
-            //log.error("UnsupportedEncodingException for enc=UTF-8", e);
             encoded = URLEncoder.encode(str);
         }
         
@@ -92,5 +150,32 @@ public class DownloaderV2 implements JobResultDownloader {
         return encoded;
     }
 
+    public void cleanDownloadedFiles() throws Exception {
+        //only going to clean files which were downloaded within the validation step
+        List<File> not_deleted=new ArrayList<File>(); 
+        
+        for(Entry<String,File> entry : resultFilesMap.entrySet()) {
+            String filename=entry.getKey();
+            File file=entry.getValue();
+            if (file.isFile()) {
+                boolean success=file.delete();
+                if (!success) {
+                    not_deleted.add(file);
+                }
+            }
+            else {
+                not_deleted.add(file);
+            }
+        }
+        if (downloadDirCreated) {
+            boolean success=downloadDir.delete();
+            if (!success) {
+                not_deleted.add(downloadDir);
+            }
+        }
+        if (not_deleted.size()>0) {
+            throw new Exception("failed to clean up job result directory: "+downloadDir);
+        }
+    }
 
 }

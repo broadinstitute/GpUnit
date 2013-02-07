@@ -13,9 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
 
-import org.genepattern.client.GPClient;
 import org.genepattern.gpunit.GpAssertions;
 import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.ModuleTestObject;
@@ -24,11 +22,9 @@ import org.genepattern.gpunit.diff.AbstractDiffTest;
 import org.genepattern.gpunit.diff.CmdLineDiff;
 import org.genepattern.gpunit.diff.NumRowsColsDiff;
 import org.genepattern.gpunit.diff.UnixCmdLineDiff;
-import org.genepattern.gpunit.download.JobResultDownloader;
 import org.genepattern.gpunit.download.soap.v2.DownloaderV2;
 import org.genepattern.gpunit.test.BatchModuleTestObject;
 import org.genepattern.gpunit.test.BatchProperties;
-import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobResult;
 import org.junit.Assert;
 
@@ -43,14 +39,11 @@ public class JobResultValidator {
     final private ModuleTestObject testCase;
     final private int jobNumber;
     final private File downloadDir;
-    final private List<String> outputFilenames;
     private boolean saveResultFiles=false;
     private boolean deleteCompletedJobs=true;
     final private boolean actualHasStdError;
     
-    private JobResultDownloader downloader;
-
-    final private Map<String,File> resultFilesMap = new ConcurrentHashMap<String,File>();
+    private DownloaderV2 downloader;
     
     public JobResultValidator(final BatchProperties props, final BatchModuleTestObject batchTestObject, final JobResult jobResult, final File downloadDir) {
         if (batchTestObject==null) {
@@ -71,10 +64,9 @@ public class JobResultValidator {
         }
         this.downloadDir = downloadDir;
         this.jobNumber=jobResult.getJobNumber();
-        this.outputFilenames=_initOutputFilenames(jobResult);
         this.actualHasStdError = jobResult.hasStandardError();
         
-        this.downloader=new DownloaderV2(props, jobResult);
+        this.downloader=new DownloaderV2(downloadDir, props, jobResult);
     }
 
     public void setSaveResultFiles(final boolean b) {
@@ -85,76 +77,6 @@ public class JobResultValidator {
         this.deleteCompletedJobs=b;
     }
     
-    private List<String> _initOutputFilenames(final JobResult jobResult) {
-        List<String> rval = new ArrayList<String>();
-        for(String outputFilename : jobResult.getOutputFileNames() ) {
-            rval.add( outputFilename );
-        }
-        if (jobResult.hasStandardOut()) {
-            rval.add( GPConstants.STDOUT );
-        }
-        if (jobResult.hasStandardError()) {
-            rval.add( GPConstants.STDERR );
-        }
-        return rval;
-    }
-    
-    private boolean downloadDirInited=false;
-    private boolean downloadDirCreated=false;
-    private synchronized void _initDownloadDir() {
-        if (downloadDirInited) {
-            return;
-        }
-        if (downloadDir==null) {
-            Assert.fail("downloadDir=null");
-        }
-        if (!downloadDir.exists()) {
-            downloadDirCreated = downloadDir.mkdirs();
-            if (!downloadDirCreated) {
-                Assert.fail("Unable to create local download directory for jobNumber="+jobNumber+", downloadDir="+downloadDir.getAbsolutePath());
-            }
-        }
-        downloadDirInited=true;
-    }
-    
-    private File getResultFile(String filename) {
-        _initDownloadDir();
-        File file=resultFilesMap.get(filename);
-        if (file != null) {
-            return file;
-        }
-        try {
-            file = downloader.downloadFile(filename, this.downloadDir);
-        }
-        catch (IOException e) {
-            Assert.fail("Error downloading result file '"+filename+"': "+e.getLocalizedMessage());
-        }
-        resultFilesMap.put(filename, file);
-        return file;
-    }
-
-    private boolean downloadedFiles=false;
-    private synchronized void downloadResultFiles() {
-        if (downloadedFiles) {
-            return;
-        }
-        _initDownloadDir();
-        
-        File[] resultFiles=null;
-        try {
-            resultFiles=downloader.downloadFiles(downloadDir);
-        }
-        catch (IOException e) {
-            Assert.fail("Exception thrown while downloading result files for jobNumber="+jobNumber+": "+e.getLocalizedMessage());
-        }
-        if (resultFiles != null) {
-            for(File file : resultFiles) {
-                resultFilesMap.put(file.getName(), file);
-            }
-        }
-        downloadedFiles=true;
-    }
-
     /**
      * Read the error message by downloading 'stderr.txt' result file and returning 
      * a String containing the first MAX_N lines of the file.
@@ -165,7 +87,7 @@ public class JobResultValidator {
         String errorMessage="";
         File stderrFile = null;
         try {
-            stderrFile = this.getResultFile("stderr.txt");
+            stderrFile=downloader.getResultFile("stderr.txt");
         }
         catch (Throwable t) {
             errorMessage = "There was an error downloading 'stderr.txt': "+t.getLocalizedMessage();
@@ -234,21 +156,25 @@ public class JobResultValidator {
         
         //if necessary, download result files
         if (this.saveResultFiles) {
-            downloadResultFiles();
+            try {
+                downloader.downloadResultFiles();
+            }
+            catch (Exception e) {
+                Assert.fail(e.getLocalizedMessage());
+            }
         }
 
         //3) numFiles: ...
         GpAssertions assertions = testCase.getAssertions();
         if (assertions.getNumFiles() >= 0) {
-            //initOutputFilenames();
             //Note: when numFiles < 0, it means don't run this assertion
-            Assert.assertEquals("Number of result files", assertions.getNumFiles(), outputFilenames.size());
+            Assert.assertEquals("Number of result files", assertions.getNumFiles(), downloader.getNumResultFiles());
         }
 
         //4) outputDir: ...
         if (assertions.getOutputDir() != null) {
             try {
-                downloadResultFiles();
+                downloader.downloadResultFiles();
             }
             catch (Throwable t) {
                     t.printStackTrace();
@@ -267,13 +193,13 @@ public class JobResultValidator {
             //}
             for(Entry<String,TestFileObj> entry : assertions.getFiles().entrySet()) {
                 String filename = entry.getKey();
-                Assert.assertTrue("Expecting result file named '"+filename+"'", outputFilenames.contains(filename));
+                Assert.assertTrue("Expecting result file named '"+filename+"'", downloader.hasResultFile(filename));
                 TestFileObj testFileObj = entry.getValue();
                 if (testFileObj != null) {
                     //need to download the file ...
                     File actual = null;
                     try {
-                        actual = this.getResultFile(filename);
+                        actual = downloader.getResultFile(filename);
                     }
                     catch (Throwable t) {
                         t.printStackTrace();
@@ -312,7 +238,12 @@ public class JobResultValidator {
     public void clean(final ModuleRunner runner) throws GpUnitException {
         //optionally, clean downloaded result files
         if (!saveResultFiles) {
-            cleanDownloadedFiles();
+            try {
+                downloader.cleanDownloadedFiles();
+            }
+            catch (Exception e) {
+                Assert.fail(e.getLocalizedMessage());
+            }
         }
         //optionally, remove job from server
         if (deleteCompletedJobs) {
@@ -325,34 +256,6 @@ public class JobResultValidator {
             return;
         }
         runner.deleteJob(jobNumber);
-    }
-    
-    private void cleanDownloadedFiles() {
-        //only going to clean files which were downloaded within the validation step
-        List<File> not_deleted=new ArrayList<File>(); 
-        
-        for(Entry<String,File> entry : resultFilesMap.entrySet()) {
-            String filename=entry.getKey();
-            File file=entry.getValue();
-            if (file.isFile()) {
-                boolean success=file.delete();
-                if (!success) {
-                    not_deleted.add(file);
-                }
-            }
-            else {
-                not_deleted.add(file);
-            }
-        }
-        if (downloadDirCreated) {
-            boolean success=downloadDir.delete();
-            if (!success) {
-                not_deleted.add(downloadDir);
-            }
-        }
-        if (not_deleted.size()>0) {
-            Assert.fail("failed to clean up job result directory: "+downloadDir);
-        }
     }
     
     private static Comparator<File> filenameComparator = new Comparator<File>() {
