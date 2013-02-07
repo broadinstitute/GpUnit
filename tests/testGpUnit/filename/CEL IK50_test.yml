@@ -1,0 +1,10 @@
+#
+# input and output file with special character in name
+#
+module: ConvertLineEndings
+params: 
+    input.filename: !!java.io.File "input_files/CEL IK50.gct"
+assertions:
+    files:
+        "CEL IK50.cvt.gct":
+            diff: "output_files/CEL IK50.cvt.gct"

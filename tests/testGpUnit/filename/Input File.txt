@@ -1,0 +1,4 @@
+Here is an input file.
+It has some lines.
+This is another line.
+This is an other line.

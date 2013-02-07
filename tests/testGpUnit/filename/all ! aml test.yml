@@ -1,0 +1,12 @@
+#
+# test special character in input and output file name
+#
+module: ConvertLineEndings
+params: 
+    # upload the input file from the test-case directory, Must use '!!java.io.File' qualifier to let gp-unit
+    # know that this is a local file rather than a server file path 
+    input.filename: !!java.io.File "input_files/all ! aml test.cls"
+assertions:
+    files:
+        "all ! aml test.cvt.cls":
+            diff: "output_files/all ! aml test.cvt.cls"

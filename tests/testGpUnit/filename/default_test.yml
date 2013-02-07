@@ -1,0 +1,12 @@
+#
+# test input and output file with space character in name
+#
+module: ConvertLineEndings
+params: 
+    # upload the input file from the test-case directory, Must use '!!java.io.File' qualifier to let gp-unit
+    # know that this is a local file rather than a server file path 
+    input.filename: !!java.io.File "Input File.txt"
+assertions:
+    files:
+        "Input File.cvt.txt":
+            diff: "Input File.cvt.txt"
