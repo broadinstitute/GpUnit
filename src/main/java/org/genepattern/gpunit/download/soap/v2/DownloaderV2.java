@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.genepattern.gpunit.download.JobResultDownloader;
 import org.genepattern.gpunit.test.BatchProperties;
+import org.genepattern.util.GPConstants;
 import org.genepattern.util.JobDownloader;
 import org.genepattern.webservice.JobResult;
 
@@ -26,8 +27,26 @@ public class DownloaderV2 implements JobResultDownloader {
     public DownloaderV2(final BatchProperties props, final JobResult jobResult) {
         this.props=props;
         this.jobNumber=jobResult.getJobNumber();
-        this.outputFileNames=jobResult.getOutputFileNames();
-    }
+        
+        int numFiles=jobResult.getOutputFileNames().length;
+        if (jobResult.hasStandardOut()) {
+            ++numFiles;
+        }
+        if (jobResult.hasStandardError()) {
+            ++numFiles;
+        }
+        this.outputFileNames=new String[numFiles];
+        int i=0;
+        for(final String filename : jobResult.getOutputFileNames()) {
+            this.outputFileNames[i++]=filename;
+        }
+        if (jobResult.hasStandardOut()) {
+            this.outputFileNames[i++]=GPConstants.STDOUT;
+        }
+        if (jobResult.hasStandardError()) {
+            this.outputFileNames[i++]=GPConstants.STDERR;
+        }        
+     }
     
     public File downloadFile(final String filename, final File downloadDir) throws IOException {
         final File toFile=new File(downloadDir, filename);
