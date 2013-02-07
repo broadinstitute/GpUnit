@@ -14,7 +14,7 @@ import org.genepattern.webservice.JobResult;
  * @author pcarr
  *
  */
-public class DownloaderV1 implements JobResultDownloader {
+public class DownloaderV1 {
     final private JobResult jobResult;
     public DownloaderV1(final JobResult jobResult) {
         this.jobResult=jobResult;

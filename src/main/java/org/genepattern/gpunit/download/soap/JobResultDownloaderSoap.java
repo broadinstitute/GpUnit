@@ -1,4 +1,4 @@
-package org.genepattern.gpunit.download.soap.v2;
+package org.genepattern.gpunit.download.soap;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
@@ -18,18 +18,19 @@ import org.genepattern.webservice.JobResult;
 
 /**
  * Updated job result downloader, with bug fix for special characters in job result filenames.
+ * This uses the SOAP API for downloading result files.
  * 
  * @author pcarr
  *
  */
-public class DownloaderV2 implements JobResultDownloader {
+public class JobResultDownloaderSoap implements JobResultDownloader {
     final private BatchProperties props;
     final private int jobNumber;
     final private List<String> outputFileNames;
     final private File downloadDir;
     final private Map<String,File> resultFilesMap = new ConcurrentHashMap<String,File>();
     
-    public DownloaderV2(final File downloadDir, final BatchProperties props, final JobResult jobResult) {
+    public JobResultDownloaderSoap(final File downloadDir, final BatchProperties props, final JobResult jobResult) {
         this.downloadDir=downloadDir;
         this.props=props;
         this.jobNumber=jobResult.getJobNumber();
@@ -86,7 +87,7 @@ public class DownloaderV2 implements JobResultDownloader {
         return file;
     }
     
-    public File downloadFile(final String filename, final File downloadDir) throws GpUnitException {
+    private File downloadFile(final String filename, final File downloadDir) throws GpUnitException {
         _initDownloadDir();
         final File toFile=new File(downloadDir, filename);
         final String encodedFilename=encodeURIcomponent(filename);
@@ -125,7 +126,7 @@ public class DownloaderV2 implements JobResultDownloader {
     }
 
 
-    public File[] downloadFiles(final File downloadDir) throws GpUnitException {
+    private File[] downloadFiles(final File downloadDir) throws GpUnitException {
         //TODO: could be a lengthy operation, consider running in an interruptible thread
         final List<File> downloadedFiles=new ArrayList<File>();
         for(final String filename : outputFileNames) {
@@ -150,7 +151,7 @@ public class DownloaderV2 implements JobResultDownloader {
         return encoded;
     }
 
-    public void cleanDownloadedFiles() throws Exception {
+    public void cleanDownloadedFiles() throws GpUnitException {
         //only going to clean files which were downloaded within the validation step
         List<File> not_deleted=new ArrayList<File>(); 
         
@@ -174,7 +175,7 @@ public class DownloaderV2 implements JobResultDownloader {
             }
         }
         if (not_deleted.size()>0) {
-            throw new Exception("failed to clean up job result directory: "+downloadDir);
+            throw new GpUnitException("failed to clean up job result directory: "+downloadDir);
         }
     }
 

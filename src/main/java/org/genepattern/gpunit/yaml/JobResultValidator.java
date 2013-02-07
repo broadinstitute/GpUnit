@@ -22,7 +22,8 @@ import org.genepattern.gpunit.diff.AbstractDiffTest;
 import org.genepattern.gpunit.diff.CmdLineDiff;
 import org.genepattern.gpunit.diff.NumRowsColsDiff;
 import org.genepattern.gpunit.diff.UnixCmdLineDiff;
-import org.genepattern.gpunit.download.soap.v2.DownloaderV2;
+import org.genepattern.gpunit.download.JobResultDownloader;
+import org.genepattern.gpunit.download.soap.JobResultDownloaderSoap;
 import org.genepattern.gpunit.test.BatchModuleTestObject;
 import org.genepattern.gpunit.test.BatchProperties;
 import org.genepattern.webservice.JobResult;
@@ -43,7 +44,7 @@ public class JobResultValidator {
     private boolean deleteCompletedJobs=true;
     final private boolean actualHasStdError;
     
-    private DownloaderV2 downloader;
+    private JobResultDownloader downloader;
     
     public JobResultValidator(final BatchProperties props, final BatchModuleTestObject batchTestObject, final JobResult jobResult, final File downloadDir) {
         if (batchTestObject==null) {
@@ -66,7 +67,7 @@ public class JobResultValidator {
         this.jobNumber=jobResult.getJobNumber();
         this.actualHasStdError = jobResult.hasStandardError();
         
-        this.downloader=new DownloaderV2(downloadDir, props, jobResult);
+        this.downloader=new JobResultDownloaderSoap(downloadDir, props, jobResult);
     }
 
     public void setSaveResultFiles(final boolean b) {
