@@ -11,10 +11,10 @@ import org.genepattern.gpunit.test.BatchProperties;
 import org.genepattern.webservice.JobResult;
 
 public class Util {
-    static public void runTest(GPClient gpClient, BatchModuleTestObject testObject) throws GpUnitException, FileNotFoundException, AssertionError, Exception {
+    static public void runTest(final GPClient gpClient, final BatchModuleTestObject testObject) throws GpUnitException, FileNotFoundException, AssertionError, Exception {
         runTest(gpClient, null, testObject);
     }
-    static public void runTest(GPClient gpClient, BatchProperties batchProps, BatchModuleTestObject testObject) throws GpUnitException, FileNotFoundException, AssertionError, Exception {
+    static public void runTest(final GPClient gpClient, final BatchProperties batchProps, final BatchModuleTestObject testObject) throws GpUnitException, FileNotFoundException, AssertionError, Exception {
         if (gpClient == null) {
             throw new GpUnitException("gpClient is null");
         }
@@ -36,8 +36,8 @@ public class Util {
         }
 
         ModuleRunner runner = new ModuleRunner(testObject.getTestCase());
-        
         runner.setGpClient(gpClient);
+        runner.setBatchProperties(batchProps);
         runner.runJobAndWait();
         JobResult jobResult = runner.getJobResult();
         
@@ -114,6 +114,5 @@ public class Util {
         ModuleRunner runner = new ModuleRunner(testCase);
         runner.setGpClient(ModuleRunner.initGpClient());
         return runner;
-    }
-    
+    }    
 }
