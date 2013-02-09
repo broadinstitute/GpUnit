@@ -209,7 +209,6 @@ public class JobResultValidator {
                     String diff = testFileObj.getDiff();
                     if (diff != null) {
                         File expected = testCase.initFileFromPath(diff);
-                        //diff(expected,actual);
                         AbstractDiffTest diffTest = getDiff(testFileObj);
                         diffTest.setJobId(""+jobNumber);
                         diffTest.setInputDir(testCase.getInputdir());
