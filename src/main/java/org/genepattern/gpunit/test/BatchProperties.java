@@ -17,6 +17,16 @@ public class BatchProperties {
         }
     }
     
+    public static boolean isSet(final String val) {
+        if (val==null) {
+            return false;
+        }
+        if (val.length()==0) {
+            return false;
+        }
+        return true;
+    }
+    
     // list of properties, configurable via System.setProperty 
     final static public String PROP_GP_URL="genePatternUrl";
     final static public String PROP_GP_USERNAME="username";
@@ -27,12 +37,18 @@ public class BatchProperties {
     final static public String PROP_SAVE_DOWNLOADS="gpunit.save.downloads";
     final static public String PROP_DELETE_JOBS="gpunit.delete.jobs";
     
+    final static public String PROP_LOCAL_PATH_PREFIX="gpunit.local.path.prefix";
+    final static public String PROP_SERVER_PATH_PREFIX="gpunit.server.path.prefix";
+    
     private String gpUrl = "http://127.0.0.1:8080";
     private String gpUsername =  "test";
     private String gpPassword = "test";
 
     private String outputDir="./jobResults";
     private String batchName="latest";
+    
+    private String localPathPrefix=null;
+    private String serverPathPrefix=null;
     
     /**
      * By default delete downloaded result files, which also means "only download files when needed".
@@ -65,6 +81,11 @@ public class BatchProperties {
         if (System.getProperties().containsKey(PROP_BATCH_NAME)) {
             this.batchName=System.getProperty(PROP_BATCH_NAME, batchName);
         }
+        
+        //options for handling input files
+        this.localPathPrefix=System.getProperty(PROP_LOCAL_PATH_PREFIX);
+        this.serverPathPrefix=System.getProperty(PROP_SERVER_PATH_PREFIX);
+        
         //options for handling result files
         if (System.getProperties().containsKey(PROP_SAVE_DOWNLOADS)) {
             this.saveDownloads=Boolean.getBoolean(PROP_SAVE_DOWNLOADS);
@@ -94,6 +115,14 @@ public class BatchProperties {
     
     public boolean getDeleteJobs() {
         return deleteJobs;
+    }
+    
+    public String getLocalPathPrefix() {
+        return localPathPrefix;
+    }
+    
+    public String getServerPathPrefix() {
+        return serverPathPrefix;
     }
     
     private boolean createdBatchOutputDir=false;
