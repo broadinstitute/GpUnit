@@ -50,6 +50,9 @@ report.dir: ${report.dir}
         <property name="gpunit.save.downloads" value="false" />
         <property name="gpunit.delete.jobs" value="true" />
         
+        <property name="gpunit.upload.dir" value="" />
+        <property name="gpunit.server.dir" value="" />
+        
     </target>
 
     <!-- in order to compile gp-unit, and to run gp-unit tests, must download the client library -->
@@ -125,6 +128,8 @@ report.dir: ${report.dir}
                 <sysproperty key="gpunit.save.downloads" value="${gpunit.save.downloads}" />
                 <sysproperty key="gpunit.delete.jobs" value="${gpunit.delete.jobs}" />
                 
+                <sysproperty key="gpunit.upload.dir" value="${gpunit.upload.dir}" />
+                <sysproperty key="gpunit.server.dir" value="${gpunit.server.dir}" />
             </junit>
 
             <junitreport todir="${report.dir}">

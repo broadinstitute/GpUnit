@@ -74,7 +74,7 @@ public class BatchModuleTest {
         }
         else {
             final String path="./tests/protocols";
-            //final String path="./tests/testGpUnit"; 
+            //final String path="./tests/testGpUnit/filepath/upload"; 
             testCases=BatchModuleUtil.data(new File(path));
         }
         
@@ -113,6 +113,9 @@ public class BatchModuleTest {
         //System.setProperty(BatchProperties.PROP_OUTPUT_DIR, "./jobResults"); 
         //System.setProperty(BatchProperties.PROP_BATCH_NAME, "run-"+new Date().getTime()); 
         //System.setProperty(BatchProperties.PROP_SAVE_DOWNLOADS, "false"); 
+        
+        //System.setProperty(BatchProperties.PROP_UPLOAD_DIR, "./tests/testGpUnit/filepath/input");
+        //System.setProperty(BatchProperties.PROP_SERVER_DIR, "/xchip/gpdev/shared_data/gp_unit/filepath");
 
         gpClient = ModuleRunner.initGpClient();
         batchProps = BatchProperties.Factory.initFromProps();

@@ -32,13 +32,32 @@ public class BatchProperties {
     final static public String PROP_GP_USERNAME="username";
     final static public String PROP_GP_PASSWORD="password";
     
+    /** the location on the local file system for downloading job result files */
     final static public String PROP_OUTPUT_DIR="gpunit.outputdir";
+    /** optionally, download job result files into a directory, based on batch.name, e.g.,
+     * <pre>
+     *  <gpunit.outputdir>/<gpunit.batchname> 
+     * </pre>
+     */
     final static public String PROP_BATCH_NAME="gpunit.batch.name";
+    /**
+     * When this is set to true, always download result files to the local file system.
+     */
     final static public String PROP_SAVE_DOWNLOADS="gpunit.save.downloads";
+    /**
+     * When this is set, delete jobs from the server for all succesfully completed test cases.
+     */
     final static public String PROP_DELETE_JOBS="gpunit.delete.jobs";
-    
-    final static public String PROP_LOCAL_PATH_PREFIX="gpunit.local.path.prefix";
-    final static public String PROP_SERVER_PATH_PREFIX="gpunit.server.path.prefix";
+
+    //
+    // for handling file uploads ...
+    //
+    /**
+     * 
+     */
+    final static public String PROP_UPLOAD_DIR="gpunit.upload.dir";
+    final static public String PROP_SERVER_DIR="gpunit.server.dir";
+    final static public String PROP_DIFF_DIR="gpunit.diff.dir";
     
     private String gpUrl = "http://127.0.0.1:8080";
     private String gpUsername =  "test";
@@ -47,8 +66,8 @@ public class BatchProperties {
     private String outputDir="./jobResults";
     private String batchName="latest";
     
-    private String localPathPrefix=null;
-    private String serverPathPrefix=null;
+    private String uploadDir=null;
+    private String serverDir=null;
     
     /**
      * By default delete downloaded result files, which also means "only download files when needed".
@@ -83,8 +102,8 @@ public class BatchProperties {
         }
         
         //options for handling input files
-        this.localPathPrefix=System.getProperty(PROP_LOCAL_PATH_PREFIX);
-        this.serverPathPrefix=System.getProperty(PROP_SERVER_PATH_PREFIX);
+        this.uploadDir=System.getProperty(PROP_UPLOAD_DIR);
+        this.serverDir=System.getProperty(PROP_SERVER_DIR);
         
         //options for handling result files
         if (System.getProperties().containsKey(PROP_SAVE_DOWNLOADS)) {
@@ -117,12 +136,12 @@ public class BatchProperties {
         return deleteJobs;
     }
     
-    public String getLocalPathPrefix() {
-        return localPathPrefix;
+    public String getUploadDir() {
+        return uploadDir;
     }
     
-    public String getServerPathPrefix() {
-        return serverPathPrefix;
+    public String getServerDir() {
+        return serverDir;
     }
     
     private boolean createdBatchOutputDir=false;

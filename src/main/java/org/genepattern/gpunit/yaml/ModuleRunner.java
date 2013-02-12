@@ -258,8 +258,8 @@ If the value is a fully qualified path, e.g. /MyData/input.txt
                 }
                 
                 //b) else if 'local.path.prefix' is set AND if <local.path.prefix>/<relativepath> exists, upload it
-                if (BatchProperties.isSet(props.getLocalPathPrefix())) {
-                    final File localDir=new File(props.getLocalPathPrefix());
+                if (BatchProperties.isSet(props.getUploadDir())) {
+                    final File localDir=new File(props.getUploadDir());
                     final File relativeToLocalPathPrefix = new File(localDir, file.getPath());
                     if (relativeToLocalPathPrefix.exists()) {
                         return new Parameter( pName, relativeToLocalPathPrefix );
@@ -267,8 +267,8 @@ If the value is a fully qualified path, e.g. /MyData/input.txt
                 }
 
                 //c) else if 'server.path.prefix' is set, literal path '<server.path.prefix>/<relativepath>
-                if (BatchProperties.isSet(props.getServerPathPrefix())) {
-                    final File serverDir=new File(props.getServerPathPrefix());
+                if (BatchProperties.isSet(props.getServerDir())) {
+                    final File serverDir=new File(props.getServerDir());
                     final File serverPath=new File(serverDir, file.getPath());
                     return new Parameter( pName, serverPath.getPath() );
                 }
