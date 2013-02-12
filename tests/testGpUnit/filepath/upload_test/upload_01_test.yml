@@ -1,0 +1,10 @@
+#
+# upload from test file directory
+#
+module: ConvertLineEndings
+params: 
+    input.filename: "upload_file_01.txt"
+assertions:
+    files:
+        "upload_file_01.cvt.txt":
+            diff: "upload_file_01.cvt.txt"

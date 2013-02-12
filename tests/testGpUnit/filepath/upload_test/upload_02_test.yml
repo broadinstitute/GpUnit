@@ -1,0 +1,13 @@
+#
+# upload from gpunit.upload.dir
+#
+# Must set 'gpunit.upload.dir' to local directory which contains
+# the 'upload_file_02.txt' file
+#
+module: ConvertLineEndings
+params: 
+    input.filename: "upload_file_02.txt"
+assertions:
+    files:
+        "upload_file_02.cvt.txt":
+            diff: "upload_file_02.cvt.txt"
