@@ -102,67 +102,6 @@ public class InputFileUtil {
         if (isInputFile) {
             final String inputFileValue=getParamValueForInputFile(props, test, pName, pValue);
             return inputFileValue;
-//            //0) if it's a URL
-//            if (pValue instanceof String) {
-//                try {
-//                    URL url = new URL( (String) pValue);
-//                    //it's a url
-//                    return (String) pValue;
-//                }
-//                catch (MalformedURLException e) {
-//                    //it's not a URL, continue
-//                }
-//            }
-//
-//            final File file;
-//            if (pValue instanceof File) {
-//                file = (File) pValue;
-//            }
-//            else if (pValue instanceof String) {
-//                file = new File((String)pValue);
-//            }
-//            else {
-//                //TODO: error, invalid type
-//                throw new IllegalArgumentException("invalid type for "+pName+"="+pValue+", type is "+pValue.getClass().getName());
-//            }
-//
-//            //1) if it's a fully qualified path:
-//            if (file.isAbsolute()) {
-//                //a) if the file exists locally, upload it
-//                if (file.exists()) {
-//                    //it's a local file, upload it
-//                    return file.getCanonicalPath();
-//                }
-//                //b) else, it's a server file path, pass by reference
-//                return file.getPath();
-//            }
-//
-//            //2) otherwise ... it's a relative path
-//            //a) if the file exists relative to the directory which contains the test-case file, upload it
-//            final File relativeToInputDir = new File( test.getInputdir(), file.getPath() ).getCanonicalFile();
-//            if (relativeToInputDir.exists()) {
-//                //it's a local file, upload it
-//                return relativeToInputDir.getCanonicalPath();
-//            }
-//
-//            //b) else if 'local.path.prefix' is set AND if <local.path.prefix>/<relativepath> exists, upload it
-//            if (BatchProperties.isSet(props.getUploadDir())) {
-//                final File localDir=new File(props.getUploadDir());
-//                final File relativeToLocalPathPrefix = new File(localDir, file.getPath());
-//                if (relativeToLocalPathPrefix.exists()) {
-//                    return relativeToLocalPathPrefix.getCanonicalPath();
-//                }
-//            }
-//
-//            //c) else if 'server.path.prefix' is set, literal path '<server.path.prefix>/<relativepath>
-//            if (BatchProperties.isSet(props.getServerDir())) {
-//                final File serverDir=new File(props.getServerDir());
-//                final File serverPath=new File(serverDir, file.getPath());
-//                return serverPath.getPath();
-//            }
-//
-//            //d) else [WARNING!] ... literal value
-//            return file.getPath();
         }
 
         return pValue.toString();
