@@ -27,10 +27,18 @@ public class BatchProperties {
         return true;
     }
     
+    enum GpUnitClient {
+        SOAP,
+        REST,
+    }
+    
     // list of properties, configurable via System.setProperty 
     final static public String PROP_GP_URL="genePatternUrl";
     final static public String PROP_GP_USERNAME="username";
     final static public String PROP_GP_PASSWORD="password";
+    
+    /** type of client, can be 'soap', 'rest', or 'localexec' */
+    final static public String PROP_CLIENT="gpunit.client";
     
     /** the location on the local file system for downloading job result files */
     final static public String PROP_OUTPUT_DIR="gpunit.outputdir";
@@ -63,6 +71,8 @@ public class BatchProperties {
     private String gpUsername =  "test";
     private String gpPassword = "test";
 
+    private GpUnitClient client=GpUnitClient.SOAP;
+
     private String outputDir="./jobResults";
     private String batchName="latest";
     
@@ -93,7 +103,13 @@ public class BatchProperties {
         if (System.getProperties().containsKey(PROP_GP_PASSWORD)) {
             this.gpPassword=System.getProperty(PROP_GP_PASSWORD);
         }
-
+        String clientStr=System.getProperty(PROP_CLIENT, GpUnitClient.SOAP.toString());
+        try {
+            client=GpUnitClient.valueOf(clientStr);
+        }
+        catch (Throwable t) {
+            throw new GpUnitException("Error initializing client from "+PROP_CLIENT+"="+clientStr+": "+t.getLocalizedMessage());
+        }
         if (System.getProperties().containsKey(PROP_OUTPUT_DIR)) {
             this.outputDir=System.getProperty(PROP_OUTPUT_DIR, outputDir);
         }
@@ -126,6 +142,10 @@ public class BatchProperties {
 
     public String getGpPassword() {
         return gpPassword;
+    }
+    
+    public GpUnitClient getClient() {
+        return client;
     }
     
     public boolean getSaveDownloads() {

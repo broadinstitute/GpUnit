@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 
 import org.genepattern.client.GPClient;
 import org.genepattern.gpunit.GpUnitException;
+import org.genepattern.gpunit.exec.rest.JobRunnerRest;
 import org.genepattern.gpunit.yaml.ModuleRunner;
 import org.genepattern.gpunit.yaml.Util;
 import org.genepattern.util.junit.Parallelized;
@@ -75,6 +76,7 @@ public class BatchModuleTest {
         else {
             final String path="./tests/protocols";
             //final String path="./tests/testGpUnit/filepath/upload"; 
+            //final String path="./tests/testRestClient"; 
             testCases=BatchModuleUtil.data(new File(path));
         }
         
@@ -106,9 +108,12 @@ public class BatchModuleTest {
         //final String gpUrl="http://gpdev.broadinstitute.org";
         //final String gpUrl="http://127.0.0.1:8080";
         
-        //System.setProperty("genePatternUrl", gpUrl);
-        //System.setProperty("username", "jntest");
-        //System.setProperty("password", "jntest"); 
+        //System.setProperty(BatchProperties.PROP_GP_URL, gpUrl);
+        //System.setProperty(BatchProperties.PROP_GP_USERNAME, "test");
+        //System.setProperty(BatchProperties.PROP_GP_PASSWORD, "test");
+        
+        //System.setProperty(BatchProperties.PROP_CLIENT, BatchProperties.GpUnitClient.REST.toString());
+
 
         //System.setProperty(BatchProperties.PROP_OUTPUT_DIR, "./jobResults"); 
         //System.setProperty(BatchProperties.PROP_BATCH_NAME, "run-"+new Date().getTime()); 
@@ -153,6 +158,13 @@ public class BatchModuleTest {
 
     @Test
     public void runJobAndWait() throws Exception {
+        //short-circuit test and submit a job via new REST API
+        if (batchProps.getClient().equals(BatchProperties.GpUnitClient.REST)) {
+            JobRunnerRest runner=new JobRunnerRest(batchProps,testObj.getTestCase());
+            runner.submitJob();
+            return;
+        }
+        
         Util.runTest(gpClient,batchProps,testObj);
     }
 
