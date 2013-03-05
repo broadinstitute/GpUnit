@@ -9,7 +9,7 @@ import java.util.List;
  * A gpunit test can optionally declare a list of expected result files. Each of those expected result files
  * can optionally declare a diff function.
  * 
- * Create a concrete subclass of this abtract class in order to customize the diff algorithm. This is required
+ * Create a concrete subclass of this abstract class in order to customize the diff algorithm. This is required
  * for example if you want your diff test to account for arbitrary ordering of elements in the result file,
  * or if you want to provide a tolerance when comparing numerical values.
  * 
