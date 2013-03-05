@@ -1,0 +1,8 @@
+{"lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00020:4", 
+ "params": [
+          {"name": "input.filename", "values": [
+                   "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct"] },
+          {"name": "threshold.and.filter", "values": [
+                   "1"] }
+  ]
+}
