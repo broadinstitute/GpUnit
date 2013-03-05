@@ -15,6 +15,7 @@ import org.genepattern.gpunit.yaml.ModuleRunner;
 import org.genepattern.gpunit.yaml.Util;
 import org.genepattern.util.junit.Parallelized;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -56,6 +57,12 @@ public class BatchModuleTest {
      */
     @Parameters(name="{1}")
     public static Collection<Object[]> data() throws GpUnitException {
+        //TODO: set debug=false before checking in, it's here for debugging new gp-unit features
+        final boolean debug=false;
+        if (debug) {
+            initDebug();
+        }
+        
         String numThreadsProp = System.getProperty("junit.parallel.threads");
         if (numThreadsProp == null) {
             System.setProperty("junit.parallel.threads", "32");
@@ -74,9 +81,7 @@ public class BatchModuleTest {
             testCases=BatchModuleUtil.data(fileset);
         }
         else {
-            final String path="./tests/protocols";
-            //final String path="./tests/testGpUnit/filepath/upload"; 
-            //final String path="./tests/testRestClient"; 
+            final String path="./tests/protocols"; 
             testCases=BatchModuleUtil.data(new File(path));
         }
         
@@ -96,32 +101,57 @@ public class BatchModuleTest {
         return testCases;
     }
 
-    @BeforeClass 
-    public static void beforeClass() throws GpUnitException {
-        //TODO: comment out all settings below this line, they are here for debugging
-        //Note: to change the gp server and user account you have two choices:
-        //   1) launch from ant, see build.xml, and set these properties, or
-        //   2) for debugging from an IDE, set some system properties
-        
-        //final String gpUrl="http://genepattern.broadinstitute.org";
+    private static void initDebug() {
+        //initRestTest();
+        initDiffTest();
+    }
+
+    /**
+     * Helper class for initializing properties when launching gp-unit tests from a debugger.
+     * For example, when developing new gp-unit features from an Eclipse IDE.
+     *  
+     * @param gpUrl
+     * @param user
+     * @param password
+     * @param testDir
+     */
+    private static void _debugInitDefault() {
+        final String gpUrl="http://genepattern.broadinstitute.org";
+        //final String gpUrl="http://gpbroad.broadinstitute.org";
         //final String gpUrl="http://genepatternbeta.broadinstitute.org";
         //final String gpUrl="http://gpdev.broadinstitute.org";
         //final String gpUrl="http://127.0.0.1:8080";
         
-        //System.setProperty(BatchProperties.PROP_GP_URL, gpUrl);
-        //System.setProperty(BatchProperties.PROP_GP_USERNAME, "test");
-        //System.setProperty(BatchProperties.PROP_GP_PASSWORD, "test");
+        final String gpUser="test";
+        final String gpPass="test";
         
-        //System.setProperty(BatchProperties.PROP_CLIENT, BatchProperties.GpUnitClient.REST.toString());
+        System.setProperty(BatchProperties.PROP_GP_URL, gpUrl);
+        System.setProperty(BatchProperties.PROP_GP_USERNAME, gpUser);
+        System.setProperty(BatchProperties.PROP_GP_PASSWORD, gpPass);
 
-
+        System.setProperty(BatchProperties.PROP_CLIENT, BatchProperties.GpUnitClient.SOAP.toString());
+        System.setProperty(BatchProperties.PROP_SAVE_DOWNLOADS, "true");
+        System.setProperty(BatchProperties.PROP_DELETE_JOBS, "false");
         //System.setProperty(BatchProperties.PROP_OUTPUT_DIR, "./jobResults"); 
         //System.setProperty(BatchProperties.PROP_BATCH_NAME, "run-"+new Date().getTime()); 
-        //System.setProperty(BatchProperties.PROP_SAVE_DOWNLOADS, "false"); 
         
-        //System.setProperty(BatchProperties.PROP_UPLOAD_DIR, "./tests/testGpUnit/filepath/input");
-        //System.setProperty(BatchProperties.PROP_SERVER_DIR, "/xchip/gpdev/shared_data/gp_unit/filepath");
+        //System.setProperty(PROP_TESTCASE_DIRS, "./tests/protocols");
+        System.setProperty(PROP_TESTCASE_DIRS, "./tests/protocols/01_Run");
+    }
+    
+    private static void initRestTest() {
+        _debugInitDefault();
+        System.setProperty(BatchProperties.PROP_CLIENT, BatchProperties.GpUnitClient.REST.toString());
+        System.setProperty(PROP_TESTCASE_DIRS, "./tests/testRestClient");
+    }
 
+    private static void initDiffTest() {
+        _debugInitDefault();
+        System.setProperty(PROP_TESTCASE_DIRS, "./tests/DiffTest");
+    }
+
+    @BeforeClass 
+    public static void beforeClass() throws GpUnitException {
         gpClient = ModuleRunner.initGpClient();
         batchProps = BatchProperties.Factory.initFromProps();
     }
@@ -155,17 +185,22 @@ public class BatchModuleTest {
         this.testname = testname;
         this.testObj = testObj;
     }
-
+    
     @Test
     public void runJobAndWait() throws Exception {
-        //short-circuit test and submit a job via new REST API
-        if (batchProps.getClient().equals(BatchProperties.GpUnitClient.REST)) {
-            JobRunnerRest runner=new JobRunnerRest(batchProps,testObj.getTestCase());
-            runner.submitJob();
-            return;
+        try {
+            //short-circuit test and submit a job via new REST API
+            if (batchProps.getClient().equals(BatchProperties.GpUnitClient.REST)) {
+                JobRunnerRest runner=new JobRunnerRest(batchProps,testObj.getTestCase());
+                runner.submitJob();
+                return;
+            }
+
+            Util.runTest(gpClient,batchProps,testObj);
         }
-        
-        Util.runTest(gpClient,batchProps,testObj);
+        catch (Throwable t) {
+            Assert.fail(t.getLocalizedMessage());
+        }
     }
 
 }
