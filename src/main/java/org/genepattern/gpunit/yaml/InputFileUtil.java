@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.genepattern.client.GPClient;
+import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.ModuleTestObject;
 import org.genepattern.gpunit.test.BatchProperties;
 import org.genepattern.webservice.Parameter;
@@ -62,23 +63,32 @@ public class InputFileUtil {
         return taskInfo;
     }
 
-    public Parameter initParam(final ModuleTestObject test, final Entry<String,Object> paramEntry) throws IOException, FileNotFoundException {
+    public Parameter initParam(final ModuleTestObject test, final Entry<String,Object> paramEntry) 
+    throws GpUnitException
+    {
         String pName = paramEntry.getKey();
         String pValue=getParamValue(test, paramEntry);
         return new Parameter(pName, pValue);
     }
 
-    public String getParamValue(final ModuleTestObject test, final Entry<String,Object> paramEntry) throws IOException, FileNotFoundException {
+    public String getParamValue(final ModuleTestObject test, final Entry<String,Object> paramEntry) 
+    throws GpUnitException 
+    {
         final String pName = paramEntry.getKey();
         final ParameterInfo pinfo=getParameterInfo(pName);
         return getParamValue(props, pinfo, test, paramEntry);
     }
 
-    public static String getParamValue(final BatchProperties props, final ParameterInfo pinfo, final ModuleTestObject test, final Entry<String,Object> paramEntry) throws IOException, FileNotFoundException {
+    public static String getParamValue(final BatchProperties props, final ParameterInfo pinfo, final ModuleTestObject test, final Entry<String,Object> paramEntry) 
+            throws GpUnitException
+    {
         boolean isInputFile;
         if (pinfo==null) {
             //TODO log error message
             isInputFile=false;
+            
+            //hard-coded, only works for PreprocessDataset 
+            isInputFile="input.filename".equals(paramEntry.getKey());
         }
         else {
             isInputFile=pinfo.isInputFile();
@@ -86,8 +96,9 @@ public class InputFileUtil {
         return getParamValue(props, isInputFile, test, paramEntry);
     }
 
-    public static String getParamValue(final BatchProperties props, final boolean isInputFile, final ModuleTestObject test, final Entry<String,Object> paramEntry) throws IOException, FileNotFoundException {
-        String pName = paramEntry.getKey();
+    public static String getParamValue(final BatchProperties props, final boolean isInputFile, final ModuleTestObject test, final Entry<String,Object> paramEntry) 
+    throws GpUnitException
+    {
         Object pValue = paramEntry.getValue();
 
         if (pValue == null) {
@@ -100,14 +111,22 @@ public class InputFileUtil {
 
         //special handling for input files
         if (isInputFile) {
-            final String inputFileValue=getParamValueForInputFile(props, test, pName, pValue);
-            return inputFileValue;
+            try {
+                final String inputFileValue=getParamValueForInputFile(props, test, pValue);
+                return inputFileValue;
+            }
+            catch (Throwable t) {
+                String pName = paramEntry.getKey();
+                throw new GpUnitException("Error setting value for "+pName+"='"+pValue+"': "+t.getLocalizedMessage());
+            }
         }
 
         return pValue.toString();
     }
 
-    public static String getParamValueForInputFile(final BatchProperties props, final ModuleTestObject test, final String pName, final Object pValue) throws IOException, FileNotFoundException {
+    public static String getParamValueForInputFile(final BatchProperties props, final ModuleTestObject test, final Object pValue) 
+    throws IOException 
+            {
         //special handling for input files
         //0) if it's a URL
         if (pValue instanceof String) {
@@ -128,9 +147,9 @@ public class InputFileUtil {
         else if (pValue instanceof String) {
             file = new File((String)pValue);
         }
+        //TODO: add support for lists
         else {
-            //TODO: error, invalid type
-            throw new IllegalArgumentException("invalid type for "+pName+"="+pValue+", type is "+pValue.getClass().getName());
+            throw new IllegalArgumentException("Must be a File or a String, type="+pValue.getClass().getName());
         }
 
         //1) if it's a fully qualified path:

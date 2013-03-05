@@ -135,7 +135,8 @@ public class ModuleRunner {
     }
     
     static private Parameter[] initParams(final GPClient gpClient, final BatchProperties batchProps, final String nameOrLsid, final ModuleTestObject test) 
-            throws IOException, FileNotFoundException, WebServiceException {
+            throws WebServiceException, GpUnitException
+    {
         InputFileUtil ifutil=new InputFileUtil(gpClient, batchProps, nameOrLsid);
         List<Parameter> params = new ArrayList<Parameter>();
         for(Entry<String,Object> entry : test.getParams().entrySet()) {
