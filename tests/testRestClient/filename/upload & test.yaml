@@ -1,0 +1,14 @@
+# Module: PreprocessDataset urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00020:4
+module: urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00020:4
+params:
+    input.filename: "./input_files/all & aml test.gct"
+    threshold.and.filter: "1"
+    floor: "20"
+    ceiling: "20000"
+    min.fold.change: "3"
+    min.delta: "100"
+    num.outliers.to.exclude: "0"
+    row.normalization: "0"
+    row.sampling.rate: "1"
+    log2.transform: "0"
+    output.file.format: "3"
