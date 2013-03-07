@@ -1,6 +1,5 @@
 # Module: PreprocessDataset urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00020:4
-#module: urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00020:4
-module: PreprocessDataset
+module: urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00020:4
 params:
     input.filename: all_aml_test.gct
     threshold.and.filter: "1"

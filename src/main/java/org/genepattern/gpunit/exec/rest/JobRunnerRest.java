@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Collections;
@@ -71,7 +70,7 @@ public class JobRunnerRest {
         Set<String> inputFileParams=new HashSet<String>();
         //TODO: load the ParameterInfo so that we can handle file uploads and substitutions
         //TODO: implement this method, at the moment it is hard-coded and only works for PreprocessDataset
-        if ("PreprocessDataset".equals(test.getModule())) {
+        if ("urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00020:4".equals(test.getModule())) {
             inputFileParams.add("input.filename");
         }
         
