@@ -28,7 +28,6 @@ import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.ModuleTestObject;
 import org.genepattern.gpunit.test.BatchProperties;
 import org.genepattern.gpunit.yaml.InputFileUtil;
-import org.genepattern.webservice.ParameterInfo;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -142,22 +141,24 @@ public class JobRunnerRest {
        }
      * </pre>
      */
-    private JSONObject initJsonObject() throws JSONException, IOException {
+    private JSONObject initJsonObject(final Map<String,URL> file_map) throws JSONException, IOException {
         JSONObject obj=new JSONObject();
         String lsid = test.getModule();
         obj.put("lsid", lsid);
         JSONArray params=new JSONArray();
         for(Entry<String,Object> paramEntry : test.getParams().entrySet()) {
-            //TODO: load the ParameterInfo so that we can handle file uploads and substitutions
-            final ParameterInfo pinfo=null;
-            String value=InputFileUtil.getParamValueForInputFile(batchProps, test, paramEntry.getValue());
-            
-            //if it's a local file, upload it and save the URL
-            
-            //String value=InputFileUtil.getParamValue(batchProps, pinfo, test, paramEntry);
-            //JSONArray arr=new JSONArray();
+            final String pname=paramEntry.getKey();
+            final String value;
+            if (file_map.containsKey(pname)) {
+                value=file_map.get(pname).toExternalForm();
+            }
+            else {
+                //TODO: change method, this is getting the value for all input parameter types, including text
+                value=InputFileUtil.getParamValueForInputFile(batchProps, test, paramEntry.getValue());
+            }
+
             JSONObject paramObj=new JSONObject();
-            paramObj.put("name", paramEntry.getKey());
+            paramObj.put("name", pname);
             JSONArray valuesArr=new JSONArray();
             valuesArr.put(value);
             paramObj.put("values", valuesArr);
@@ -287,7 +288,7 @@ public class JobRunnerRest {
         final Map<String,URL> file_map=uploadFiles();
         
         
-        JSONObject job = initJsonObject();
+        JSONObject job = initJsonObject(file_map);
         post.setEntity(new StringEntity(job.toString()));
 
         HttpResponse response = client.execute(post);
