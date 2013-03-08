@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Collections;
@@ -17,9 +18,12 @@ import java.util.Set;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpMessage;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.FileEntity;
 import org.apache.http.entity.StringEntity;
@@ -31,6 +35,7 @@ import org.genepattern.gpunit.yaml.InputFileUtil;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 
 /**
@@ -189,7 +194,7 @@ public class JobRunnerRest {
         return uploadFile(localFile);        
     }
     
-    private HttpPost setAuthHeaders(HttpPost post) {
+    private HttpMessage setAuthHeaders(HttpMessage message) {
         //for basic auth, use a header like this
         //Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==
         String orig = batchProps.getGpUsername()+":"+batchProps.getGpPassword();
@@ -199,11 +204,19 @@ public class JobRunnerRest {
         //System.out.println("Base64 Encoded String : " + new String(encoded));
 
         final String basicAuth="Basic "+new String(encoded);
-        post.setHeader("Authorization", basicAuth);
-        post.setHeader("Content-type", "application/json");
-        post.setHeader("Accept", "application/json");
+        message.setHeader("Authorization", basicAuth);
+        message.setHeader("Content-type", "application/json");
+        message.setHeader("Accept", "application/json");
         
-        return post;
+        return message;
+    }
+
+    private HttpGet setAuthHeaders(HttpGet get) {
+        return (HttpGet) setAuthHeaders((HttpMessage)get);
+    }
+
+    private HttpPost setAuthHeaders(HttpPost post) {
+        return (HttpPost) setAuthHeaders((HttpMessage)post);
     }
     
     private URL uploadFile(File localFile) throws GpUnitException {
@@ -231,8 +244,6 @@ public class JobRunnerRest {
         urlStr+="?name="+encFilename; 
         HttpPost post = new HttpPost(urlStr);
         post = setAuthHeaders(post);
-        //post.setHeader("Content-Length", ""+localFile.length());
-        //post.set
         FileEntity entity = new FileEntity(localFile, "binary/octet-stream");
         post.setEntity(entity);
         HttpResponse response = null;
@@ -265,23 +276,10 @@ public class JobRunnerRest {
         throw new GpUnitException("Unexpected error uploading file '"+localFile.getAbsolutePath()+"'");
     }
 
-    public String submitJob() throws JSONException, UnsupportedEncodingException, IOException, Exception {
+    public URI submitJob() throws JSONException, UnsupportedEncodingException, IOException, Exception {
         HttpClient client = new DefaultHttpClient();
         HttpPost post = new HttpPost(addJobUrl.toExternalForm());
         post = setAuthHeaders(post);
-        
-//        //for basic auth, use a header like this
-//        //Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==
-//        String orig = batchProps.getGpUsername()+":"+batchProps.getGpPassword();
-//        //encoding  byte array into base 64
-//        byte[] encoded = Base64.encodeBase64(orig.getBytes());
-//        //System.out.println("Original String: " + orig );
-//        //System.out.println("Base64 Encoded String : " + new String(encoded));
-//
-//        final String basicAuth="Basic "+new String(encoded);
-//        post.setHeader("Authorization", basicAuth);
-//        post.setHeader("Content-type", "application/json");
-//        post.setHeader("Accept", "application/json");
         
         // upload data files, for each file input parameter, if it's a local file, upload it and save the URL
         // use that url as the value when adding the job to GP
@@ -309,12 +307,60 @@ public class JobRunnerRest {
             throw new Exception(message);
         }
         
-        BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-        String line = "";
-        while ((line = rd.readLine()) != null) {
-            System.out.println(line);
+        String jobLocation=null;
+        Header[] locations=response.getHeaders("Location");
+        if (locations.length > 0) {
+            jobLocation=locations[0].getValue();
         }
-        return "-1";
+        if (jobLocation==null) {
+            throw new Exception("Missing required response header: Location");
+        }
+        URI jobUri=new URI(jobLocation);
+        return jobUri;
+    }
+    
+    public JSONObject getJob(final URI jobUri) throws Exception {
+        HttpClient client = new DefaultHttpClient();
+        //String urlStr=getJobUrl.toExternalForm()+"/"+jobId;
+        
+        HttpGet get = new HttpGet(jobUri);
+        get = setAuthHeaders(get);
+        
+        HttpResponse response=client.execute(get);
+        final int statusCode=response.getStatusLine().getStatusCode();
+        final boolean success;
+        if (statusCode >= 200 && statusCode < 300) {
+            success=true;
+        }
+        else {
+            success=false;
+        }
+        if (!success) {
+            String message="GET "+jobUri.toString()+" failed! "+statusCode+": "+response.getStatusLine().getReasonPhrase();
+            //String message="GET "+urlStr+" failed! "+statusCode+": "+response.getStatusLine().getReasonPhrase();
+            throw new Exception(message);
+        }
+        
+        HttpEntity entity = response.getEntity();
+        if (entity == null) {
+            //the response should contain an entity
+            throw new Exception("The response should contain an entity");
+        }
+
+        BufferedReader reader=null;
+        try {
+            reader=new BufferedReader(
+                    new InputStreamReader( response.getEntity().getContent() ));
+            JSONTokener jsonTokener=new JSONTokener(reader);
+            JSONObject job=new JSONObject(jsonTokener);
+            return job;
+        }
+        finally {
+            if (reader != null) {
+                reader.close();
+            }
+        }
+        
     }
 
 }

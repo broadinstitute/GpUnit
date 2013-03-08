@@ -1,6 +1,7 @@
 package org.genepattern.gpunit.test;
 
 import java.io.File;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -14,6 +15,7 @@ import org.genepattern.gpunit.exec.rest.JobRunnerRest;
 import org.genepattern.gpunit.yaml.ModuleRunner;
 import org.genepattern.gpunit.yaml.Util;
 import org.genepattern.util.junit.Parallelized;
+import org.json.JSONObject;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -102,8 +104,8 @@ public class BatchModuleTest {
     }
 
     private static void initDebug() {
-        //initRestTest();
-        initDiffTest();
+        initRestTest();
+        //initDiffTest();
     }
 
     /**
@@ -116,11 +118,11 @@ public class BatchModuleTest {
      * @param testDir
      */
     private static void _debugInitDefault() {
-        final String gpUrl="http://genepattern.broadinstitute.org";
+        //final String gpUrl="http://genepattern.broadinstitute.org";
         //final String gpUrl="http://gpbroad.broadinstitute.org";
         //final String gpUrl="http://genepatternbeta.broadinstitute.org";
         //final String gpUrl="http://gpdev.broadinstitute.org";
-        //final String gpUrl="http://127.0.0.1:8080";
+        final String gpUrl="http://127.0.0.1:8080";
         
         final String gpUser="test";
         final String gpPass="test";
@@ -142,7 +144,7 @@ public class BatchModuleTest {
     private static void initRestTest() {
         _debugInitDefault();
         System.setProperty(BatchProperties.PROP_CLIENT, BatchProperties.GpUnitClient.REST.toString());
-        System.setProperty(PROP_TESTCASE_DIRS, "./tests/testRestClient");
+        System.setProperty(PROP_TESTCASE_DIRS, "./tests/testRestClient/filename");
     }
 
     private static void initDiffTest() {
@@ -189,10 +191,25 @@ public class BatchModuleTest {
     @Test
     public void runJobAndWait() throws Exception {
         try {
-            //short-circuit test and submit a job via new REST API
+            //submit a job via new REST API
             if (batchProps.getClient().equals(BatchProperties.GpUnitClient.REST)) {
                 JobRunnerRest runner=new JobRunnerRest(batchProps,testObj.getTestCase());
-                runner.submitJob();
+                //1) run the job
+                final URI jobUri=runner.submitJob();
+
+                //2) poll for job completion
+                JSONObject job=runner.getJob(jobUri);
+                boolean isFinished=job.getBoolean("isFinished");
+                
+                if (!isFinished) {
+                    //TODO: poll for job completion
+                }
+                
+                //3) validate job results 
+                boolean hasError=job.getBoolean("hasError");
+                if (hasError) {
+                    throw new Exception("job hasError");
+                }
                 return;
             }
 
