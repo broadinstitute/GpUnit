@@ -16,7 +16,6 @@
     <available property="gp-client-lib-exists" file="${client.lib.dir}/GenePattern.jar" />
     <property name="report.dir" value="reports" />
     
-
     <path id="gp.client.classpath">
         <pathelement location="${client.lib.dir}/GenePattern.jar" />
         <fileset dir="${client.lib.dir}/lib">
@@ -45,6 +44,7 @@ report.dir: ${report.dir}
         <mkdir dir="${report.dir}" />
         
         <!-- initialize properties for a batch run -->
+        <property name="gpunit.client" value="SOAP" />
         <property name="gpunit.outputdir" value="./jobResults" />
         <property name="gpunit.batch.name" value="run_${DSTAMP}_${TSTAMP}" />
         <property name="gpunit.save.downloads" value="false" />
@@ -123,6 +123,7 @@ report.dir: ${report.dir}
                 <sysproperty key="username" value="${gp.user}" />
                 <sysproperty key="password" value="${gp.password}" />
                 
+                <sysproperty key="gpunit.client" value="${gpunit.client}" />
                 <sysproperty key="gpunit.outputdir" value="${gpunit.outputdir}" />
                 <sysproperty key="gpunit.batch.name" value="${gpunit.batch.name}" />
                 <sysproperty key="gpunit.save.downloads" value="${gpunit.save.downloads}" />
