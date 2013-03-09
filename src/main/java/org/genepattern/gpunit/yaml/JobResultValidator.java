@@ -93,6 +93,18 @@ public class JobResultValidator {
         catch (Throwable t) {
             errorMessage = "There was an error downloading 'stderr.txt': "+t.getLocalizedMessage();
         }
+        errorMessage = getErrorMessageFromStderrFile(stderrFile);
+        return errorMessage;
+    }
+    
+    /**
+     * Read the error message by downloading 'stderr.txt' result file and returning 
+     * a String containing the first MAX_N lines of the file.
+     * 
+     * @return
+     */
+    static public String getErrorMessageFromStderrFile(final File stderrFile) {
+        String errorMessage="";
         if (stderrFile != null) {
             LineNumberReader reader=null;
             try {
