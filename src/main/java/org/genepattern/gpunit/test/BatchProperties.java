@@ -211,6 +211,28 @@ public class BatchProperties {
      * @return a directory into which to download job results for the given completed test
      */
     public File getJobResultDir(final BatchModuleTestObject batchTestCase, final JobResult jobResult) throws GpUnitException {
+        String jobId=null;
+        if (jobResult != null && jobResult.getJobNumber()>=0) {
+            jobId=""+jobResult.getJobNumber();
+        }
+        return getJobResultDir(batchTestCase, jobId);
+    }
+
+    /**
+     * Get a job result directory for the given testCase and jobId.
+     * You download job result files from the server and into this directory.
+     * 
+     * Rule for creating the download directory for a test-case.
+     *     if (batch.name is set) {
+     *         <gpunit.outputdir>/<gpunit.batch.name>/<testfile.parentdir.name>/<testfile.basename>
+     *     }
+     *     else {
+     *         <gpunit.outputdir>/<testfile.parentdir.name>/<testfile.basename>
+     *     }
+     *     
+     * @return a directory into which to download job results for the given completed test
+     */
+    public File getJobResultDir(final BatchModuleTestObject batchTestCase, final String jobId) throws GpUnitException {
         File testCaseFile=null;
         String testName=null;
         if (batchTestCase != null) {
@@ -232,12 +254,12 @@ public class BatchProperties {
             //otherwise, use the testname
             dirname = testName;
         }
-        else if (jobResult != null) {
+        else if (jobId != null) {
             //otherwise, use the job id
-            dirname = ""+jobResult.getJobNumber();
+            dirname = jobId;
         }
         else {
-            throw new IllegalArgumentException("Can't create job result directory, testCase and jobResult are not set!");
+            throw new IllegalArgumentException("Can't create job result directory, testCase and jobId are not set!");
         }
         File jobResultDir=new File(batchOutputDir, dirname);
         return jobResultDir;
