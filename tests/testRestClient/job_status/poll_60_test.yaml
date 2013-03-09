@@ -1,0 +1,10 @@
+#
+# For testing REST client call, which must poll for job completion
+#
+# Module: EchoSleeper urn:lsid:broad.mit.edu:cancer.software.genepattern.module.test.analysis:00002:0.4
+
+module: urn:lsid:broad.mit.edu:cancer.software.genepattern.module.test.analysis:00002:0.4
+params:
+    waitTime: "60"
+    message: "Wait for one minute"
+    verbose: "true"

@@ -5,10 +5,12 @@ import java.net.URI;
 import java.net.URL;
 
 import org.genepattern.gpunit.GpAssertions;
+import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.ModuleTestObject;
 import org.genepattern.gpunit.test.BatchModuleTestObject;
 import org.genepattern.gpunit.test.BatchProperties;
 import org.genepattern.gpunit.yaml.JobResultValidator;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
 
@@ -19,20 +21,18 @@ public class RestClientUtil {
         final URI jobUri=runner.submitJob();
 
         //2) poll for job completion
-        //TODO: implement polling, as a hack, sleep for a few seconds
-        Thread.sleep(2500);
-        JSONObject job=runner.getJob(jobUri);
+        int count=0;
+        int maxtries = 20;
+        int initialSleep = 1000;
+        JSONObject job=waitForJob(runner, jobUri, initialSleep, initialSleep, maxtries, count); 
+        //boolean isFinished=jobStatus.getBoolean("isFinished");
+
+        //3) validate job results  
         String jobId=job.getString("jobId");
 
         JSONObject jobStatus=job.getJSONObject("status");
-        boolean isFinished=jobStatus.getBoolean("isFinished");
         boolean hasError=jobStatus.getBoolean("hasError");
 
-        if (!isFinished) {
-            //TODO: poll for job completion
-        }
-
-        //3) validate job results  
         //   TODO: merge with GPClient specific functionality in Util.runTest, see JobResultValidator
         //   JobResultValidator is hard-coded to use the GPclient SOAP client, we need to refactor into two 
         //   implementations, one for SOAP client one for REST client
@@ -93,8 +93,58 @@ public class RestClientUtil {
         return;
 
     }
+    
+    //helper methods for polling for job completion, could be made generic
+    private static JSONObject waitForJob(JobRunnerRest runner, URI jobUri, int sleep, int initialSleep, int maxTries, int count) 
+    throws InterruptedException, GpUnitException
+    {
+        Thread.sleep(sleep);
+        JSONObject job=null;
+        try {
+            job=runner.getJob(jobUri);
+        }
+        catch (Exception e) {
+            throw new GpUnitException("Error getting jobStatus from: "+jobUri, e);
+        }
+        if (job==null) {
+            throw new IllegalArgumentException("job==null");
+        }
+        boolean isFinished;
+        try {
+            isFinished=job.getJSONObject("status").getBoolean("isFinished");
+        }
+        catch (JSONException e) {
+            throw new GpUnitException("Error parsing JSON object from: "+jobUri, e);
+        }
+        if (isFinished) {
+            return job;
+        }
+        count++;
+        sleep = incrementSleep(initialSleep, maxTries, count);
+        return waitForJob(runner, jobUri, sleep, initialSleep, maxTries, count);
+    }
+    
+    /**
+     * Make the sleep time go up as it takes longer to exec. eg for 100 tries of 1000ms (1 sec) first 20 are 1 sec each
+     * next 20 are 2 sec each next 20 are 4 sec each next 20 are 8 sec each any beyond this are 16 sec each
+     */
+    private static int incrementSleep(int init, int maxTries, int count) {
+        if (count < (maxTries * 0.2)) {
+            return init;
+        }
+        if (count < (maxTries * 0.4)) {
+            return init * 2;
+        }
+        if (count < (maxTries * 0.6)) {
+            return init * 4;
+        }
+        if (count < (maxTries * 0.8)) {
+            return init * 8;
+        }
+        return init * 16;
+    }
 
-        //helper methods for job result validation
+    //helper methods for job result validation
     private static class GenericJobResult {
         final static public String NL = System.getProperty("line.separator");
         public String jobId;
