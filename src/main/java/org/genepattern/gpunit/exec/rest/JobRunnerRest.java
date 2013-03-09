@@ -2,8 +2,11 @@ package org.genepattern.gpunit.exec.rest;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -360,7 +363,86 @@ public class JobRunnerRest {
                 reader.close();
             }
         }
-        
     }
+    
+    public void downloadFile(final URL from, final File toFile) throws Exception {
+        HttpClient client = new DefaultHttpClient();        
+        HttpGet get = new HttpGet(from.toExternalForm());
+        get = setAuthHeaders(get);
+        //HACK: in order to by-pass the GP login page, and use Http Basic Authentication,
+        //     need to spoof the 'IGV' client
+        get.setHeader("User-Agent", "IGV");
+        
+        HttpResponse response=client.execute(get);
+        final int statusCode=response.getStatusLine().getStatusCode();
+        final boolean success;
+        if (statusCode >= 200 && statusCode < 300) {
+            success=true;
+        }
+        else {
+            success=false;
+        }
+        
+        if (!success) {
+            String message="GET "+from.toString()+" failed! "+statusCode+": "+response.getStatusLine().getReasonPhrase();
+            throw new Exception(message);
+        }
+        
+        HttpEntity entity = response.getEntity();
+        if (entity == null) {
+            //the response should contain an entity
+            throw new Exception("The response should contain an entity");
+        }
+        
+        InputStream in = response.getEntity().getContent();
+        try {
+            writeToFile(in, toFile, Long.MAX_VALUE);
+        }
+        finally {
+            if (in != null) {
+                in.close();
+            }
+        }
+    }
+    
+    private void writeToFile( final InputStream in, final File toFile, final long maxNumBytes) 
+    throws IOException
+    //throws MaxFileSizeException, WriteToFileException
+    {
+        OutputStream out=null;
+        try {
+            long numBytesRead = 0L;
+            int read = 0;
+            byte[] bytes = new byte[1024];
+
+            out = new FileOutputStream(toFile);
+            while ((read = in.read(bytes)) != -1) {
+                out.write(bytes, 0, read);
+                numBytesRead += read;
+                if (numBytesRead > maxNumBytes) {
+                    //TODO: log.debug("maxNumBytes reached: "+maxNumBytes);
+                    //throw new MaxFileSizeException("maxNumBytes reached: "+maxNumBytes);
+                    break; 
+                } 
+            }
+            out.flush();
+            out.close();
+        } 
+        //catch (IOException e) {
+            //log.error("Error writing to file: "+toFile.getAbsolutePath());
+            //throw new WriteToFileException(e);
+        //}
+        finally {
+            if (out != null) {
+                try {
+                    out.close();
+                }
+                catch (IOException e) {
+                    //TODO:  log.error("Error closing output stream in finally clause", e);
+                }
+            }
+        }
+    }
+
 
 }
