@@ -1,4 +1,4 @@
-package org.genepattern.gpunit.yaml;
+package org.genepattern.gpunit.exec.soap;
 
 import java.io.File;
 import java.io.FileReader;
@@ -34,7 +34,7 @@ import org.junit.Assert;
  * 
  * @author pcarr
  */
-public class JobResultValidator {
+public class JobResultValidatorOrig {
     final static String NL = System.getProperty("line.separator");
 
     final private ModuleTestObject testCase;
@@ -46,7 +46,7 @@ public class JobResultValidator {
     
     private JobResultDownloader downloader;
     
-    public JobResultValidator(final BatchProperties props, final BatchModuleTestObject batchTestObject, final JobResult jobResult, final File downloadDir) {
+    public JobResultValidatorOrig(final BatchProperties props, final BatchModuleTestObject batchTestObject, final JobResult jobResult, final File downloadDir) {
         if (batchTestObject==null) {
             throw new IllegalArgumentException("batchTestObject==null");
         }

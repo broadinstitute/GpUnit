@@ -1,61 +1,10 @@
 package org.genepattern.gpunit.yaml;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 
-import org.genepattern.client.GPClient;
-import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.ModuleTestObject;
-import org.genepattern.gpunit.test.BatchModuleTestObject;
-import org.genepattern.gpunit.test.BatchProperties;
-import org.genepattern.webservice.JobResult;
 
 public class Util {
-    static public void runTest(final GPClient gpClient, final BatchModuleTestObject testObject) throws GpUnitException, FileNotFoundException, AssertionError, Exception {
-        runTest(gpClient, null, testObject);
-    }
-    static public void runTest(final GPClient gpClient, final BatchProperties batchProps, final BatchModuleTestObject testObject) throws GpUnitException, FileNotFoundException, AssertionError, Exception {
-        if (gpClient == null) {
-            throw new GpUnitException("gpClient is null");
-        }
-        if (batchProps == null) {
-            throw new GpUnitException("batchProps is null");
-        }
-        if (testObject == null) {
-            throw new GpUnitException("testObject is null");
-        }
-        if (testObject.getTestCase() == null) {
-            throw new GpUnitException("testObject.testCase is null");
-        }
-        Throwable initError = testObject.getInitException();
-        if (initError != null) {
-            throw new Exception(initError.getMessage(), initError);
-        }
-        if (testObject.getTestCase() == null) {
-            throw new Exception("testObject is null");
-        }
-
-        ModuleRunner runner = new ModuleRunner(testObject.getTestCase());
-        runner.setGpClient(gpClient);
-        runner.setBatchProperties(batchProps);
-        runner.runJobAndWait();
-        JobResult jobResult = runner.getJobResult();
-        
-        File jobResultDir=batchProps.getJobResultDir(testObject, jobResult);
-        
-        JobResultValidator validator = new JobResultValidator(batchProps, testObject, jobResult, jobResultDir);
-        validator.setSaveResultFiles(batchProps.getSaveDownloads());
-        validator.setDeleteCompletedJobs(batchProps.getDeleteJobs());
-        try {
-            validator.validate();
-        }
-        finally {
-            if (jobResult != null) {
-                validator.clean(runner);
-            }
-        }
-    }
-
     /**
      * Get the basename of the testcase file, only if the extension is 3 or 4 characters.
      * 
@@ -109,10 +58,4 @@ public class Util {
         return testCase;
     }
     
-    static public ModuleRunner initModuleRunner(File fromFile) throws Exception {
-        ModuleTestObject testCase = initTestCase(fromFile);
-        ModuleRunner runner = new ModuleRunner(testCase);
-        runner.setGpClient(ModuleRunner.initGpClient());
-        return runner;
-    }    
 }

@@ -1,7 +1,5 @@
-package org.genepattern.gpunit.yaml;
+package org.genepattern.gpunit.exec.soap;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -10,6 +8,7 @@ import org.genepattern.client.GPClient;
 import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.ModuleTestObject;
 import org.genepattern.gpunit.test.BatchProperties;
+import org.genepattern.gpunit.yaml.InputFileUtil;
 import org.genepattern.webservice.AnalysisWebServiceProxy;
 import org.genepattern.webservice.JobResult;
 import org.genepattern.webservice.Parameter;
@@ -113,6 +112,22 @@ public class ModuleRunner {
         catch (Throwable t) {
             t.printStackTrace();
             throw new AssertionError("Error initializing gpClient for gpUrl='"+gpUrl+"': "+t.getLocalizedMessage());
+        }
+        return gpClient;
+    }
+    
+    synchronized static public GPClient initGpClient(BatchProperties batchProps) {
+        //final String gpUrl = System.getProperty("genePatternUrl", "http://gpdev.broadinstitute.org");
+        //final String gpUsername = System.getProperty("username", "jntest");
+        //final String gpPassword = System.getProperty("password", "jntest");
+        
+        GPClient gpClient = null;
+        try {
+            gpClient = new GPClient(batchProps.getGpUrl(), batchProps.getGpUsername(), batchProps.getGpPassword());
+        }
+        catch (Throwable t) {
+            t.printStackTrace();
+            throw new AssertionError("Error initializing gpClient for gpUrl='"+batchProps.getGpUrl()+"': "+t.getLocalizedMessage());
         }
         return gpClient;
     }

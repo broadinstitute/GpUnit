@@ -8,10 +8,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.genepattern.client.GPClient;
 import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.exec.rest.RestClientUtil;
-import org.genepattern.gpunit.yaml.ModuleRunner;
+import org.genepattern.gpunit.exec.soap.SoapClientUtil;
 import org.genepattern.gpunit.yaml.Util;
 import org.genepattern.util.junit.Parallelized;
 import org.junit.AfterClass;
@@ -33,7 +32,6 @@ import org.junit.runners.Parameterized.Parameters;
  */
 @RunWith(Parallelized.class)
 public class BatchModuleTest { 
-    static GPClient gpClient;
     static BatchProperties batchProps;
 
     final static private String PROP_TESTCASE_DIRS="gpunit.testcase.dirs";
@@ -142,7 +140,7 @@ public class BatchModuleTest {
     private static void initRestTest() {
         _debugInitDefault();
         System.setProperty(BatchProperties.PROP_CLIENT, BatchProperties.GpUnitClient.REST.toString());
-        System.setProperty(PROP_TESTCASE_DIRS, "./tests/testRestClient");
+        System.setProperty(PROP_TESTCASE_DIRS, "./tests/testRestClient/job_status");
     }
 
     private static void initDiffTest() {
@@ -152,7 +150,6 @@ public class BatchModuleTest {
 
     @BeforeClass 
     public static void beforeClass() throws GpUnitException {
-        gpClient = ModuleRunner.initGpClient();
         batchProps = BatchProperties.Factory.initFromProps();
     }
     
@@ -195,7 +192,7 @@ public class BatchModuleTest {
                 return;
             }
 
-            Util.runTest(gpClient,batchProps,testObj);
+            SoapClientUtil.runTest(batchProps,testObj);
         }
         catch (Throwable t) {
             Assert.fail(t.getLocalizedMessage());

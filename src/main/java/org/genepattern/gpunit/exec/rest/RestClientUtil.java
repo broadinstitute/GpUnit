@@ -7,14 +7,15 @@ import java.net.URL;
 import org.genepattern.gpunit.GpAssertions;
 import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.ModuleTestObject;
+import org.genepattern.gpunit.exec.soap.JobResultValidatorOrig;
 import org.genepattern.gpunit.test.BatchModuleTestObject;
 import org.genepattern.gpunit.test.BatchProperties;
-import org.genepattern.gpunit.yaml.JobResultValidator;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
 
 public class RestClientUtil {
+    
     public static void runTest(BatchProperties batchProps, BatchModuleTestObject testObj) throws Exception {
         JobRunnerRest runner=new JobRunnerRest(batchProps,testObj.getTestCase());
         //1) run the job
@@ -78,7 +79,7 @@ public class RestClientUtil {
                 }
                 stderrFile=new File(jobResultDir, stderrFilename);
                 runner.downloadFile(stderrUrl, stderrFile);
-                errorMessage=JobResultValidator.getErrorMessageFromStderrFile(stderrFile);
+                errorMessage=JobResultValidatorOrig.getErrorMessageFromStderrFile(stderrFile);
             }
         }
 
