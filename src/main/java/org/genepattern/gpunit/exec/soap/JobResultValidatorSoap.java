@@ -3,6 +3,7 @@ package org.genepattern.gpunit.exec.soap;
 import java.io.File;
 
 import org.genepattern.gpunit.GpUnitException;
+import org.genepattern.gpunit.download.JobResultDownloader;
 import org.genepattern.gpunit.download.soap.JobResultDownloaderSoap;
 import org.genepattern.gpunit.test.BatchModuleTestObject;
 import org.genepattern.gpunit.test.BatchProperties;
@@ -13,7 +14,7 @@ import org.junit.Assert;
 
 public class JobResultValidatorSoap extends JobResultValidatorGeneric {
     private JobResult jobResult=null;
-    private JobResultDownloaderSoap downloader=null;
+    private JobResultDownloader downloader=null;
     private ModuleRunner moduleRunner;
 
     public JobResultValidatorSoap(final BatchProperties props, final BatchModuleTestObject batchTestObject, final File downloadDir) {
@@ -47,48 +48,11 @@ public class JobResultValidatorSoap extends JobResultValidatorGeneric {
     }
 
     @Override
-    /**
-     * Read the error message by downloading 'stderr.txt' result file and returning 
-     * a String containing the first MAX_N lines of the file.
-     * 
-     * @return
-     */
-    public String getErrorMessageFromStderrFile() {
-        String errorMessage="";
-        File stderrFile = null;
-        try {
-            stderrFile=downloader.getResultFile("stderr.txt");
+    public JobResultDownloader getDownloader() {
+        if (downloader == null) {
+            Assert.fail("downloader not initialized");
         }
-        catch (Throwable t) {
-            errorMessage = "There was an error downloading 'stderr.txt': "+t.getLocalizedMessage();
-        }
-        errorMessage = JobResultValidatorOrig.getErrorMessageFromStderrFile(stderrFile);
-        return errorMessage;
-    }
-
-    @Override
-    public void downloadResultFiles(File toDir) throws GpUnitException {
-        downloader.downloadResultFiles();
-    }
-
-    @Override
-    public int getNumResultFiles() {
-        return downloader.getNumResultFiles();
-    }
-
-    @Override
-    public boolean hasResultFile(String relativePath) {
-        return downloader.hasResultFile(relativePath);
-    }
-
-    @Override
-    public File getResultFile(File toDir, String relativePath) throws GpUnitException {
-        return downloader.getResultFile(relativePath);
-    }
-
-    @Override
-    public void cleanDownloadedFiles() throws GpUnitException {
-        downloader.cleanDownloadedFiles();
+        return downloader;
     }
 
     @Override
@@ -98,6 +62,5 @@ public class JobResultValidatorSoap extends JobResultValidatorGeneric {
         }
         moduleRunner.deleteJob(jobResult.getJobNumber());
     }
-
 
 }

@@ -20,6 +20,8 @@ import org.genepattern.gpunit.diff.AbstractDiffTest;
 import org.genepattern.gpunit.diff.CmdLineDiff;
 import org.genepattern.gpunit.diff.NumRowsColsDiff;
 import org.genepattern.gpunit.diff.UnixCmdLineDiff;
+import org.genepattern.gpunit.download.JobResultDownloader;
+import org.genepattern.gpunit.exec.soap.JobResultValidatorOrig;
 import org.genepattern.gpunit.test.BatchModuleTestObject;
 import org.genepattern.gpunit.test.BatchProperties;
 import org.junit.Assert;
@@ -81,13 +83,47 @@ public abstract class JobResultValidatorGeneric {
 
     abstract public void checkInit();
     abstract public boolean hasStdError();
-    abstract public String getErrorMessageFromStderrFile();
-    abstract public void downloadResultFiles(File toDir) throws GpUnitException;
-    abstract public int getNumResultFiles();
-    abstract public boolean hasResultFile(String relativePath);
-    abstract public File getResultFile(File toDir, String relativePath) throws GpUnitException;
-    abstract public void cleanDownloadedFiles() throws GpUnitException;
+    abstract public JobResultDownloader getDownloader();
     abstract public void deleteJob() throws GpUnitException;
+    
+    /**
+     * Read the error message by downloading 'stderr.txt' result file and returning 
+     * a String containing the first MAX_N lines of the file.
+     * 
+     * @return
+     */
+    public String getErrorMessageFromStderrFile() {
+        String errorMessage="";
+        File stderrFile = null;
+        try {
+            stderrFile=getDownloader().getResultFile("stderr.txt");
+        }
+        catch (Throwable t) {
+            errorMessage = "There was an error downloading 'stderr.txt': "+t.getLocalizedMessage();
+        }
+        errorMessage = JobResultValidatorOrig.getErrorMessageFromStderrFile(stderrFile);
+        return errorMessage;
+    }
+
+    private void downloadResultFiles(File toDir) throws GpUnitException {
+        getDownloader().downloadResultFiles();
+    }
+
+    private int getNumResultFiles() {
+        return getDownloader().getNumResultFiles();
+    }
+
+    public boolean hasResultFile(String relativePath) {
+        return getDownloader().hasResultFile(relativePath);
+    }
+
+    public File getResultFile(File toDir, String relativePath) throws GpUnitException {
+        return getDownloader().getResultFile(relativePath);
+    }
+
+    public void cleanDownloadedFiles() throws GpUnitException {
+        getDownloader().cleanDownloadedFiles();
+    }
 
     private void validateJobStatus() {
         GpAssertions assertions = testCase.getAssertions();
