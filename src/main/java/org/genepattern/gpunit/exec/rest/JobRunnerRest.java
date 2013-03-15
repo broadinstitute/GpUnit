@@ -459,8 +459,8 @@ public class JobRunnerRest {
         HttpGet get = new HttpGet(from.toExternalForm());
         get = setAuthHeaders(get);
         //HACK: in order to by-pass the GP login page, and use Http Basic Authentication,
-        //     need to spoof the 'IGV' client
-        get.setHeader("User-Agent", "IGV");
+        //     need to set the User-Agent to start with 'GenePatternRest'
+        get.setHeader("User-Agent", "GenePatternRest");
         
         HttpResponse response=client.execute(get);
         final int statusCode=response.getStatusLine().getStatusCode();
