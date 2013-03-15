@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -146,9 +147,14 @@ public class InputFileUtil {
         else if (pValue instanceof String) {
             file = new File((String)pValue);
         }
-        //TODO: add support for lists
-        else {
+        else if (pValue instanceof Collection) { 
+            //TODO: add support for lists
             throw new IllegalArgumentException("Must be a File or a String, type="+pValue.getClass().getName());
+        }
+        else {
+            //TODO: improve handling of types (e.g. int)
+            String rval = pValue.toString();
+            return rval;
         }
 
         //1) if it's a fully qualified path:
