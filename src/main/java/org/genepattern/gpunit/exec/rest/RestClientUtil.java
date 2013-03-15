@@ -16,7 +16,35 @@ import org.junit.Assert;
 
 public class RestClientUtil {
     
-    public static void runTest(BatchProperties batchProps, BatchModuleTestObject testObj) throws Exception {
+    public static void runTest(BatchProperties batchProps, BatchModuleTestObject testObject) throws Exception {
+        JobRunnerRest runner=new JobRunnerRest(batchProps, testObject.getTestCase());
+        //1) run the job
+        final URI jobUri=runner.submitJob();
+
+        //2) poll for job completion
+        int count=0;
+        int maxtries = 20;
+        int initialSleep = 1000;
+        JSONObject jobResult=waitForJob(runner, jobUri, initialSleep, initialSleep, maxtries, count); 
+
+        //3) validate job results  
+        String jobId=jobResult.getString("jobId");
+        File jobResultDir=batchProps.getJobResultDir(testObject, jobId);
+        
+        JobResultValidatorRest validator=new JobResultValidatorRest(batchProps, testObject, jobResultDir);
+        validator.setRestClient(runner);
+        validator.setJobStatus(jobResult);
+        try {
+            validator.validate();
+        }
+        finally {
+            if (jobResult != null) {
+                validator.clean();
+            }
+        }
+    }
+
+    public static void runTestOrig(BatchProperties batchProps, BatchModuleTestObject testObj) throws Exception {
         JobRunnerRest runner=new JobRunnerRest(batchProps,testObj.getTestCase());
         //1) run the job
         final URI jobUri=runner.submitJob();

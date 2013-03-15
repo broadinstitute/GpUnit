@@ -52,6 +52,7 @@ public class JobRunnerRest {
     private ModuleTestObject test;
     private URL addFileUrl;
     private URL addJobUrl;
+    private URL getTaskUrl;
     
     public JobRunnerRest(final BatchProperties batchProps, final ModuleTestObject test) throws GpUnitException {
         if (batchProps==null) {
@@ -64,14 +65,9 @@ public class JobRunnerRest {
         this.test=test;
         this.addFileUrl=initAddFileUrl();
         this.addJobUrl=initAddJobUrl();
+        this.getTaskUrl=initGetTaskUrl();
     }
     
-    
-    public void runJobAndWait() {
-        //TODO: REST call to add the job
-        //TODO: REST call to poll for job completion
-        //TODO: REST call to get the job results
-    }
     
     private Map<String,URL> uploadFiles() throws IOException, GpUnitException {
         Set<String> inputFileParams=new HashSet<String>();
@@ -135,6 +131,22 @@ public class JobRunnerRest {
         }
     }
     
+    private  URL initGetTaskUrl() throws GpUnitException {
+        String gpUrl=batchProps.getGpUrl();
+        if (!gpUrl.endsWith("/")) {
+            gpUrl += "/";
+        }
+        //TODO: context path is hard-coded
+        gpUrl += "gp/";
+        gpUrl += "rest/v1/tasks";
+        try {
+            return new URL(gpUrl);
+        }
+        catch (MalformedURLException e) {
+            throw new GpUnitException(e);
+        }
+    }
+    
     /**
      * Initialize the JSONObject to PUT into the /jobs resource on the GP server.
      * 
@@ -149,9 +161,9 @@ public class JobRunnerRest {
        }
      * </pre>
      */
-    private JSONObject initJsonObject(final Map<String,URL> file_map) throws JSONException, IOException {
+    private JSONObject initJsonObject(final String lsid, final Map<String,URL> file_map) throws JSONException, IOException {
         JSONObject obj=new JSONObject();
-        String lsid = test.getModule();
+        //String lsid = test.getModule();
         obj.put("lsid", lsid);
         JSONArray params=new JSONArray();
         for(Entry<String,Object> paramEntry : test.getParams().entrySet()) {
@@ -278,18 +290,95 @@ public class JobRunnerRest {
         }
         throw new GpUnitException("Unexpected error uploading file '"+localFile.getAbsolutePath()+"'");
     }
+    
+    private String getTaskLsid(final String taskNameOrLsid) throws GpUnitException {
+        try {
+            JSONObject taskObj = getTask(taskNameOrLsid);
+            JSONObject moduleObj=taskObj.getJSONObject("module");
+            String lsid=moduleObj.getString("LSID");
+            return lsid;
+        }
+        catch (JSONException e) {
+            throw new GpUnitException("Error parsing JSON response for GET task, taskNameOrLsid="+taskNameOrLsid);
+        }
+    }
+    
+    private JSONObject getTask(final String taskNameOrLsid) throws GpUnitException {
+        HttpClient client = new DefaultHttpClient();
+        final String urlStr=getTaskUrl.toExternalForm()+"/"+taskNameOrLsid;
+        
+        HttpGet get = new HttpGet(urlStr);
+        get = setAuthHeaders(get);
+        HttpResponse response=null;
+        try {
+            response=client.execute(get);
+        }
+        catch (ClientProtocolException e) {
+            throw new GpUnitException("Error executing HTTP request, GET "+urlStr, e);
+        }
+        catch (IOException e) {
+            throw new GpUnitException("Error executing HTTP request, GET "+urlStr, e);
+        }
+        final int statusCode=response.getStatusLine().getStatusCode();
+        final boolean success;
+        if (statusCode >= 200 && statusCode < 300) {
+            success=true;
+        }
+        else {
+            success=false;
+        }
+        if (!success) {
+            String message="GET "+urlStr+" failed! "+statusCode+": "+response.getStatusLine().getReasonPhrase();
+            throw new GpUnitException(message);
+        }
+        
+        HttpEntity entity = response.getEntity();
+        if (entity == null) {
+            //the response should contain an entity
+            throw new GpUnitException("The response should contain an entity");
+        }
+
+        BufferedReader reader=null;
+        try {
+            reader=new BufferedReader(
+                    new InputStreamReader( response.getEntity().getContent() ));
+            JSONTokener jsonTokener=new JSONTokener(reader);
+            JSONObject task=new JSONObject(jsonTokener);
+            return task;
+        }
+        catch (IOException e) {
+            throw new GpUnitException("Error getting HTTP content from GET "+urlStr, e);
+        }
+        catch (JSONException e) {
+            throw new GpUnitException("Error parsing JSON response from GET "+urlStr, e);
+        }
+        finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                }
+                catch (IOException e) {
+                    throw new GpUnitException("Unexpected exception thrown closing reader!");
+                }
+            }
+        }
+    }
 
     public URI submitJob() throws JSONException, UnsupportedEncodingException, IOException, Exception {
-        HttpClient client = new DefaultHttpClient();
-        HttpPost post = new HttpPost(addJobUrl.toExternalForm());
-        post = setAuthHeaders(post);
+        // make REST call to validate that the module.lsid (which could be a taskName or LSID)
+        // is installed on the server
+        final String taskNameOrLsid = test.getModule();
+        final String lsid=getTaskLsid(taskNameOrLsid);
         
         // upload data files, for each file input parameter, if it's a local file, upload it and save the URL
         // use that url as the value when adding the job to GP
         final Map<String,URL> file_map=uploadFiles();
         
+        JSONObject job = initJsonObject(lsid, file_map);
         
-        JSONObject job = initJsonObject(file_map);
+        HttpClient client = new DefaultHttpClient();
+        HttpPost post = new HttpPost(addJobUrl.toExternalForm());
+        post = setAuthHeaders(post);
         post.setEntity(new StringEntity(job.toString()));
 
         HttpResponse response = client.execute(post);
