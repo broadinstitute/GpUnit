@@ -55,7 +55,8 @@ report.dir: ${report.dir}
         
     </target>
 
-    <!-- in order to compile gp-unit, and to run gp-unit tests, must download the client library -->
+    <!-- in order to compile gp-unit, and to run gp-unit tests, must download the client library, 
+         for SOAP client calls to the GP server -->
     <target name="gp-client-lib" depends="init" unless="gp-client-lib-exists">
         <description>If necessary, download the Java Programming Library from the server, and unzip into a local directory</description>
 
@@ -64,7 +65,21 @@ report.dir: ${report.dir}
         <unzip src="${local.dir}/GenePattern.zip" dest="${client.lib.dir}" overwrite="true" />
     </target>
 
-    <target name="compile" depends="init, gp-client-lib">
+    <!-- gpunit depends on the json.org library, 
+         for REST client calls to the GP server -->
+    <target name="compile-json" depends="init">
+        <property name="java.target" value="1.5" />
+        <javac debug="true"
+            srcdir="${gpunit.dir}/src/3rd-party/org.json" 
+            destdir="${gpunit.dir}/classes" 
+            includeantruntime="false"
+            target="${java.target}" 
+            source="${java.target}" 
+            classpathref="gpunit.classpath" >
+        </javac>
+    </target>
+
+    <target name="compile" depends="init, gp-client-lib, compile-json">
         <property name="java.target" value="1.5" />
         <javac debug="true" includeantruntime="false"
             defaultexcludes="true" 
