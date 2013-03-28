@@ -67,16 +67,8 @@ public class JobRunnerRest {
         this.addJobUrl=initAddJobUrl();
         this.getTaskUrl=initGetTaskUrl();
     }
-    
-    
-    private Map<String,URL> uploadFiles() throws IOException, GpUnitException {
-        Set<String> inputFileParams=new HashSet<String>();
-        //TODO: load the ParameterInfo so that we can handle file uploads and substitutions
-        //TODO: implement this method, at the moment it is hard-coded and only works for PreprocessDataset
-        if ("urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00020:4".equals(test.getModule())) {
-            inputFileParams.add("input.filename");
-        }
-        
+
+    private Map<String,URL> uploadFiles(final Set<String> inputFileParams) throws IOException, GpUnitException {
         if (inputFileParams.size()==0) {
             return Collections.emptyMap();
         }
@@ -291,18 +283,6 @@ public class JobRunnerRest {
         throw new GpUnitException("Unexpected error uploading file '"+localFile.getAbsolutePath()+"'");
     }
     
-    private String getTaskLsid(final String taskNameOrLsid) throws GpUnitException {
-        try {
-            JSONObject taskObj = getTask(taskNameOrLsid);
-            JSONObject moduleObj=taskObj.getJSONObject("module");
-            String lsid=moduleObj.getString("LSID");
-            return lsid;
-        }
-        catch (JSONException e) {
-            throw new GpUnitException("Error parsing JSON response for GET task, taskNameOrLsid="+taskNameOrLsid);
-        }
-    }
-    
     private JSONObject getTask(final String taskNameOrLsid) throws GpUnitException {
         HttpClient client = new DefaultHttpClient();
         final String urlStr=getTaskUrl.toExternalForm()+"/"+taskNameOrLsid;
@@ -364,15 +344,52 @@ public class JobRunnerRest {
         }
     }
 
+    private String getInputFilePname(final JSONObject param) throws GpUnitException {
+        if (param==null) {
+            throw new GpUnitException("param==null");
+        }
+        final String[] names=JSONObject.getNames(param);
+        if (names==null) {
+            throw new GpUnitException("names==null");
+        }
+        if (names.length==0) {
+            throw new GpUnitException("names.length==0");
+        }
+        if (names.length>1) {
+            throw new GpUnitException("names.length=="+names.length);
+        }
+        final String pname=names[0];
+        try {
+            final String type=param.getJSONObject(pname).getJSONObject("attributes").getString("type");
+            if (type.equals("java.io.File")) {
+                return pname;
+            }
+        }
+        catch (Throwable t) {
+            throw new GpUnitException("Error getting type for parameter="+pname, t);
+        }
+        return null;
+    }
+
     public URI submitJob() throws JSONException, UnsupportedEncodingException, IOException, Exception {
         // make REST call to validate that the module.lsid (which could be a taskName or LSID)
         // is installed on the server
         final String taskNameOrLsid = test.getModule();
-        final String lsid=getTaskLsid(taskNameOrLsid);
+        final JSONObject taskInfo=getTask(taskNameOrLsid);
+        final String lsid=taskInfo.getString("lsid");
+        Set<String> inputFileParams=new HashSet<String>();
+        JSONArray params=taskInfo.getJSONArray("params");
+        for(int i=0; i<params.length(); ++i) {
+            final JSONObject param=params.getJSONObject(i);
+            final String pname=getInputFilePname(param);
+            if (pname != null) {
+                inputFileParams.add(pname);
+            }
+        }
         
         // upload data files, for each file input parameter, if it's a local file, upload it and save the URL
         // use that url as the value when adding the job to GP
-        final Map<String,URL> file_map=uploadFiles();
+        final Map<String,URL> file_map=uploadFiles(inputFileParams);
         
         JSONObject job = initJsonObject(lsid, file_map);
         
