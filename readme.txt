@@ -24,9 +24,7 @@ a FileSet is, and how to declare one, you know how to declare a
 gpunit suite.
 
 A test consists of a run of a module on a GP server, followed by a validation step run
-locally. It uses well established technologies: junit and ant. 
-The idea is to use as much of these existing technologies 
-as possible, implementing new functionality only when needed.
+locally.
 
 --------------------
 Requirements
@@ -37,6 +35,8 @@ Requirements
   or later, because of the dependency on the Parameterized test class.
 * a running GP server. You can connect to any GP server, including gpprod
   for running the tests.
+* GP Java client. When you run gpunit as an ant target, it will automatically
+  download the Java client library from the server before running the tests.
 
 --------------------
 Using Gpunit
@@ -47,6 +47,8 @@ Edit the configuration file as necessary.
     gpunit.properties
 Then run the ant 'gpunit' target.
     ant gpunit
+Then view the report
+    open reports/html/index.html
 
 This target runs the default suite of gpunit tests on the default 
 GenePattern Server using the deault username and password.
@@ -57,12 +59,12 @@ gpunit. You do so in the same way that you customize an ant job,
 with command line arguments and/or properties files. For more
 details look at the 'gpunit.properties' file.
 
-
 The recipe below gives more details.
 
 Step 1: Declare test case(s)
 In the abstract, a gpunit test case consists of a module to run, a list of zero or more
-non-default parameter values, and expected outputs in the form of gpunit assertions.
+non-default parameter values, and an assertion section which can include expected 
+job status and expected outputs.
 There are several ways to declare your test case:
 1) hand edit a yaml file
 2) export a completed job, including the gp_execution_log.txt, from a server
@@ -81,7 +83,6 @@ For more sophisticated patterns, consult the ant documentation of the
 FileSet task. You will need to update the build.xml in order to use
 this level of customization.
 
-
 Step 3: Run your test(s)
 You run a test or suite of tests with the ant gpunit target.
     ant gpunit
@@ -89,48 +90,63 @@ You run a test or suite of tests with the ant gpunit target.
 --------------------
 Customizing Gpunit
 --------------------
-There are a number of ways to customize gpunit. Start by looking at the
-comments in the gpunit.properties file.
+There are a number of ways to customize gpunit. For details,
+look at the comments in the gpunit.properties file.
 
 --------------------
-Gpunit Yaml Formal
+Gpunit Yaml Format
 --------------------
 A gpunit test case is declared in a YAML file. While there is no schema
 for a gpunit yaml file (it is schemaless), there is an implicit schema.
-There are a number of example gpunit test cases in this project.
-
 At the moment, if you need more details you will have to look at the
-example gpunit files included in this project. For more details, look 
+example gpunit files included in this project. For even more details, look 
 at the source code.
 
- Yaml is a standardized 
-format. The structure is a schemaless custom stucture required by the gpunit system.
-
-A gpunit test case is declared in a test case yaml file.
-Note: The automatrix is a gui for automatically generating 
-these files.
-
+--------------------
+Converting a completed job into a test
+--------------------
 You can also easily convert a completed job on a GP server into a gpunit
-test case.
+test case. Look at the ./tests/saved_jobs folder for some examples.
+
+A few manual steps are required, especially if you uploaded data
+files for the initial run of the job.
+External URLs work automatically because they are passed by 
+reference when you download the job.
+
+--------------------
+Building Gpunit
+--------------------
+The ant 'gpunit' target will build gpunit when necessary. In most cases
+that is all you need to do.
+
+If you want to build the gpunit jar file first run this command:
+    ant package
+
+Both the 'gpunit' and 'package' targets require the GP Java Client.
+Normally, this gets installed for you automatically.
+See below for more details.
+
+--------------------
+Initializing GP Java Client
+--------------------
+Gpunit runs jobs on a (usually) remote GenePattern Server. By default,
+gpunit uses SOAP client calls for interacting with the GP server. When you 
+run the gpunit target from ant, if necessary it will automatically download 
+the Java client before building gpunit. For more details look at the build.xml file.
+
+There is also a REST API for connecting to the GP server (circa 3.6.0). In
+it's present incarnation, REST API methods are coded directly into the
+gpunit project.
 
 --------------------
 How it works
 --------------------
-A gpunit test run is invoked with the ant 'junit' target, hard-coded to a single test:
-    org.genepattern.gpunit.test.BatchModuleTest
-The 'gpunit.testcase.dirs' is an ant FileSet. Each matching file in the fileset is
-treated as a single gpunit test. For more details look at the 'run-tests' macrodef
-in the build.xml file.
-
+The build.xml file included in this project includes the 'gpunit' ant target.
+This target uses the standard 'junit' ant target.
     <junit ...>
         <test name="org.genepattern.gpunit.test.BatchModuleTest" ... />
     </junit>
-
-From the perspective of junit, BatchModuleTest is a Parameterized test which
-has been extended to run each test in parallel. It uses the 'gpunit.testcase.dirs'
-system property to scan the file system for gpunit test case files.
-
-
+For more details look at the 'run-tests' macrodef.
 
 Here is the what happens when you invoke the 'gpunit' target.
 A junit test is run in a new JVM, "org.genepattern.gpunit.test.BatchModuleTest".
@@ -154,36 +170,11 @@ run on a gp server, and the validation process runs on your client machine.
 If necessary, result files are downloaded to your client machine as
 part of the validation process.
 
---------------------
-About Test Execution
---------------------
-
---------------------
-Developing Gpunit
---------------------
 For more information, see the comments in the java source code.
 Start with the org.genepattern.gpunit.test.BatchModuleTest.java class.
 
 
-
-
-Overview
-
-A gpunit test case 
-
-
-
-* How to get started
-** building gp-unit
-** deploying gp-unit
-** running gp-unit tests
-
-
-* How to create a unit test
-* How to choose a server
-* Note: REST vs. SOAP client
-
 TODO:
 * label the gp-unit jar
 * improve properties for username, password, and gp server
-** by convention, look in a well named properties file, otherwise prompt
+** by convention, look in a well named properties file, otherwise prompt the user
