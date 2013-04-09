@@ -76,7 +76,12 @@ public class BatchModuleUtil {
         return data;
     }
 
-    final static public FileFilter testcaseFileFilter = new FileFilter() {
+    /**
+     * This filter matches all files which end in 'test.yml' or 'test.yaml' as well as
+     * all 'gp_execution_log.txt' files.
+     *
+     */
+    final static public FileFilter testcaseFileFilter0 = new FileFilter() {
         public boolean accept(File arg0) {
             if (arg0.isDirectory()) {
                 return true;
@@ -95,11 +100,34 @@ public class BatchModuleUtil {
         }
     };
 
+    /**
+     * This filter matches all '*.yml' and '*.yaml' files as well as
+     * all 'gp_execution_log.txt' files.
+     */
+    final static public FileFilter testcaseFileFilter1 = new FileFilter() {
+        public boolean accept(File arg0) {
+            if (arg0.isDirectory()) {
+                return true;
+            }
+            String filenameKey = arg0.getName().toLowerCase();
+            if (filenameKey.endsWith(".yml")) {
+                return true;
+            }
+            if (filenameKey.endsWith(".yaml")) {
+                return true;
+            }
+            if (filenameKey.equals("gp_execution_log.txt")) {
+                return true;
+            }
+            return false;
+        }
+    };
+
     public static List<File> findTestcases(List<File> fileset) {
         List<File> testFiles = new ArrayList<File>();
         for(File file : fileset) {
             if (file.isFile()) {
-                if (testcaseFileFilter.accept(file)) {
+                if (testcaseFileFilter1.accept(file)) {
                     testFiles.add(file);
                 }
                 else {
@@ -108,14 +136,14 @@ public class BatchModuleUtil {
                 }
             }
             else if (file.isDirectory()) {
-                listFilesInto(testFiles, file, testcaseFileFilter);
+                listFilesInto(testFiles, file, testcaseFileFilter1);
             }
         }
         return testFiles;
     }
     public static List<File> findTestcases(File rootDir) {
         List<File> testFiles = new ArrayList<File>();
-        listFilesInto(testFiles, rootDir, testcaseFileFilter);
+        listFilesInto(testFiles, rootDir, testcaseFileFilter1);
         return testFiles; 
     }
     private static void listFilesInto(List<File> list, File fromDir, FileFilter filter) {
