@@ -99,6 +99,8 @@ report.dir: ${report.dir}
     </target>
 
     <target name="clean">
+        <delete dir="${gpunit.dir}/classes" />
+        <delete dir="${gpunit.dir}/dist" />
         <delete dir="${gp.annotations.dir}/classes" />
         <delete dir="${gp.annotations.dir}/dist" />
         <delete dir="${report.dir}" />
