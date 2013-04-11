@@ -193,7 +193,7 @@ public class InputFileUtil {
         }
 
         //d) else [WARNING!] ... literal value
-        return file.getPath();
+        return pValue.toString();
     }
 
     public ParameterInfo getParameterInfo(final String pname) {
