@@ -103,11 +103,8 @@ public class InputFileUtil {
     {
         boolean isInputFile;
         if (pinfo==null) {
-            //TODO log error message
+            //[WARNING!] ... log error message
             isInputFile=false;
-            
-            //hard-coded, only works for PreprocessDataset 
-            isInputFile="input.filename".equals(paramEntry.getKey());
         }
         else {
             isInputFile=pinfo.isInputFile();
