@@ -164,8 +164,8 @@ public class InputFileUtil {
                 //it's a local file, upload it
                 return file.getCanonicalPath();
             }
-            //b) else, it's a server file path, pass by reference
-            return file.getPath();
+            //b) else, it's a server file path, pass by reference, return the original value
+            return pValue.toString();
         }
 
         //2) otherwise ... it's a relative path
