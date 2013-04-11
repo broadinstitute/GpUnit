@@ -41,6 +41,25 @@ If the value is a fully qualified path, e.g. /MyData/input.txt
  *
  */
 public class InputFileUtil {
+    /**
+     * Return the path for the given input file, 
+     * replacing the Windows path separator with the
+     * Unix separator when necessary.
+     * 
+     * @param in
+     * @return
+     */
+    public static String asUnixPath(final File in) {
+        final String pathIn=in.getPath();
+        final char UNIX_SEP = '/';
+        final char WIN_SEP = '\\';
+        if (pathIn == null || pathIn.indexOf(WIN_SEP) == -1) {
+            return pathIn;
+        }
+        final String pathOut=pathIn.replace(WIN_SEP, UNIX_SEP);
+        return pathOut;
+    }
+
     final private BatchProperties props;
     final private TaskInfo taskInfo;
     final private Map<String, ParameterInfo> pinfoMap;
@@ -189,7 +208,7 @@ public class InputFileUtil {
         if (BatchProperties.isSet(props.getServerDir())) {
             final File serverDir=new File(props.getServerDir());
             final File serverPath=new File(serverDir, file.getPath());
-            return serverPath.getPath();
+            return asUnixPath(serverPath);
         }
 
         //d) else [WARNING!] ... literal value
