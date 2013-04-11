@@ -5,8 +5,8 @@ About Gpunit
 --------------------
 Gpunit is a testing framework for GenePattern Modules. The framework
 consists of:
-    1) a method for declaring test cases
-    2) a script for executing test cases
+    1) a yaml file format for declaring test cases
+    2) an ant build file for executing test cases as junit tests
     3) a convention for declaring a suite as a collection of test cases
 
 1) Test cases are declarative. This gives us a platform agnostic way to
