@@ -1,0 +1,22 @@
+#lsid=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00236:4
+#
+name: Valid Parameter Set 1
+module: Cufflinks.cuffdiff
+params:
+       first.SAM.or.BAM.file: "mock.bam"
+       second.SAM.or.BAM.file: "mock2.bam"
+       input.files.list: ""
+       GTF.file: "mock.gtf"
+       sample.labels: ""
+       time.series: "false"
+       upper.quartile.norm: "false"
+       total.hits.norm: "false"
+       compatible.hits.norm: "true"
+       frag.bias.correct: ""
+       multi.read.correct: "false"
+       min.alignment.count: "500"
+       FDR: ".05"
+       mask.file: ""
+       library.type: "inferred"
+assertions:
+        jobStatus: success

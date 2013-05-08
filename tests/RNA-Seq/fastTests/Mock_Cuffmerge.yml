@@ -1,0 +1,12 @@
+#lsid=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00291:0.5
+#
+name: Valid Parameter Set 1
+module: Cufflinks.cuffmerge
+params:
+       gtf1.file: "mock.gtf"
+       gtf2.file: "mock1.gtf"
+       input.list.file: ""
+       reference.GTF: ""
+       genome.file: "mock1.fa"
+assertions:
+        jobStatus: success

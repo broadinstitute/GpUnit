@@ -1,0 +1,36 @@
+#lsid=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00230:6
+#
+name: Valid Parameter Set 1
+module: TopHat
+params:
+       prebuilt.bowtie.index: "Drosophila_melanogaster_Ensembl_BDGP5"
+       custom.bowtie.index: ""
+       reads.pair.1: "mock1.fa"
+       reads.pair.2: "mock2.fa"
+       mate.inner.dist: "50"
+       mate.std.dev: ""
+       library.type: ""
+       Bowtie.preset.options: ""
+       GTF.file: ""
+       transcriptome.only: "no"
+       max.transcriptome.hits: ""
+       prefilter.multihits: ""
+       raw.junctions.file: ""
+       find.novel.junctions: ""
+       min.anchor.length: "8"
+       max.splice.mismatches: "0"
+       min.intron.length: ""
+       max.intron.length: "500000"
+       max.insertion.length: "3"
+       max.deletion.length: "3"
+       quality.value.scale: ""
+       quality.value.files.1: ""
+       quality.value.files.2: ""
+       integer.quals: ""
+       max.multihits: "20"
+       read.mismatches: "2"
+       coverage.search: "--no-coverage-search"
+       microexon.search: ""
+       output.prefix: "<reads.pair.1_basename>"
+assertions:
+        jobStatus: success
