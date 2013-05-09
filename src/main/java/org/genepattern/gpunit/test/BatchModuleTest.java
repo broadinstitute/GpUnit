@@ -100,8 +100,15 @@ public class BatchModuleTest {
     }
 
     private static void initDebug() {
-        initRestTest();
+        _debugInitDefault();
+        //initRestTest();
         //initDiffTest();
+        //System.setProperty(BatchProperties.PROP_GP_URL, "http://gpbroad.broadinstitute.org");
+        System.setProperty(BatchProperties.PROP_GP_URL, "http://gpdev.broadinstitute.org");
+        System.setProperty(BatchProperties.PROP_GP_USERNAME, "test");
+        System.setProperty(BatchProperties.PROP_GP_PASSWORD, "test");
+        System.setProperty(PROP_TESTCASE_DIRS, "./tests/RNA-Seq/fastTests/mock_tophat_test.yml");
+        System.setProperty(BatchProperties.PROP_CLIENT, BatchProperties.GpUnitClient.REST.toString());
     }
 
     /**

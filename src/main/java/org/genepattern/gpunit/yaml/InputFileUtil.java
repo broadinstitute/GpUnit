@@ -143,9 +143,18 @@ public class InputFileUtil {
     public static String getParamValueForInputFile(final BatchProperties props, final ModuleTestObject test, final Object pValue) 
     throws IOException 
             {
+        //special handling for null value
+        if (pValue == null) {
+            //if the initial value is null then return a null value
+            return null;
+        }
         //special handling for input files
         //0) if it's a URL
         if (pValue instanceof String) {
+            //special-case for empty string, return the empty string
+            if ( ((String) pValue).length() == 0) {
+                return (String) pValue;
+            }
             try {
                 URL url = new URL( (String) pValue);
                 //it's a url
