@@ -4,7 +4,7 @@ name: Valid Parameter Set 1
 module: Cufflinks.cuffmerge
 params:
        gtf1.file: "mock.gtf"
-       gtf2.file: "mock1.gtf"
+       gtf2.file: "mock2.gtf"
        input.list.file: ""
        reference.GTF: ""
        genome.file: "mock1.fa"
