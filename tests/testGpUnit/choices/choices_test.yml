@@ -1,0 +1,8 @@
+#
+# test choice input parameters, with default values
+#
+module: testChoiceParameters
+params: 
+assertions:
+    jobStatus: success
+

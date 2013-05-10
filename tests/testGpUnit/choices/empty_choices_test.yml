@@ -1,0 +1,9 @@
+#
+# test choice input parameters, with declared empty string values
+#
+module: testChoiceParameters
+params: 
+    arg1: ""
+    arg2: ""
+assertions:
+    jobStatus: success
