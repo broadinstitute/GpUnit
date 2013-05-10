@@ -154,9 +154,11 @@ public class ModuleRunner {
     {
         InputFileUtil ifutil=new InputFileUtil(gpClient, batchProps, nameOrLsid);
         List<Parameter> params = new ArrayList<Parameter>();
-        for(Entry<String,Object> entry : test.getParams().entrySet()) {
-            Parameter param = ifutil.initParam(test, entry);
-            params.add(param);
+        if (test.getParams() != null) {
+            for(Entry<String,Object> entry : test.getParams().entrySet()) {
+                Parameter param = ifutil.initParam(test, entry);
+                params.add(param);
+            }
         }
         
         //convert to an array
