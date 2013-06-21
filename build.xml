@@ -130,7 +130,7 @@ report.dir: ${report.dir}
 
             <junit fork="yes" printsummary="on" haltonfailure="false" showoutput="@{showoutput}" logfailedtests="true" failureProperty="test.failure" >
                 <formatter type="@{junit.formatter}" usefile="@{usefile}" />
-                <test name="org.genepattern.gpunit.test.BatchModuleTest" outfile="${report.dir}/TEST-all" />
+                <test name="org.genepattern.gpunit.test.BatchModuleTest" outfile="TEST-all" />
                 <classpath refid="gpunit.classpath" />
                 <sysproperty key="gpunit.testcase.dirs" value="@{testcases}" />
                 <sysproperty key="junit.parallel.threads" value="@{numthreads}" />
