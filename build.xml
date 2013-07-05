@@ -203,7 +203,8 @@ report.dir: ${report.dir}
             <pathelement location="${gpunit.testfolder}" />
         </path>
         <property name="testcases" refid="testfolder.path" /> 
-        <run-tests testcases="${testcases}" />
+        <run-tests testcases="${testcases}"
+            shutdowntimeout="${gpunit.shutdowntimeout}" />
     </target>
     
     <target name="gpunit-cufflinks" depends="package">
