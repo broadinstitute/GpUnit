@@ -49,6 +49,8 @@ report.dir: ${report.dir}
         <property name="gpunit.batch.name" value="run_${DSTAMP}_${TSTAMP}" />
         <property name="gpunit.save.downloads" value="false" />
         <property name="gpunit.delete.jobs" value="true" />
+        <property name="gpunit.shutdowntimeout" value="30" />
+        <property name="gpunit.numthreads" value="16" />
         
         <property name="gpunit.upload.dir" value="" />
         <property name="gpunit.server.dir" value="" />
@@ -204,6 +206,7 @@ report.dir: ${report.dir}
         </path>
         <property name="testcases" refid="testfolder.path" /> 
         <run-tests testcases="${testcases}"
+            numthreads="${gpunit.numthreads}" 
             shutdowntimeout="${gpunit.shutdowntimeout}" />
     </target>
     
