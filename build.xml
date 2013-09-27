@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="gp-unit" default="package">
+    <!-- Always load the 'gpunit.default.properties' file first -->
+    <dirname property="project.basedir" file="${ant.file.gp-unit}"/>
+    <property file="${project.basedir}/gpunit.default.properties" />
+    <!-- 
+      - Then load the gpunit.properties file, which can be optionally be
+      - replaced with a different file, e.g.
+      -  '-Dgpunit.properties=my.gpunit.properties' 
+     -->
     <property name="gpunit.dir" location="./" />
     <property name="gpunit.properties" value="gpunit.properties" />
     <property file="${gpunit.properties}" />
