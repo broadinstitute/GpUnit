@@ -1,0 +1,25 @@
+# Created: Thu Sep 26 20:16:57 EDT 2013 by jntest
+# Job: 57812    server:  http://gpdev.broadinstitute.org/gp/
+# Module: AuDIT urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00172:5.2
+# Parameters: 
+#    data.file = GO_Hutch_100ng_Interlab_audit.csv   http://gpdev.broadinstitute.org/gp/users/jntest/tmp/run5545218740984594072.tmp/data.file/1/GO_Hutch_100ng_Interlab_audit.csv
+#    skyline.export = TRUE
+#    pvalue.threshold = 0.00001
+#    cv.threshold = 0.2
+#    all.pairs = FALSE
+#    output.intermediate.results = FALSE
+#    output.prefix = <data.file_basename>-results
+module: AuDIT
+params:
+   data.file: GO_Hutch_100ng_Interlab_audit.csv
+   skyline.export: "TRUE"
+   pvalue.threshold: "0.00001"
+   cv.threshold: "0.2"
+   all.pairs: "FALSE"
+   output.intermediate.results: "FALSE"
+   output.prefix: "<data.file_basename>-results"
+assertions:
+    # declare the files because we are not interested in the stdout.txt diff
+    files:
+        GO_Hutch_100ng_Interlab_audit-results.csv:
+            diff: ./expected/GO_Hutch_100ng_Interlab_audit-results.csv

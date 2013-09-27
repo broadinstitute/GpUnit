@@ -1,6 +1,6 @@
 #lsid=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00236:4
 #
-name: Valid Parameter Set 1
+#name: Valid Parameter Set 1
 module: Cufflinks.cuffdiff
 params:
        first.SAM.or.BAM.file: "mock.bam"

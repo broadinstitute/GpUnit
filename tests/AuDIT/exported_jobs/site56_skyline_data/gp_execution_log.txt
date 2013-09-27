@@ -1,0 +1,11 @@
+# Created: Thu Sep 26 19:28:50 EDT 2013 by jntest
+# Job: 57803    server:  http://gpdev.broadinstitute.org/gp/
+# Module: AuDIT urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00172:5.2
+# Parameters: 
+#    data.file = site56-7.1-skyline-data.csv   http://gpdev.broadinstitute.org/gp/data//xchip/sqa/TestFiles/AuDIT/v3/site56-7.1-skyline-data.csv
+#    skyline.export = FALSE
+#    pvalue.threshold = 0.00001
+#    cv.threshold = 0.2
+#    all.pairs = FALSE
+#    output.intermediate.results = FALSE
+#    output.prefix = <data.file_basename>-results
