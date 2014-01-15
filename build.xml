@@ -58,7 +58,7 @@ report.dir: ${report.dir}
         <property name="gpunit.save.downloads" value="false" />
         <property name="gpunit.delete.jobs" value="true" />
         <property name="gpunit.shutdowntimeout" value="300" />
-        <property name="gpunit.numthreads" value="16" />
+        <property name="gpunit.numthreads" value="5" />
         
         <property name="gpunit.upload.dir" value="" />
         <property name="gpunit.server.dir" value="" />
@@ -125,7 +125,7 @@ report.dir: ${report.dir}
       -->
     <macrodef name="run-tests">
         <attribute name="testcases" />
-        <attribute name="numthreads" default="16" />
+        <attribute name="numthreads" default="5" />
         <!-- when running jobs in parallel, this is the max time in seconds to wait before finishing the test -->
         <attribute name="shutdowntimeout" default="300" /> 
         <attribute name="junit.formatter" default="xml" /> <!-- 'brief' | 'xml' | 'html' -->
@@ -176,7 +176,7 @@ report.dir: ${report.dir}
             <pathelement location="./tests/protocols" />
         </path>
         <property name="all-protocols.testcases" refid="all-protocols.path" /> 
-        <property name="gpunit.numthreads" value="32" />
+        <property name="gpunit.numthreads" value="5" />
         <!-- the max amount of time to wait, in seconds, before terminating the unit test -->
         <property name="gpunit.shutdowntimeout" value="300" />
         <run-tests 
@@ -223,7 +223,7 @@ report.dir: ${report.dir}
             <pathelement location="${gpunit.testfolder}" />
         </path>
         <property name="testcases" refid="testfolder.path" />
-        <property name="gpunit.numthreads" value="32" />
+        <property name="gpunit.numthreads" value="5" />
         <!-- the max amount of time to wait, in seconds, before terminating the unit test -->
         <property name="gpunit.shutdowntimeout" value="1800" />
         <run-tests 
