@@ -59,6 +59,11 @@ report.dir: ${report.dir}
         <property name="gpunit.delete.jobs" value="true" />
         <property name="gpunit.shutdowntimeout" value="300" />
         <property name="gpunit.numthreads" value="5" />
+        <property name="report.run.dir" location="${report.dir}/${gpunit.batch.name}" />
+        <mkdir dir="${report.run.dir}" />
+        <symlink link="${report.dir}/current" resource="${report.run.dir}" overwrite="true" />
+        <mkdir dir="${gpunit.outputdir}" />
+        <symlink link="${gpunit.outputdir}/current" resource="${gpunit.batch.name}" overwrite="true" />
         
         <property name="gpunit.upload.dir" value="" />
         <property name="gpunit.server.dir" value="" />
@@ -114,6 +119,8 @@ report.dir: ${report.dir}
         <delete dir="${gp.annotations.dir}/classes" />
         <delete dir="${gp.annotations.dir}/dist" />
         <delete dir="${report.dir}" />
+        <delete dir="${gpunit.outputdir}" />
+        <delete file="System.out" />
     </target>
     <!-- END build gp-unit.jar -->
 
@@ -140,7 +147,7 @@ report.dir: ${report.dir}
 
             <junit fork="yes" printsummary="on" haltonfailure="false" showoutput="@{showoutput}" logfailedtests="true" failureProperty="test.failure" >
                 <formatter type="@{junit.formatter}" usefile="@{usefile}" />
-                <test name="org.genepattern.gpunit.test.BatchModuleTest" outfile="TEST-all" todir="${report.dir}"/>
+                <test name="org.genepattern.gpunit.test.BatchModuleTest" outfile="TEST-all" todir="${report.run.dir}"/>
                 <classpath refid="gpunit.classpath" />
                 <sysproperty key="gpunit.testcase.dirs" value="@{testcases}" />
                 <sysproperty key="junit.parallel.threads" value="@{numthreads}" />
@@ -160,11 +167,11 @@ report.dir: ${report.dir}
                 <sysproperty key="gpunit.server.dir" value="${gpunit.server.dir}" />
             </junit>
 
-            <junitreport todir="${report.dir}">
-                <fileset dir="${report.dir}">
+            <junitreport todir="${report.run.dir}">
+                <fileset dir="${report.run.dir}">
                     <include name="TEST-*.xml"/>
                 </fileset>
-                <report format="frames" todir="${report.dir}/html"/>
+                <report format="frames" todir="${report.run.dir}/html"/>
             </junitreport>
 
             <fail if="test.failure" message="junit test failed" />
