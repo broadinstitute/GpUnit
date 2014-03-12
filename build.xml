@@ -61,9 +61,9 @@ report.dir: ${report.dir}
         <property name="gpunit.numthreads" value="5" />
         <property name="report.run.dir" location="${report.dir}/${gpunit.batch.name}" />
         <mkdir dir="${report.run.dir}" />
-        <symlink link="${report.dir}/current" resource="${report.run.dir}" overwrite="true" />
+        <symlink link="${report.dir}/current" resource="${report.run.dir}" overwrite="true" failonerror="false" />
         <mkdir dir="${gpunit.outputdir}" />
-        <symlink link="${gpunit.outputdir}/current" resource="${gpunit.batch.name}" overwrite="true" />
+        <symlink link="${gpunit.outputdir}/current" resource="${gpunit.batch.name}" overwrite="true" failonerror="false" />
         
         <property name="gpunit.upload.dir" value="" />
         <property name="gpunit.server.dir" value="" />
