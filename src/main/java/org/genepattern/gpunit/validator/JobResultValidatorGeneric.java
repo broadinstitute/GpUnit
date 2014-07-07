@@ -190,9 +190,6 @@ public abstract class JobResultValidatorGeneric {
         //   (may or may not have already downloaded result files; assume that we haven't, because it doesn't make sense
         //    to include outputDir and files assertion in the same test)
         if (assertions.getFiles() != null) {
-            //if (outputFilenames == null) {
-            //    initOutputFilenames();
-            //}
             for(Entry<String,TestFileObj> entry : assertions.getFiles().entrySet()) {
                 String filename = entry.getKey();
                 Assert.assertTrue("Expecting result file named '"+filename+"'", hasResultFile(filename));
@@ -204,8 +201,7 @@ public abstract class JobResultValidatorGeneric {
                         actual = getResultFile(downloadDir, filename);
                     }
                     catch (Throwable t) {
-                        t.printStackTrace();
-                        Assert.fail("Error downloading result file '"+filename+"': "+t.getLocalizedMessage());
+                        Assert.fail("job #"+jobId+", Error downloading result file '"+filename+"': "+t.getLocalizedMessage());
                     }
                     String diff = testFileObj.getDiff();
                     if (diff != null) {
