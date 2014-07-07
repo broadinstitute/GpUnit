@@ -27,7 +27,7 @@ public class BatchProperties {
         return true;
     }
     
-    enum GpUnitClient {
+    public enum GpUnitClient {
         SOAP,
         REST,
     }
@@ -37,6 +37,12 @@ public class BatchProperties {
     final static public String PROP_GP_USERNAME="username";
     final static public String PROP_GP_PASSWORD="password";
     
+    /**
+     * The root path from which to search for test.yaml files.
+     * When this property is set, run all matching *.yaml or *.yml files as gpunit tests.
+     */
+    public static final String PROP_TESTCASE_DIRS="gpunit.testcase.dirs";
+
     /** type of client, can be 'soap', 'rest', or 'localexec' */
     final static public String PROP_CLIENT="gpunit.client";
     

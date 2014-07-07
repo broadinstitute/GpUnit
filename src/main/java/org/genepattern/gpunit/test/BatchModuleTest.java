@@ -34,8 +34,6 @@ import org.junit.runners.Parameterized.Parameters;
 public class BatchModuleTest { 
     static BatchProperties batchProps;
 
-    final static private String PROP_TESTCASE_DIRS="gpunit.testcase.dirs";
-
     /**
      * This parameterized test runs a single unit test for each test case in the Collection.
      * Each Object[] instance in the collection is used to call the BatchModuleTest constructor,
@@ -68,7 +66,7 @@ public class BatchModuleTest {
         
         Collection<Object[]> testCases;
 
-        String gpunitTestcaseDirsProp = System.getProperty(PROP_TESTCASE_DIRS);
+        String gpunitTestcaseDirsProp = System.getProperty(BatchProperties.PROP_TESTCASE_DIRS);
         if (gpunitTestcaseDirsProp != null) { 
             //parse the list of one or more test cases
             List<File> fileset = new ArrayList<File>();
@@ -107,7 +105,7 @@ public class BatchModuleTest {
         System.setProperty(BatchProperties.PROP_GP_URL, "http://gpdev.broadinstitute.org");
         System.setProperty(BatchProperties.PROP_GP_USERNAME, "test");
         System.setProperty(BatchProperties.PROP_GP_PASSWORD, "test");
-        System.setProperty(PROP_TESTCASE_DIRS, "./tests/RNA-Seq/fastTests/mock_tophat_test.yml");
+        System.setProperty(BatchProperties.PROP_TESTCASE_DIRS, "./tests/RNA-Seq/fastTests/mock_tophat_test.yml");
         System.setProperty(BatchProperties.PROP_CLIENT, BatchProperties.GpUnitClient.REST.toString());
     }
 
@@ -140,19 +138,18 @@ public class BatchModuleTest {
         //System.setProperty(BatchProperties.PROP_OUTPUT_DIR, "./jobResults"); 
         //System.setProperty(BatchProperties.PROP_BATCH_NAME, "run-"+new Date().getTime()); 
         
-        //System.setProperty(PROP_TESTCASE_DIRS, "./tests/protocols");
-        System.setProperty(PROP_TESTCASE_DIRS, "./tests/protocols/01_Run");
+        System.setProperty(BatchProperties.PROP_TESTCASE_DIRS, "./tests/protocols/01_Run");
     }
     
     private static void initRestTest() {
         _debugInitDefault();
         System.setProperty(BatchProperties.PROP_CLIENT, BatchProperties.GpUnitClient.REST.toString());
-        System.setProperty(PROP_TESTCASE_DIRS, "./tests/testRestClient/job_status");
+        System.setProperty(BatchProperties.PROP_TESTCASE_DIRS, "./tests/testRestClient/job_status");
     }
 
     private static void initDiffTest() {
         _debugInitDefault();
-        System.setProperty(PROP_TESTCASE_DIRS, "./tests/DiffTest");
+        System.setProperty(BatchProperties.PROP_TESTCASE_DIRS, "./tests/DiffTest");
     }
 
     @BeforeClass 
