@@ -47,16 +47,6 @@ public abstract class AbstractDiffTest {
     }
     
     /**
-     * Override this method in a subclass if you need to pass arguments directly from the
-     * test case (the _test.yml file) to your implementing class. By default extra args
-     * are ignored.
-     * 
-     * @param args
-     */
-    //public void init(List<String> args) {
-    //}
-
-    /**
      * This method is the junit test case. Use the junit Assert class to indicate a failed test case.
      */
     abstract public void diff();
