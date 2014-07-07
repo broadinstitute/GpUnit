@@ -52,11 +52,11 @@ public class CmdLineDiff extends AbstractDiffTest {
 
     protected String[] getCmdLine() {
         //must have at least one arg
-        if (args==null) {
-            Assert.fail("invalid custom diff command: args==null");
+        if (args==null) {            
+            Assert.fail("job #"+jobId+", invalid custom diff command: args==null");
         }
         if (args.size()==0) {
-            Assert.fail("invalid custom diff command: args.size==0");
+            Assert.fail("job #"+jobId+", invalid custom diff command: args.size==0");
         }
         
         //must have a valid executable
@@ -69,17 +69,17 @@ public class CmdLineDiff extends AbstractDiffTest {
                     execFile = new File( inputDir, execFile.getPath() ).getCanonicalFile();
                 }
                 catch (IOException e) {
-                    Assert.fail("Error initializing execFile for '"+execFile.getPath()+"': "+e.getLocalizedMessage());
+                    Assert.fail("job #"+jobId+", Error initializing execFile for '"+execFile.getPath()+"': "+e.getLocalizedMessage());
                 }
             }
             if (!execFile.canExecute()) {
-                Assert.fail("invalid custom diff command: can't execute command, execFile="+execFile.toString());
+                Assert.fail("job #"+jobId+", invalid custom diff command: can't execute command, execFile="+execFile.toString());
             }
             try {
                 exec = execFile.getCanonicalPath();
             }
             catch (IOException e) {
-                Assert.fail("Error initializing custom executable for diff command: "+e.getLocalizedMessage());
+                Assert.fail("job #"+jobId+", Error initializing custom executable for diff command: "+e.getLocalizedMessage());
             }
         }
         
@@ -113,13 +113,13 @@ public class CmdLineDiff extends AbstractDiffTest {
         }
         catch (IOException e) {
             e.printStackTrace();
-            Assert.fail("Error in diff( '"+expected.getPath()+"', '"+actual.getPath()+"' ): " +e.getLocalizedMessage());
+            Assert.fail("job #"+jobId+", Error in diff( '"+expected.getPath()+"', '"+actual.getPath()+"' ): " +e.getLocalizedMessage());
         }
         if (interrupted) {
-            Assert.fail("diff command was interrupted.");
+            Assert.fail("job #"+jobId+", diff command was interrupted.");
         }
         if (hasDiff) {
-            Assert.fail("Files differ, '"+expected.getPath()+"', '"+actual.getPath()+"'");
+            Assert.fail("job #"+jobId+", Files differ, '"+expected.getPath()+"', '"+actual.getPath()+"'");
         } 
     }
     
