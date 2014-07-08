@@ -139,11 +139,11 @@ report.dir: ${report.dir}
         <attribute name="showoutput" default="true" />
         <attribute name="usefile" default="true" />
         <sequential>
+            <echo>Running tests as '${gp.user}' on '${gp.url}'</echo>
             <echo>testcases: @{testcases}</echo>
             <echo>junit.formatter: @{junit.formatter}</echo>
 
             <property name="gpunit.classpath.prop" refid="gpunit.classpath" /> 
-            <echo>gpunit.classpath: ${gpunit.classpath.prop}</echo>
 
             <junit fork="yes" printsummary="on" haltonfailure="false" showoutput="@{showoutput}" logfailedtests="true" failureProperty="test.failure" >
                 <formatter type="@{junit.formatter}" usefile="@{usefile}" />
