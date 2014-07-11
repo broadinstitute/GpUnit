@@ -2,12 +2,10 @@ package org.genepattern.gpunit.exec.rest;
 
 import java.io.File;
 import java.net.URI;
-import java.net.URL;
 
 import org.genepattern.gpunit.GpAssertions;
 import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.ModuleTestObject;
-import org.genepattern.gpunit.exec.soap.JobResultValidatorOrig;
 import org.genepattern.gpunit.test.BatchModuleTestObject;
 import org.genepattern.gpunit.test.BatchProperties;
 import org.json.JSONException;
@@ -42,85 +40,6 @@ public class RestClientUtil {
                 validator.clean();
             }
         }
-    }
-
-    public static void runTestOrig(BatchProperties batchProps, BatchModuleTestObject testObj) throws Exception {
-        JobRunnerRest runner=new JobRunnerRest(batchProps,testObj.getTestCase());
-        //1) run the job
-        final URI jobUri=runner.submitJob();
-
-        //2) poll for job completion
-        int count=0;
-        int maxtries = 20;
-        int initialSleep = 1000;
-        JSONObject job=waitForJob(runner, jobUri, initialSleep, initialSleep, maxtries, count); 
-        //boolean isFinished=jobStatus.getBoolean("isFinished");
-
-        //3) validate job results  
-        String jobId=job.getString("jobId");
-
-        JSONObject jobStatus=job.getJSONObject("status");
-        boolean hasError=jobStatus.getBoolean("hasError");
-
-        //   TODO: merge with GPClient specific functionality in Util.runTest, see JobResultValidator
-        //   JobResultValidator is hard-coded to use the GPclient SOAP client, we need to refactor into two 
-        //   implementations, one for SOAP client one for REST client
-        //testObj.getTestCase().getAssertions().getJobStatus();
-        //if (hasError) {
-        //    throw new Exception("job hasError");
-        //}
-
-        //TODO: need to incorporate full support for download directory
-        //    In the Soap client implementation, we automatically create directories as needed,
-        //    and automatically delete the ones we created
-        File jobResultDir=batchProps.getJobResultDir(testObj, jobId);
-        if (!jobResultDir.exists()) {
-            boolean success=jobResultDir.mkdirs();
-            if (!success) {
-                Assert.fail("Failed to create jobResultDir="+jobResultDir);
-            }
-        }
-
-        File stderrFile=null;
-        String errorMessage=null;
-        if (hasError) {
-            //init the error message
-            String stderrLocation=jobStatus.getString("stderrLocation");
-            if (stderrLocation != null) {
-                URL stderrUrl = new URL(stderrLocation);
-                //get the filename from the url
-                //TODO: could include this in the jobStatus object
-                String stderrFilename="stderr.txt";
-                String p=stderrUrl.getPath();
-                if (p != null) {
-                    int idx=p.lastIndexOf("/");
-                    if (idx>0) {
-                        p=p.substring(idx);
-                        if (p.startsWith("/")) {
-                            p=p.substring(1);
-                        }
-                    }
-                    if (p.length()==0) {
-                        p="stderr.txt";
-                    }
-                    stderrFilename=p;
-                }
-                stderrFile=new File(jobResultDir, stderrFilename);
-                runner.downloadFile(stderrUrl, stderrFile);
-                errorMessage=JobResultValidatorOrig.getErrorMessageFromStderrFile(stderrFile);
-            }
-        }
-
-        GenericJobResult jobResult=new GenericJobResult();
-        jobResult.jobId=job.getString("jobId");
-        jobResult.hasError=hasError;
-        if (errorMessage != null) {
-            jobResult.errorMessage=errorMessage;
-        }
-
-        validateJobStatus(testObj.getTestCase(), jobResult);
-        return;
-
     }
     
     //helper methods for polling for job completion, could be made generic
