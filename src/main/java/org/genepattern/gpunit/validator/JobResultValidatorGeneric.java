@@ -242,29 +242,6 @@ public abstract class JobResultValidatorGeneric {
             deleteJob();
         }
     }
-
-    //    public void cleanO() throws GpUnitException {
-//        //optionally, clean downloaded result files
-//        if (!saveResultFiles) {
-//            try {
-//                cleanDownloadedFiles();
-//            }
-//            catch (Exception e) {
-//                Assert.fail(e.getLocalizedMessage());
-//            }
-//        }
-//        //optionally, remove job from server
-//        if (deleteCompletedJobs) {
-//            deleteJob();
-//        }
-//    }
-    
-//    private void deleteJob(/* final ModuleRunner runner */) throws GpUnitException {
-//        if (jobId==null) {
-//            return;
-//        }
-//        runner.deleteJob(jobId);
-//    }
     
     private static Comparator<File> filenameComparator = new Comparator<File>() {
         public int compare(File arg0, File arg1) {
