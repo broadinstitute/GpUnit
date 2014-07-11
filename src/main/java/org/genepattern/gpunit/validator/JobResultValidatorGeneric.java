@@ -233,7 +233,7 @@ public abstract class JobResultValidatorGeneric {
         if (assertions.getFiles() != null) {
             for(Entry<String,TestFileObj> entry : assertions.getFiles().entrySet()) {
                 String filename = entry.getKey();
-                Assert.assertTrue("Expecting result file named '"+filename+"'", hasResultFile(filename));
+                Assert.assertTrue("job #"+jobId+", Expecting result file named '"+filename+"'", hasResultFile(filename));
                 TestFileObj testFileObj = entry.getValue();
                 if (testFileObj != null) {
                     //need to download the file ...
