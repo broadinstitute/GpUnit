@@ -1,8 +1,10 @@
 package org.genepattern.gpunit.validator;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.LineNumberReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -21,7 +23,6 @@ import org.genepattern.gpunit.diff.CmdLineDiff;
 import org.genepattern.gpunit.diff.NumRowsColsDiff;
 import org.genepattern.gpunit.diff.UnixCmdLineDiff;
 import org.genepattern.gpunit.download.JobResultDownloader;
-import org.genepattern.gpunit.exec.soap.JobResultValidatorOrig;
 import org.genepattern.gpunit.test.BatchModuleTestObject;
 import org.genepattern.gpunit.test.BatchProperties;
 import org.junit.Assert;
@@ -101,9 +102,49 @@ public abstract class JobResultValidatorGeneric {
         catch (Throwable t) {
             errorMessage = "There was an error downloading 'stderr.txt': "+t.getLocalizedMessage();
         }
-        errorMessage = JobResultValidatorOrig.getErrorMessageFromStderrFile(stderrFile);
+        errorMessage = getErrorMessageFromStderrFile(stderrFile);
         return errorMessage;
     }
+
+    /**
+     * Read the error message by downloading 'stderr.txt' result file and returning 
+     * a String containing the first MAX_N lines of the file.
+     * 
+     * @return
+     */
+    static public String getErrorMessageFromStderrFile(final File stderrFile) {
+        String errorMessage="";
+        if (stderrFile != null) {
+            LineNumberReader reader=null;
+            try {
+                reader = new LineNumberReader(new FileReader(stderrFile));
+                int n=0;
+                int MAX_N=12;
+                String line;
+                while ( ((line = reader.readLine()) != null) && n<MAX_N) {
+                    ++n;
+                    if (errorMessage.length()>0) { errorMessage += NL; }
+                    errorMessage += line;
+                }
+            }
+            catch (Throwable t) {
+                if (errorMessage.length()>0) { errorMessage += NL; }
+                errorMessage += "There was an error reading 'stderr.txt': "+t.getLocalizedMessage();
+            }
+            finally {
+                if (reader!=null) {
+                    try {
+                        reader.close();
+                    }
+                    catch (IOException e) {
+                        //ignoring
+                    }
+                }
+            }
+        }
+        return errorMessage;
+    }
+
 
     private void downloadResultFiles(File toDir) throws GpUnitException {
         getDownloader().downloadResultFiles();
