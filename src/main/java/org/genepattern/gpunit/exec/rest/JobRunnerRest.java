@@ -48,6 +48,8 @@ import org.json.JSONTokener;
  *
  */
 public class JobRunnerRest {
+    //TODO: context path is hard-coded
+    private String gpContextPath="gp";
     private BatchProperties batchProps;
     private ModuleTestObject test;
     private URL addFileUrl;
@@ -96,9 +98,7 @@ public class JobRunnerRest {
         if (!gpUrl.endsWith("/")) {
             gpUrl += "/";
         }
-        //TODO: context path is hard-coded
-        gpUrl += "gp/";
-        gpUrl += "rest/v1/data/upload/job_input";
+        gpUrl += gpContextPath+"/rest/v1/data/upload/job_input";
         try {
             return new URL(gpUrl);
         }
@@ -112,9 +112,7 @@ public class JobRunnerRest {
         if (!gpUrl.endsWith("/")) {
             gpUrl += "/";
         }
-        //TODO: context path is hard-coded
-        gpUrl += "gp/";
-        gpUrl += "rest/v1/jobs";
+        gpUrl += gpContextPath+"/rest/v1/jobs";
         try {
             return new URL(gpUrl);
         }
@@ -128,9 +126,7 @@ public class JobRunnerRest {
         if (!gpUrl.endsWith("/")) {
             gpUrl += "/";
         }
-        //TODO: context path is hard-coded
-        gpUrl += "gp/";
-        gpUrl += "rest/v1/tasks";
+        gpUrl += gpContextPath+"/rest/v1/tasks";
         try {
             return new URL(gpUrl);
         }
