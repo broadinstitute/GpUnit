@@ -145,7 +145,6 @@ public abstract class JobResultValidatorGeneric {
         return errorMessage;
     }
 
-
     private void downloadResultFiles(File toDir) throws GpUnitException {
         getDownloader().downloadResultFiles();
     }
@@ -203,7 +202,7 @@ public abstract class JobResultValidatorGeneric {
                 downloadResultFiles(downloadDir);
             }
             catch (Exception e) {
-                Assert.fail(e.getLocalizedMessage());
+                Assert.fail("job #"+jobId+", Error downloading result files: "+ e.getLocalizedMessage());
             }
         }
 
@@ -211,7 +210,7 @@ public abstract class JobResultValidatorGeneric {
         GpAssertions assertions = testCase.getAssertions();
         if (assertions.getNumFiles() >= 0) {
             //Note: when numFiles < 0, it means don't run this assertion
-            Assert.assertEquals("Number of result files", assertions.getNumFiles(), getNumResultFiles());
+            Assert.assertEquals("job #"+jobId+", Number of result files", assertions.getNumFiles(), getNumResultFiles());
         }
 
         //4) outputDir: ...
@@ -222,7 +221,7 @@ public abstract class JobResultValidatorGeneric {
             }
             catch (Throwable t) {
                 t.printStackTrace();
-                Assert.fail("Error downloading result files for job='"+jobId+"': "+t.getLocalizedMessage());
+                Assert.fail("job #"+jobId+", Error downloading result files: "+t.getLocalizedMessage());
             }
             directoryDiff(expectedOutputDir, downloadDir);
         }
@@ -319,7 +318,7 @@ public abstract class JobResultValidatorGeneric {
                 expectedDir = new File( testCase.getInputdir(), expectedDir.getPath() ).getCanonicalFile();
             }
             catch (IOException e) {
-                Assert.fail("Error initializing expectedDir for '"+expectedDir.getPath()+"': "+e.getLocalizedMessage());
+                Assert.fail("job #"+jobId+", Error initializing expectedDir for '"+expectedDir.getPath()+"': "+e.getLocalizedMessage());
             }
         }
         List<File> expectedFiles = new ArrayList<File>();
@@ -349,7 +348,7 @@ public abstract class JobResultValidatorGeneric {
         for(String filename : expectedFilesMap.keySet()) {
             File actual = resultFilesMap.remove(filename);
             if (actual == null) {
-                Assert.fail("Expected result file not found: '"+filename+"'");
+                Assert.fail("job #"+jobId+", Expected result file not found: '"+filename+"'");
             }
             File expected = expectedFilesMap.get(filename);
             //diff(expected,actual);
@@ -361,7 +360,7 @@ public abstract class JobResultValidatorGeneric {
             diffTest.diff();
         }
         if (resultFilesMap.size() > 0) {
-            Assert.fail("More job result files than expected: "+resultFilesMap.size());
+            Assert.fail("job #"+jobId+", More job result files than expected: "+resultFilesMap.size());
         }
     }
     
@@ -394,11 +393,11 @@ public abstract class JobResultValidatorGeneric {
             customDiff = initDiffTestFromCmdArgs(customDiffCmdArgs);
         }
         catch (Throwable t) {
-            String message="Error initializing custom diff command, test: "+customDiffCmdObj+". Error: "+t.getLocalizedMessage();
+            String message="job #"+jobId+", Error initializing custom diff command, test: "+customDiffCmdObj+". Error: "+t.getLocalizedMessage();
             Assert.fail(message);
         }
         if (customDiff == null) {
-            Assert.fail("Error initializing custom diff command, test: "+customDiffCmdObj);
+            Assert.fail("job #"+jobId+", Error initializing custom diff command, test: "+customDiffCmdObj);
         }
         return customDiff;
     }
