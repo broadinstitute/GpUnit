@@ -1,10 +1,13 @@
 package org.genepattern.gpunit.test;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -54,8 +57,8 @@ public class BatchModuleTest {
     @Parameters(name="{1}")
     public static Collection<Object[]> data() throws GpUnitException {
         //TODO: set debug=false before checking in, it's here for debugging new gp-unit features
-        final boolean debug=false;
-        if (debug) {
+        final boolean debug=true;
+        if (false) {
             initDebug();
         }
         
@@ -98,58 +101,34 @@ public class BatchModuleTest {
     }
 
     private static void initDebug() {
-        _debugInitDefault();
-        //initRestTest();
-        //initDiffTest();
-        //System.setProperty(BatchProperties.PROP_GP_URL, "http://gpbroad.broadinstitute.org");
-        System.setProperty(BatchProperties.PROP_GP_URL, "http://gpdev.broadinstitute.org");
-        System.setProperty(BatchProperties.PROP_GP_USERNAME, "test");
-        System.setProperty(BatchProperties.PROP_GP_PASSWORD, "test");
-        System.setProperty(BatchProperties.PROP_TESTCASE_DIRS, "./tests/RNA-Seq/fastTests/mock_tophat_test.yml");
-        System.setProperty(BatchProperties.PROP_CLIENT, BatchProperties.GpUnitClient.REST.toString());
-    }
-
-    /**
-     * Helper class for initializing properties when launching gp-unit tests from a debugger.
-     * For example, when developing new gp-unit features from an Eclipse IDE.
-     *  
-     * @param gpUrl
-     * @param user
-     * @param password
-     * @param testDir
-     */
-    private static void _debugInitDefault() {
-        //final String gpUrl="http://genepattern.broadinstitute.org";
-        //final String gpUrl="http://gpbroad.broadinstitute.org";
-        //final String gpUrl="http://genepatternbeta.broadinstitute.org";
-        //final String gpUrl="http://gpdev.broadinstitute.org";
-        final String gpUrl="http://127.0.0.1:8080";
+        //load props from the properties file
+        try {
+            Properties props=new Properties();
+            props.load(new FileInputStream(new File("gpunit.default.properties")));
+            for(final Entry<Object, Object> entry : props.entrySet()) {
+                System.setProperty((String)entry.getKey(), (String)entry.getValue());
+            }
+        }
+        catch (Exception e) {
+            Assert.fail(""+e.getLocalizedMessage());
+        }
         
-        final String gpUser="test";
-        final String gpPass="test";
         
-        System.setProperty(BatchProperties.PROP_GP_URL, gpUrl);
-        System.setProperty(BatchProperties.PROP_GP_USERNAME, gpUser);
-        System.setProperty(BatchProperties.PROP_GP_PASSWORD, gpPass);
+        // workaround for the way test cases are declared, one way in the properties file and another from ant
+        System.setProperty(BatchProperties.PROP_TESTCASE_DIRS, System.getProperty("gpunit.testfolder", "./tests/protocols/01_Run"));
 
-        System.setProperty(BatchProperties.PROP_CLIENT, BatchProperties.GpUnitClient.SOAP.toString());
-        System.setProperty(BatchProperties.PROP_SAVE_DOWNLOADS, "true");
-        System.setProperty(BatchProperties.PROP_DELETE_JOBS, "false");
+        // example custom properties for debugging
+        //System.setProperty(BatchProperties.PROP_GP_URL, "http://genepatternbeta.broadinstitute.org");
+        //System.setProperty(BatchProperties.PROP_GP_USERNAME, "test");
+        //System.setProperty(BatchProperties.PROP_GP_PASSWORD, "test");
+        //System.setProperty(BatchProperties.PROP_TESTCASE_DIRS, "./tests/testGpUnit/testStep");
+        //System.setProperty(BatchProperties.PROP_CLIENT, BatchProperties.GpUnitClient.REST.toString());
+        //System.setProperty(BatchProperties.PROP_SERVER_DIR, "http://genepatternbeta.broadinstitute.org/gp/data//xchip/sqa/Modules/TestSuiteData/");
+        
+        //System.setProperty(BatchProperties.PROP_SAVE_DOWNLOADS, "true");
+        //System.setProperty(BatchProperties.PROP_DELETE_JOBS, "false");
         //System.setProperty(BatchProperties.PROP_OUTPUT_DIR, "./jobResults"); 
-        //System.setProperty(BatchProperties.PROP_BATCH_NAME, "run-"+new Date().getTime()); 
-        
-        System.setProperty(BatchProperties.PROP_TESTCASE_DIRS, "./tests/protocols/01_Run");
-    }
-    
-    private static void initRestTest() {
-        _debugInitDefault();
-        System.setProperty(BatchProperties.PROP_CLIENT, BatchProperties.GpUnitClient.REST.toString());
-        System.setProperty(BatchProperties.PROP_TESTCASE_DIRS, "./tests/testRestClient/job_status");
-    }
-
-    private static void initDiffTest() {
-        _debugInitDefault();
-        System.setProperty(BatchProperties.PROP_TESTCASE_DIRS, "./tests/DiffTest");
+        //System.setProperty(BatchProperties.PROP_BATCH_NAME, "run-"+new Date().getTime());
     }
 
     @BeforeClass 
