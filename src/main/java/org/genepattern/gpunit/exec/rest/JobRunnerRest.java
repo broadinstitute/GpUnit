@@ -48,7 +48,7 @@ import org.json.JSONTokener;
  *
  */
 public class JobRunnerRest {
-    //TODO: context path is hard-coded
+    //context path is hard-coded
     private String gpContextPath="gp";
     private BatchProperties batchProps;
     private ModuleTestObject test;
@@ -78,12 +78,11 @@ public class JobRunnerRest {
         Map<String,URL> inputfileMap=new HashMap<String,URL>();
         for(Entry<String,Object> paramEntry : test.getParams().entrySet()) {
             final String pname=paramEntry.getKey();
-            //final ParameterInfo pinfo=null;
             if (inputFileParams.contains(pname)) {
                 //it's an input file
                 final Object initialValue=paramEntry.getValue();
                 String updatedValue=InputFileUtil.getParamValueForInputFile(batchProps, test, initialValue);
-                //upload the file here, TODO: make this an interruptible task
+                //upload the file here, this method blocks until the upload is complete
                 URL url=uploadFileIfNecessary(updatedValue);
                 if (url != null) {
                     inputfileMap.put(pname, url);
@@ -428,11 +427,9 @@ public class JobRunnerRest {
         return jobUri;
     }
     
-    public JSONObject getJob(final URI jobUri) throws Exception {
+    public JSONObject getJsonObject(final URI uri) throws Exception {
         HttpClient client = new DefaultHttpClient();
-        //String urlStr=getJobUrl.toExternalForm()+"/"+jobId;
-        
-        HttpGet get = new HttpGet(jobUri);
+        HttpGet get = new HttpGet(uri);
         get = setAuthHeaders(get);
         
         HttpResponse response=client.execute(get);
@@ -445,7 +442,7 @@ public class JobRunnerRest {
             success=false;
         }
         if (!success) {
-            String message="GET "+jobUri.toString()+" failed! "+statusCode+": "+response.getStatusLine().getReasonPhrase();
+            String message="GET "+uri.toString()+" failed! "+statusCode+": "+response.getStatusLine().getReasonPhrase();
             throw new Exception(message);
         }
         
@@ -468,6 +465,16 @@ public class JobRunnerRest {
                 reader.close();
             }
         }
+    }
+
+    
+    public JSONObject getJob(final URI jobUri) throws Exception {
+        return getJsonObject(jobUri);
+    }
+    
+    public JSONObject getJobStatus(final URI jobUri) throws Exception {
+        URI statusUri=new URI(jobUri.toString()+"/status.json");
+        return getJsonObject(statusUri);
     }
     
     public void downloadFile(final URL from, final File toFile) throws Exception {
