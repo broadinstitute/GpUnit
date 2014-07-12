@@ -155,6 +155,13 @@ public class InputFileUtil {
             if ( ((String) pValue).length() == 0) {
                 return (String) pValue;
             }
+            
+            // special-case, gpunit.server.dir is set, pass by reference
+            if (BatchProperties.isSet(props.getServerDir())) {
+                String filePath=props.getServerDir() + (String) pValue;
+                return filePath;
+            }
+            
             try {
                 URL url = new URL( (String) pValue);
                 //it's a url
