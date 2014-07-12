@@ -134,7 +134,7 @@ public class JobRunnerRest {
             throw new GpUnitException(e);
         }
     }
-    
+
     /**
      * Initialize the JSONObject to PUT into the /jobs resource on the GP server.
      * 
@@ -151,7 +151,6 @@ public class JobRunnerRest {
      */
     private JSONObject initJsonObject(final String lsid, final Map<String,URL> file_map) throws JSONException, IOException {
         JSONObject obj=new JSONObject();
-        //String lsid = test.getModule();
         obj.put("lsid", lsid);
         JSONArray params=new JSONArray();
         for(Entry<String,Object> paramEntry : test.getParams().entrySet()) {
@@ -161,8 +160,13 @@ public class JobRunnerRest {
                 value=file_map.get(pname).toExternalForm();
             }
             else {
-                //TODO: change method, this is getting the value for all input parameter types, including text
-                value=InputFileUtil.getParamValueForInputFile(batchProps, test, paramEntry.getValue());
+                if (paramEntry.getValue()==null) {
+                    //replace null with empty string
+                    value="";
+                }
+                else {
+                    value=paramEntry.getValue().toString();
+                }
             }
 
             JSONObject paramObj=new JSONObject();
@@ -442,7 +446,6 @@ public class JobRunnerRest {
         }
         if (!success) {
             String message="GET "+jobUri.toString()+" failed! "+statusCode+": "+response.getStatusLine().getReasonPhrase();
-            //String message="GET "+urlStr+" failed! "+statusCode+": "+response.getStatusLine().getReasonPhrase();
             throw new Exception(message);
         }
         
