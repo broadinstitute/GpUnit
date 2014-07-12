@@ -3,14 +3,11 @@ package org.genepattern.gpunit.exec.rest;
 import java.io.File;
 import java.net.URI;
 
-import org.genepattern.gpunit.GpAssertions;
 import org.genepattern.gpunit.GpUnitException;
-import org.genepattern.gpunit.ModuleTestObject;
 import org.genepattern.gpunit.test.BatchModuleTestObject;
 import org.genepattern.gpunit.test.BatchProperties;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.junit.Assert;
 
 public class RestClientUtil {
     
@@ -43,7 +40,7 @@ public class RestClientUtil {
     }
     
     //helper methods for polling for job completion, could be made generic
-    private static JSONObject waitForJob(JobRunnerRest runner, URI jobUri, int sleep, int initialSleep, int maxTries, int count) 
+    private static JSONObject waitForJob(final JobRunnerRest runner, final URI jobUri, final int sleep, final int initialSleep, final int maxTries, final int count) 
     throws InterruptedException, GpUnitException
     {
         Thread.sleep(sleep);
@@ -67,9 +64,7 @@ public class RestClientUtil {
         if (isFinished) {
             return job;
         }
-        count++;
-        sleep = incrementSleep(initialSleep, maxTries, count);
-        return waitForJob(runner, jobUri, sleep, initialSleep, maxTries, count);
+        return waitForJob(runner, jobUri, incrementSleep(initialSleep, maxTries, count), initialSleep, maxTries, count+1);
     }
     
     /**
@@ -91,38 +86,4 @@ public class RestClientUtil {
         }
         return init * 16;
     }
-
-    //helper methods for job result validation
-    private static class GenericJobResult {
-        final static public String NL = System.getProperty("line.separator");
-        public String jobId;
-        public boolean hasError;
-        //TODO: GET this from the REST call
-        public String errorMessage="Error message, see stderr.txt file on GP server for more details";
-    }
-
-    private static void validateJobStatus(final ModuleTestObject testCase, final GenericJobResult jobResult) {
-        GpAssertions assertions = testCase.getAssertions();
-        
-        boolean expectedHasStdError = false;
-        if (assertions != null && assertions.getJobStatus().trim().length() > 0) {
-            //check to see if it's a test-case with an expected stderr.txt output
-            expectedHasStdError = !"success".equalsIgnoreCase(assertions.getJobStatus());
-        }
-        
-        //case 1: expecting stderr
-        if (expectedHasStdError) {
-            Assert.assertTrue("job #"+jobResult.jobId+" doesn't have stderr.txt output", jobResult.hasError);
-            return;
-        }
-        //case 2: unexpected stderr
-        if (jobResult.hasError && !expectedHasStdError) {
-            String junitMessage = "job #"+jobResult.jobId+" has stderr.txt output: ";
-            //TODO: lazy init error message
-            //    for SOAP gpclient, String errorMessage = getErrorMessageFromStderrFile();
-            junitMessage += GenericJobResult.NL + jobResult.errorMessage;
-            Assert.fail(junitMessage);
-        }
-    }
-
 }
