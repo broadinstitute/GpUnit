@@ -1,0 +1,18 @@
+#
+# Basic run of 'TestStep' module with an uploaded file
+# 
+#
+module: TestStep
+params: 
+    message: "Run for ten seconds then exit"
+    exitCode: "0"
+    runningTime: "10"
+    verbose: "no"
+    copyInputFiles: "yes"
+    input0: "all_aml_test.cls"
+assertions:
+    files:
+        "all_aml_test.cp0.cls":
+            diff: "all_aml_test.cp0.cls"
+        "stdout.txt":
+            diff: "stdout_02.txt"

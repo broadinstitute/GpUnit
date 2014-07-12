@@ -1,0 +1,18 @@
+#
+# Basic run of 'TestStep' module with an uploaded file
+# 
+#
+module: TestStep
+params: 
+    message: "Test run for gpunit"
+    exitCode: "0"
+    runningTime: "0"
+    verbose: "no"
+    copyInputFiles: "yes"
+    input0: "all_aml_test.cls"
+assertions:
+    files:
+        "all_aml_test.cp0.cls":
+            diff: "all_aml_test.cp0.cls"
+        "stdout.txt":
+            diff: "stdout_01.txt"

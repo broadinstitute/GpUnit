@@ -1,0 +1,11 @@
+#
+# Basic run of 'ConvertLineEndings' module with an uploaded file
+# 
+#
+module: ConvertLineEndings
+params: 
+    input.filename: "all_aml_test.cls"
+assertions:
+    files:
+        "all_aml_test.cvt.cls":
+            diff: "all_aml_test.cvt.cls"

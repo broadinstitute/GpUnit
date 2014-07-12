@@ -1,0 +1,4 @@
+terminated after 10 seconds.
+Run for ten seconds then exit
+newname=all_aml_test.cp0.cls
+Exiting with exitCode=0

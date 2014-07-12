@@ -1,0 +1,4 @@
+terminated after 0 seconds.
+Test run for gpunit
+newname=all_aml_test.cp0.cls
+Exiting with exitCode=0
