@@ -19,7 +19,7 @@ public class RestClientUtil {
         //2) poll for job completion
         int count=0;
         int maxtries = 20;
-        int initialSleep = 1000;
+        int initialSleep = 1000; // set this to 1 for debugging
         JSONObject jobResult=waitForJob(runner, jobUri, initialSleep, initialSleep, maxtries, count); 
 
         //3) validate job results  
@@ -45,24 +45,42 @@ public class RestClientUtil {
     {
         Thread.sleep(sleep);
         JSONObject job=null;
+        //JSONObject jobStatus=null;
         try {
             job=runner.getJob(jobUri);
+            //jobStatus=runner.getJobStatus(jobUri);
         }
         catch (Exception e) {
-            throw new GpUnitException("Error getting jobStatus from: "+jobUri, e);
+            throw new GpUnitException("Error getting jobStatus from: "+jobUri+
+                    " Must connect to a GP server running version 3.8.2 or greater.", e);
         }
         if (job==null) {
             throw new IllegalArgumentException("job==null");
         }
+        //if (jobStatus==null) {
+        //    throw new IllegalArgumentException("jobStatus==null");
+        //}
         boolean isFinished;
         try {
             isFinished=job.getJSONObject("status").getBoolean("isFinished");
+            //isFinished=jobStatus.getBoolean("isFinished");
         }
         catch (JSONException e) {
             throw new GpUnitException("Error parsing JSON object from: "+jobUri, e);
         }
         if (isFinished) {
-            return job;
+            // workaround problem with 3.8.2 server, give the server a chance to record the job output files before proceeding
+            try {
+                Thread.sleep(1000);
+                job=runner.getJob(jobUri);
+                return job;
+            }
+            catch (InterruptedException e) {
+                throw e;
+            }
+            catch (Throwable t) {
+                throw new GpUnitException("Error in GET "+jobUri, t);
+            }
         }
         return waitForJob(runner, jobUri, incrementSleep(initialSleep, maxTries, count), initialSleep, maxTries, count+1);
     }
