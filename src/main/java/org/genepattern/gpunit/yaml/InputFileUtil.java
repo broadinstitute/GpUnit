@@ -156,19 +156,19 @@ public class InputFileUtil {
                 return (String) pValue;
             }
             
-            // special-case, gpunit.server.dir is set, pass by reference
-            if (BatchProperties.isSet(props.getServerDir())) {
-                String filePath=props.getServerDir() + (String) pValue;
-                return filePath;
-            }
-            
             try {
                 URL url = new URL( (String) pValue);
-                //it's a url
+                //it's a url, pass by reference
                 return (String) pValue;
             }
             catch (MalformedURLException e) {
                 //it's not a URL, continue
+            }
+            
+            // special-case, gpunit.server.dir is set, pass by reference
+            if (BatchProperties.isSet(props.getServerDir())) {
+                String filePath=props.getServerDir() + (String) pValue;
+                return filePath;
             }
         }
 

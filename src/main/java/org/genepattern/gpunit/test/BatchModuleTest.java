@@ -56,9 +56,8 @@ public class BatchModuleTest {
      */
     @Parameters(name="{1}")
     public static Collection<Object[]> data() throws GpUnitException {
-        //TODO: set debug=false before checking in, it's here for debugging new gp-unit features
-        final boolean debug=true;
-        if (false) {
+        final boolean debug=false;
+        if (debug) {
             initDebug();
         }
         
