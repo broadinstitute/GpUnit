@@ -1,0 +1,13 @@
+#
+# server file path
+# 
+# actual path: /xchip/sqa/Modules/TestSuiteData/TestGpUnit/all_aml_test.cls
+# example url: http://genepatternbeta.broadinstitute.org/gp/data//xchip/sqa/Modules/TestSuiteData/TestGpUnit/all_aml_test.cls
+#
+module: ConvertLineEndings
+params: 
+    input.filename: "TestGpUnit/all_aml_test.cls"
+assertions:
+    files:
+        "all_aml_test.cvt.cls":
+            diff: "all_aml_test.cvt.cls"

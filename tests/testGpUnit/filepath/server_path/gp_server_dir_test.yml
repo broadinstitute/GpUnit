@@ -1,0 +1,20 @@
+#
+# server file path
+# 
+# actual path: /xchip/sqa/Modules/TestSuiteData/TestGpUnit/all_aml_test.cls
+# example url: http://genepatternbeta.broadinstitute.org/gp/data//xchip/sqa/Modules/TestSuiteData/TestGpUnit/all_aml_test.cls
+#
+module: TestStep
+params: 
+    message: "Test run for gpunit"
+    exitCode: "0"
+    runningTime: "0"
+    verbose: "no"
+    copyInputFiles: "yes"
+    input0: "TestGpUnit/all_aml_test.cls"
+assertions:
+    files:
+        "all_aml_test.cp0.cls":
+            diff: "all_aml_test.cp0.cls"
+        "stdout.txt":
+            diff: "stdout.txt"

@@ -1,0 +1,11 @@
+#
+# hard-coded ftp path, don't append ${gp.server.dir} prefix
+# 
+#
+module: ConvertLineEndings
+params: 
+    input.filename: "ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_test.cls"
+assertions:
+    files:
+        "all_aml_test.cvt.cls":
+            diff: "all_aml_test.cvt.cls"
