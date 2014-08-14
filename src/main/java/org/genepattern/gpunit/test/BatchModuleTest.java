@@ -14,7 +14,6 @@ import java.util.regex.Pattern;
 import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.exec.rest.RestClientUtil;
 import org.genepattern.gpunit.exec.soap.SoapClientUtil;
-import org.genepattern.gpunit.yaml.GpUnitFileParser;
 import org.genepattern.util.junit.Parallelized;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -88,8 +87,7 @@ public class BatchModuleTest {
         Set<String> testNames=new HashSet<String>();
         for(Object[] row : testCases) {
             final BatchModuleTestObject batchTestObj=(BatchModuleTestObject) row[1];
-            final File testFile=batchTestObj.getTestFile();
-            final String testName=GpUnitFileParser.getTestNameFromFile(testFile);
+            final String testName=batchTestObj.getTestName();
             boolean added=testNames.add(testName);
             if (!added) {
                 //error, duplicate testName
