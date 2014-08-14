@@ -87,7 +87,7 @@ public class BatchModuleTest {
         //validate the testCases, make sure we have a unique download dir for each test
         Set<String> testNames=new HashSet<String>();
         for(Object[] row : testCases) {
-            final BatchModuleTestObject batchTestObj=(BatchModuleTestObject) row[2];
+            final BatchModuleTestObject batchTestObj=(BatchModuleTestObject) row[1];
             final File testFile=batchTestObj.getTestFile();
             final String testName=Util.getTestNameFromFile(testFile);
             boolean added=testNames.add(testName);
@@ -154,14 +154,9 @@ public class BatchModuleTest {
         }
     }
 
-    private int batchIdx;
-    //testname is the way to get the name for the test to show up in the junit report
-    private String testname;
     private BatchModuleTestObject testObj;
     
-    public BatchModuleTest(final int batchIdx, final String testname, final BatchModuleTestObject testObj) {
-        this.batchIdx = batchIdx;
-        this.testname = testname;
+    public BatchModuleTest(final int batchIdx, final BatchModuleTestObject testObj) {
         this.testObj = testObj;
     }
     

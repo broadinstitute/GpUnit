@@ -37,4 +37,21 @@ public class BatchModuleTestObject {
     public Throwable getInitException() {
         return initException;
     }
+    
+    public String getTestName() {    
+        if (testCase != null && testCase.getName() != null) {
+            return testCase.getName();
+        }
+        else if (testFile != null) {
+            return testFile.getName();
+        }
+        else {
+            return "";
+        }
+    }
+    
+    public String toString() {
+        return getTestName();
+    }
+    
 }

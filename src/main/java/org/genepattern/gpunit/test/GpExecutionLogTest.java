@@ -23,7 +23,7 @@ public class GpExecutionLogTest extends BatchModuleTest {
     }
     
     public GpExecutionLogTest(final int batchIdx, final String testname, final BatchModuleTestObject testObj) {
-        super(batchIdx, testname, testObj);
+        super(batchIdx, testObj);
     }
 
 }

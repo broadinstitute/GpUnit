@@ -19,18 +19,7 @@ import org.genepattern.gpunit.yaml.Util;
 public class BatchModuleUtil { 
     final static public String default_root_dir = "./tests";
 
-    /**
-     * Initialize the next test-case by parsing the given test file in yaml format.
-     * 
-     * @param batchIdx
-     * @param testFile
-     * @return an Object array where,
-     *     Object[0] is the batch index,
-     *     Object[1] is the test name,
-     *     Object[2] is the BatchModuleTestObject
-     *     
-     */
-    public static final Object[] initTestCaseEntry(final int batchIdx, final File testFile) {
+    public static final BatchModuleTestObject initBatchModuleTestObject(final File testFile) {
         ModuleTestObject testCase = null;
         Throwable exception = null;
         try {
@@ -43,16 +32,23 @@ public class BatchModuleUtil {
         batchTestObj.setTestFile(testFile);
         batchTestObj.setTestCase(testCase);
         batchTestObj.setInitException(exception);
-
-        //String testName=testFile.getName();
-        String testName=null;
-        if (testCase != null && testCase.getName() != null) {
-            testName = batchTestObj.getTestCase().getName();
-        }
-        else if (testFile != null) {
-            testName = testFile.getName();
-        }
-        return new Object[] { batchIdx, testName, batchTestObj };
+        return batchTestObj;
+    }
+    
+    /**
+     * Initialize the next test-case by parsing the given test file in yaml format.
+     * 
+     * @param batchIdx
+     * @param testFile
+     * @return an Object array where,
+     *     Object[0] is the batch index,
+     *     Object[1] is the test name,
+     *     Object[2] is the BatchModuleTestObject
+     *     
+     */
+    public static final Object[] initTestCaseEntry(final int batchIdx, final File testFile) {
+        BatchModuleTestObject batchTestObj = initBatchModuleTestObject(testFile);
+        return new Object[] { batchIdx, batchTestObj };
     }
     
     final static private Collection<Object[]> dataFromTestcaseFiles(final List<File> testcaseFiles) {
