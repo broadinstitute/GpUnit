@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.genepattern.gpunit.ModuleTestObject;
-import org.genepattern.gpunit.yaml.Util;
+import org.genepattern.gpunit.yaml.GpUnitFileParser;
 
 
 /**
@@ -23,7 +23,7 @@ public class BatchModuleUtil {
         ModuleTestObject testCase = null;
         Throwable exception = null;
         try {
-            testCase = Util.initTestCase(testFile);
+            testCase = GpUnitFileParser.initTestCase(testFile);
         }
         catch (Throwable t) {
             exception = t;

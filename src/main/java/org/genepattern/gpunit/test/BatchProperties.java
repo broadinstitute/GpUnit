@@ -4,7 +4,7 @@ import java.io.File;
 
 import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.ModuleTestObject;
-import org.genepattern.gpunit.yaml.Util;
+import org.genepattern.gpunit.yaml.GpUnitFileParser;
 import org.genepattern.webservice.JobResult;
 
 /**
@@ -254,7 +254,7 @@ public class BatchProperties {
         
         String dirname=null;
         if (testCaseFile != null) {
-            dirname=Util.getTestNameFromFile(testCaseFile);
+            dirname=GpUnitFileParser.getTestNameFromFile(testCaseFile);
         }
         else if (testName != null) {
             //otherwise, use the testname

@@ -4,14 +4,20 @@ import java.io.File;
 
 import org.genepattern.gpunit.ModuleTestObject;
 
-public class Util {
+/**
+ * Helper class for parsing gpunit files.
+ * 
+ * @author pcarr
+ *
+ */
+public class GpUnitFileParser {
     /**
      * Get the basename of the testcase file, only if the extension is 3 or 4 characters.
      * 
      * @param file
      * @return
      */
-    static public String dropExtension(File file) {
+    protected static final String dropExtension(File file) {
         if (file==null || file.getName()==null) {
             throw new IllegalArgumentException("file==null");
         }
@@ -29,13 +35,13 @@ public class Util {
         return name.substring(0, idx);
     }
     
-    static public String getTestNameFromFile(final File testCaseFile) {
+    public static final String getTestNameFromFile(final File testCaseFile) {
         if (testCaseFile==null) {
             throw new IllegalArgumentException("testCaseFile==null");
         }
         String dirname;
         //by default save output files into a directory based on the test case file
-        String basename=Util.dropExtension(testCaseFile);            
+        String basename=GpUnitFileParser.dropExtension(testCaseFile);            
         if (testCaseFile.getParentFile() != null) {
             dirname = testCaseFile.getParentFile().getName() + "_" + basename;
         }
@@ -45,7 +51,16 @@ public class Util {
         return dirname;
     }
 
-    static public ModuleTestObject initTestCase(File fromFile) throws Exception {
+    /**
+     * Create a new ModuleTestObject instance by parsing the given file. The input file can be in one of two formats:
+     *     (1) a gp_execution_log.txt file from a completed gp job, or
+     *     (2) a yaml formatted file which declares the test case
+     * 
+     * @param fromFile
+     * @return
+     * @throws Exception
+     */
+    public static final ModuleTestObject initTestCase(final File fromFile) throws Exception {
         if ("gp_execution_log.txt".equals(fromFile.getName().toLowerCase())) {
             return ExecutionLogParser.parse(fromFile);
         }
