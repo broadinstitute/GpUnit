@@ -1,0 +1,16 @@
+{
+  "href": "http://gpbroad.broadinstitute.org/gp/rest/v1/tasks/urn:lsid:broad.mit.edu:cancer.software.genepattern.module.test.analysis:00009:0.2",
+  "lsid": "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.test.analysis:00009:0.2",
+  "name": "TestFileGroup",
+  "params": [{"inputFileGroup": {"attributes": {
+    "MODE": "IN",
+    "TYPE": "FILE",
+    "fileFormat": "",
+    "numGroups": "0+",
+    "numValues": "1+",
+    "optional": "",
+    "prefix_when_specified": "--inputFileGroup=",
+    "prefix_when_specified_list": "--inputFileGroup-list=",
+    "type": "java.io.File"
+  }}}]
+}

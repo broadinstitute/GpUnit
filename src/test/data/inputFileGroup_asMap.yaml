@@ -1,0 +1,21 @@
+#
+# Hand-coded example yaml file for a module which accepts a grouped list of input files
+# Parameters: 
+module: TestFileGroup
+params:
+    # 2 groups of 2 input files, by external URL
+    inputFileGroup: {
+        "Group A": [
+              "ftp://gpftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.cls", 
+              "ftp://gpftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct"
+        ],
+        "Group B": [
+              "ftp://gpftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.cls",
+              "ftp://gpftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.gct"
+        ]
+    }
+assertions:
+    files:
+        "stdout.txt":
+            diff: "./expected/inputFileGroup_asMap_stdout.txt"
+    

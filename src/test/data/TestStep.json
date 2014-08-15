@@ -1,0 +1,86 @@
+{
+  "href": "http://gpbroad.broadinstitute.org/gp/rest/v1/tasks/urn:lsid:broad.mit.edu:cancer.software.genepattern.module.test.analysis:00008:0.3",
+  "lsid": "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.test.analysis:00008:0.3",
+  "name": "TestStep",
+  "params": [
+    {"message": {"attributes": {
+      "default_value": "Hello, World!",
+      "fileFormat": "",
+      "optional": "",
+      "prefix_when_specified": "--message=",
+      "type": "java.lang.String"
+    }}},
+    {"errorMessage": {"attributes": {
+      "fileFormat": "",
+      "optional": "on",
+      "prefix_when_specified": "--errorMessage=",
+      "type": "java.lang.String"
+    }}},
+    {"exitCode": {"attributes": {
+      "default_value": "0",
+      "fileFormat": "",
+      "optional": "",
+      "prefix_when_specified": "--exitCode=",
+      "type": "java.lang.String"
+    }}},
+    {"runningTime": {"attributes": {
+      "default_value": "0",
+      "fileFormat": "",
+      "optional": "",
+      "prefix_when_specified": "--runningTime=",
+      "type": "java.lang.String"
+    }}},
+    {"verbose": {"attributes": {
+      "default_value": "yes",
+      "fileFormat": "",
+      "optional": "",
+      "prefix_when_specified": "--verbose=",
+      "type": "java.lang.String"
+    }}},
+    {"copyInputFiles": {"attributes": {
+      "default_value": "no",
+      "fileFormat": "",
+      "optional": "",
+      "prefix_when_specified": "--copyInputFiles=",
+      "type": "java.lang.String"
+    }}},
+    {"input0": {"attributes": {
+      "MODE": "IN",
+      "TYPE": "FILE",
+      "fileFormat": "",
+      "optional": "on",
+      "prefix_when_specified": "--input0=",
+      "type": "java.io.File"
+    }}},
+    {"input1": {"attributes": {
+      "MODE": "IN",
+      "TYPE": "FILE",
+      "fileFormat": "",
+      "optional": "on",
+      "prefix_when_specified": "--input1=",
+      "type": "java.io.File"
+    }}},
+    {"input2": {"attributes": {
+      "MODE": "IN",
+      "TYPE": "FILE",
+      "fileFormat": "",
+      "optional": "on",
+      "prefix_when_specified": "--input2=",
+      "type": "java.io.File"
+    }}},
+    {"input3": {"attributes": {
+      "MODE": "IN",
+      "TYPE": "FILE",
+      "fileFormat": "",
+      "optional": "on",
+      "prefix_when_specified": "--input3=",
+      "type": "java.io.File"
+    }}},
+    {"logLabel": {"attributes": {
+      "fileFormat": "",
+      "optional": "on",
+      "prefix_when_specified": "--logLabel=",
+      "type": "java.lang.String"
+    }}}
+  ]
+}

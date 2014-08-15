@@ -1,0 +1,10 @@
+#
+# Hand-coded example yaml file for a module which accepts a grouped list of input files
+# Parameters: 
+module: ConvertLineEndings
+params:
+    input.filename: all_aml_test.gct
+assertions:
+    files:
+        "all_aml_test.cvt.gct":
+            diff: "./all_aml_test.gct"

@@ -1,0 +1,6 @@
+There are 2 files in group 'group a'
+	all_aml_test.cls
+	all_aml_test.gct
+There are 2 files in group 'group b'
+	all_aml_train.cls
+	all_aml_train.gct
