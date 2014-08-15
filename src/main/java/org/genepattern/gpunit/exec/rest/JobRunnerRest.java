@@ -139,7 +139,7 @@ public class JobRunnerRest {
             return initJsonValueFromYamlMap(pname, yamlValue);
         }
         ParamEntry paramEntry = new ParamEntry(pname);
-        String value=initValueStringFromObj(yamlValue);
+        String value=initJsonValueFromYamlObject(yamlValue);
         paramEntry.addValue(value);
         return Arrays.asList(new ParamEntry[]{paramEntry});
     }
@@ -155,7 +155,7 @@ public class JobRunnerRest {
         }
         ParamEntry paramEntry=new ParamEntry(pname);
         for(final Object yamlEntry : yamlList) {
-            String value=initValueStringFromObj(yamlEntry);
+            String value=initJsonValueFromYamlObject(yamlEntry);
             paramEntry.addValue(value);
         }
         return paramEntry;
@@ -176,7 +176,7 @@ public class JobRunnerRest {
             GroupedParamEntry paramEntry = new GroupedParamEntry(pname, groupId);
             for(final Object yamlEntry : entry.getValue()) {
                 // convert file input value into a URL if necessary
-                String value=initValueStringFromObj(yamlEntry);
+                String value=initJsonValueFromYamlObject(yamlEntry);
                 paramEntry.addValue(value);
             }
             groups.add(paramEntry);
@@ -184,7 +184,15 @@ public class JobRunnerRest {
         return groups;
     }
     
-    protected String initValueStringFromObj(Object yamlEntry) throws GpUnitException {
+    /**
+     * This method uploads the file from the local machine to the GP server when a local file path is specified.
+     * In all cases it returns the value to be submitted to the GP server via the REST API call.
+     * 
+     * @param yamlEntry
+     * @return
+     * @throws GpUnitException
+     */
+    protected String initJsonValueFromYamlObject(final Object yamlEntry) throws GpUnitException {
         String updatedValue;
         try {
             updatedValue=InputFileUtil.getParamValueForInputFile(batchProps, test, yamlEntry);
