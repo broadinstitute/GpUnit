@@ -55,10 +55,7 @@ public class BatchModuleTest {
      */
     @Parameters(name="{1}")
     public static Collection<Object[]> data() throws GpUnitException {
-        final boolean debug=false;
-        if (debug) {
-            initDebug();
-        }
+        loadGpunitDefaultProperties();
         
         String numThreadsProp = System.getProperty("junit.parallel.threads");
         if (numThreadsProp == null) {
@@ -97,35 +94,30 @@ public class BatchModuleTest {
         return testCases;
     }
 
-    private static void initDebug() {
+    private static void loadGpunitDefaultProperties() {
+        File gpunitDefaultPropsFile=new File("gpunit.default.properties");
+        if (!gpunitDefaultPropsFile.canRead()) {
+            // ignore, only load the properties if they are in the working directory
+            return;
+        }
+        
         //load props from the properties file
         try {
             Properties props=new Properties();
-            props.load(new FileInputStream(new File("gpunit.default.properties")));
+            props.load(new FileInputStream(gpunitDefaultPropsFile));
             for(final Entry<Object, Object> entry : props.entrySet()) {
-                System.setProperty((String)entry.getKey(), (String)entry.getValue());
+                String key=(String)entry.getKey();
+                String value=(String)entry.getValue();
+                System.setProperty(key, value);
+                // workaround for the way test cases are declared, one way in the properties file and another from ant
+                if ("gpunit.testfolder".equals(key)) {
+                    System.setProperty(BatchProperties.PROP_TESTCASE_DIRS, value);
+                }
             }
         }
         catch (Exception e) {
-            Assert.fail(""+e.getLocalizedMessage());
+            Assert.fail("Error loading properties from "+gpunitDefaultPropsFile+": "+e.getLocalizedMessage());
         }
-        
-        
-        // workaround for the way test cases are declared, one way in the properties file and another from ant
-        System.setProperty(BatchProperties.PROP_TESTCASE_DIRS, System.getProperty("gpunit.testfolder", "./tests/protocols/01_Run"));
-
-        // example custom properties for debugging
-        //System.setProperty(BatchProperties.PROP_GP_URL, "http://genepatternbeta.broadinstitute.org");
-        //System.setProperty(BatchProperties.PROP_GP_USERNAME, "test");
-        //System.setProperty(BatchProperties.PROP_GP_PASSWORD, "test");
-        //System.setProperty(BatchProperties.PROP_TESTCASE_DIRS, "./tests/testGpUnit/testStep");
-        //System.setProperty(BatchProperties.PROP_CLIENT, BatchProperties.GpUnitClient.REST.toString());
-        //System.setProperty(BatchProperties.PROP_SERVER_DIR, "http://genepatternbeta.broadinstitute.org/gp/data//xchip/sqa/Modules/TestSuiteData/");
-        
-        //System.setProperty(BatchProperties.PROP_SAVE_DOWNLOADS, "true");
-        //System.setProperty(BatchProperties.PROP_DELETE_JOBS, "false");
-        //System.setProperty(BatchProperties.PROP_OUTPUT_DIR, "./jobResults"); 
-        //System.setProperty(BatchProperties.PROP_BATCH_NAME, "run-"+new Date().getTime());
     }
 
     @BeforeClass 
