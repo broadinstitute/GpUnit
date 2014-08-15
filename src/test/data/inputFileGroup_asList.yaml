@@ -1,5 +1,5 @@
 #
-# Hand-coded example yaml file for a module which accepts a grouped list of input files
+# Hand-coded example yaml file for a module which accepts a list of input files
 # Parameters: 
 module: TestFileGroup
 params:
