@@ -148,7 +148,7 @@ public class JobRunnerRest {
        }
      * </pre>
      */
-    private JSONObject initJsonObject(final String lsid, final Map<String,URL> file_map) throws JSONException, IOException {
+    protected JSONObject initJsonObject(final String lsid, final Map<String,URL> file_map) throws JSONException, IOException {
         JSONObject obj=new JSONObject();
         obj.put("lsid", lsid);
         JSONArray params=new JSONArray();
@@ -369,13 +369,8 @@ public class JobRunnerRest {
         }
         return null;
     }
-
-    public URI submitJob() throws JSONException, UnsupportedEncodingException, IOException, Exception {
-        // make REST call to validate that the module.lsid (which could be a taskName or LSID)
-        // is installed on the server
-        final String taskNameOrLsid = test.getModule();
-        final JSONObject taskInfo=getTask(taskNameOrLsid);
-        final String lsid=taskInfo.getString("lsid");
+    
+    protected Set<String> getInputFileParamNames(JSONObject taskInfo) throws JSONException, GpUnitException {
         Set<String> inputFileParams=new HashSet<String>();
         JSONArray params=taskInfo.getJSONArray("params");
         for(int i=0; i<params.length(); ++i) {
@@ -385,10 +380,20 @@ public class JobRunnerRest {
                 inputFileParams.add(pname);
             }
         }
+        return inputFileParams;
+    }
+
+    public URI submitJob() throws JSONException, UnsupportedEncodingException, IOException, Exception {
+        // make REST call to validate that the module.lsid (which could be a taskName or LSID)
+        // is installed on the server
+        final String taskNameOrLsid = test.getModule();
+        final JSONObject taskInfo=getTask(taskNameOrLsid);
+        final String lsid=taskInfo.getString("lsid");
+        final Set<String> inputFileParamNames=getInputFileParamNames(taskInfo);
         
         // upload data files, for each file input parameter, if it's a local file, upload it and save the URL
         // use that url as the value when adding the job to GP
-        final Map<String,URL> file_map=uploadFiles(inputFileParams);
+        final Map<String,URL> file_map=uploadFiles(inputFileParamNames);
         
         JSONObject job = initJsonObject(lsid, file_map);
         
