@@ -142,6 +142,13 @@ public class InputFileUtil {
 
     public static String getParamValueForInputFile(final BatchProperties props, final ModuleTestObject test, final Object pValue) 
     throws IOException 
+    {
+        File localInputDir=test.getInputdir();
+        return getParamValueForInputFile(props, localInputDir, pValue);
+    }
+    
+    public static String getParamValueForInputFile(final BatchProperties props, final File localInputDir, final Object pValue) 
+    throws IOException 
             {
         //special handling for null value
         if (pValue == null) {
@@ -202,7 +209,7 @@ public class InputFileUtil {
 
         //2) otherwise ... it's a relative path
         //a) if the file exists relative to the directory which contains the test-case file, upload it
-        final File relativeToInputDir = new File( test.getInputdir(), file.getPath() ).getCanonicalFile();
+        final File relativeToInputDir = new File( localInputDir, file.getPath() ).getCanonicalFile();
         if (relativeToInputDir.exists()) {
             //it's a local file, upload it
             return relativeToInputDir.getCanonicalPath();
