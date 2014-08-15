@@ -191,7 +191,6 @@ public class InputFileUtil {
             throw new IllegalArgumentException("Must be a File or a String, type="+pValue.getClass().getName());
         }
         else {
-            //TODO: improve handling of types (e.g. int)
             String rval = pValue.toString();
             return rval;
         }

@@ -12,9 +12,10 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -55,7 +56,7 @@ public class JobRunnerRest {
     private URL addFileUrl;
     private URL addJobUrl;
     private URL getTaskUrl;
-    
+
     public JobRunnerRest(final BatchProperties batchProps, final ModuleTestObject test) throws GpUnitException {
         if (batchProps==null) {
             throw new IllegalArgumentException("batchProps==null");
@@ -68,28 +69,6 @@ public class JobRunnerRest {
         this.addFileUrl=initAddFileUrl();
         this.addJobUrl=initAddJobUrl();
         this.getTaskUrl=initGetTaskUrl();
-    }
-
-    private Map<String,URL> uploadFiles(final Set<String> inputFileParams) throws IOException, GpUnitException {
-        if (inputFileParams.size()==0) {
-            return Collections.emptyMap();
-        }
-        
-        Map<String,URL> inputfileMap=new HashMap<String,URL>();
-        for(Entry<String,Object> paramEntry : test.getParams().entrySet()) {
-            final String pname=paramEntry.getKey();
-            if (inputFileParams.contains(pname)) {
-                //it's an input file
-                final Object initialValue=paramEntry.getValue();
-                String updatedValue=InputFileUtil.getParamValueForInputFile(batchProps, test, initialValue);
-                //upload the file here, this method blocks until the upload is complete
-                URL url=uploadFileIfNecessary(updatedValue);
-                if (url != null) {
-                    inputfileMap.put(pname, url);
-                }
-            }
-        }
-        return inputfileMap;        
     }
 
     private URL initAddFileUrl() throws GpUnitException {
@@ -133,9 +112,97 @@ public class JobRunnerRest {
             throw new GpUnitException(e);
         }
     }
+    
+    /**
+     * Prepare the (list of) input file(s) from the given yamlValue. 
+     * If necessary upload each input file to the server. This method blocks while files are being transferred.
+     * 
+     * @param yamlValue, this is an object from the right-hand side of the parameter declaration in the
+     *     yaml file. It can be a String, a File, a List of String, a List of File, or a Map of file groupings.
+     *     
+     * @return jsonValue, the JSON representation to be uploaded to the GenePattern REST API. It can be one of these types
+     *     (based on the JSON.org spec): Boolean, Double, Integer, JSONArray, JSONObject, Long, String, or the JSONObject.NULL object.
+     *     
+     * @throws GpUnitException
+     * @throws JSONException
+     */
+    protected List<ParamEntry> prepareInputValues(String pname, Object yamlValue) throws GpUnitException, JSONException {
+        // if it's an array ...
+        if (yamlValue instanceof List<?>) {
+            // expecting a List<String,Object>
+            ParamEntry values=initJsonValueFromYamlList(pname, yamlValue);
+            return Arrays.asList(new ParamEntry[]{values});
+        }
+        // or a map of grouped values ...
+        else if (yamlValue instanceof Map<?,?>) {
+            // expecting a Map<String,Object>
+            return initJsonValueFromYamlMap(pname, yamlValue);
+        }
+        ParamEntry paramEntry = new ParamEntry(pname);
+        String value=initValueStringFromObj(yamlValue);
+        paramEntry.addValue(value);
+        return Arrays.asList(new ParamEntry[]{paramEntry});
+    }
+    
+    @SuppressWarnings("unchecked")
+    protected ParamEntry initJsonValueFromYamlList(final String pname, final Object yamlValue) throws GpUnitException, JSONException {
+        List<Object> yamlList;
+        try {
+            yamlList = (List<Object>) yamlValue;
+        }
+        catch (Throwable t) {
+            throw new GpUnitException("yaml format error, expecting List<Object> "+t.getLocalizedMessage());
+        }
+        ParamEntry paramEntry=new ParamEntry(pname);
+        for(final Object yamlEntry : yamlList) {
+            String value=initValueStringFromObj(yamlEntry);
+            paramEntry.addValue(value);
+        }
+        return paramEntry;
+    }
+
+    @SuppressWarnings("unchecked")
+    protected List<ParamEntry> initJsonValueFromYamlMap(final String pname, final Object yamlValue) throws GpUnitException, JSONException {
+        Map<String,List<Object>> yamlValueMap;
+        try {
+            yamlValueMap = (Map<String,List<Object>>) yamlValue;
+        }
+        catch (Throwable t) {
+            throw new GpUnitException("yaml format error, expecting Map<String,Object> "+t.getLocalizedMessage());
+        }
+        List<ParamEntry> groups=new ArrayList<ParamEntry>();
+        for(final Entry<String,List<Object>> entry : yamlValueMap.entrySet()) {
+            String groupId=entry.getKey();
+            GroupedParamEntry paramEntry = new GroupedParamEntry(pname, groupId);
+            for(final Object yamlEntry : entry.getValue()) {
+                // convert file input value into a URL if necessary
+                String value=initValueStringFromObj(yamlEntry);
+                paramEntry.addValue(value);
+            }
+            groups.add(paramEntry);
+        }
+        return groups;
+    }
+    
+    protected String initValueStringFromObj(Object yamlEntry) throws GpUnitException {
+        String updatedValue;
+        try {
+            updatedValue=InputFileUtil.getParamValueForInputFile(batchProps, test, yamlEntry);
+        }
+        catch (Throwable t) {
+            throw new GpUnitException("Error initializing input file value from yamlEntry="+yamlEntry+": "+t.getLocalizedMessage());
+        }
+        URL url=uploadFileIfNecessary(updatedValue);
+        if (url != null) {
+            return url.toExternalForm();
+        }
+        return updatedValue;
+    }
 
     /**
      * Initialize the JSONObject to PUT into the /jobs resource on the GP server.
+     * Upload data files when necessary. For each file input parameter, if it's a local file, upload it and save the URL.
+     * Use that url as the value when adding the job to GP.
      * 
      * <pre>
        {"lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00020:4", 
@@ -148,38 +215,32 @@ public class JobRunnerRest {
        }
      * </pre>
      */
-    protected JSONObject initJsonObject(final String lsid, final Map<String,URL> file_map) throws JSONException, IOException {
-        JSONObject obj=new JSONObject();
+    private JSONObject initJsonObject(final String lsid) throws JSONException, IOException, GpUnitException {
+        final JSONObject obj=new JSONObject();
         obj.put("lsid", lsid);
-        JSONArray params=new JSONArray();
-        for(Entry<String,Object> paramEntry : test.getParams().entrySet()) {
-            final String pname=paramEntry.getKey();
-            final String value;
-            if (file_map.containsKey(pname)) {
-                value=file_map.get(pname).toExternalForm();
+        final JSONArray paramsJsonArray=new JSONArray();
+        for(final Entry<String,Object> paramYamlEntry : test.getParams().entrySet()) {
+            final List<ParamEntry> paramValues=prepareInputValues(paramYamlEntry.getKey(), paramYamlEntry.getValue());
+            if (paramValues==null || paramValues.size()==0) {
+                // replace empty list with list containing the empty string
+                JSONObject paramObj=new JSONObject();
+                paramObj.put("name", paramYamlEntry.getKey());
+                JSONArray valuesArr=new JSONArray();
+                valuesArr.put("");
+                paramObj.put("values", valuesArr);
+                paramsJsonArray.put(paramObj);
             }
             else {
-                if (paramEntry.getValue()==null) {
-                    //replace null with empty string
-                    value="";
-                }
-                else {
-                    value=paramEntry.getValue().toString();
+                for(final ParamEntry paramValue : paramValues) {
+                    JSONObject paramValueToJson=new JSONObject(paramValue);
+                    paramsJsonArray.put(paramValueToJson);
                 }
             }
-
-            JSONObject paramObj=new JSONObject();
-            paramObj.put("name", pname);
-            JSONArray valuesArr=new JSONArray();
-            valuesArr.put(value);
-            paramObj.put("values", valuesArr);
-            paramObj.put("values", valuesArr);
-            params.put(paramObj);
         }
-        obj.put("params", params);
+        obj.put("params", paramsJsonArray);
         return obj;
     }
-    
+
     private URL uploadFileIfNecessary(final String value) throws GpUnitException {
         try {
             URL url=new URL(value);
@@ -389,13 +450,8 @@ public class JobRunnerRest {
         final String taskNameOrLsid = test.getModule();
         final JSONObject taskInfo=getTask(taskNameOrLsid);
         final String lsid=taskInfo.getString("lsid");
-        final Set<String> inputFileParamNames=getInputFileParamNames(taskInfo);
         
-        // upload data files, for each file input parameter, if it's a local file, upload it and save the URL
-        // use that url as the value when adding the job to GP
-        final Map<String,URL> file_map=uploadFiles(inputFileParamNames);
-        
-        JSONObject job = initJsonObject(lsid, file_map);
+        JSONObject job = initJsonObject(lsid);
         
         HttpClient client = new DefaultHttpClient();
         HttpPost post = new HttpPost(addJobUrl.toExternalForm());
@@ -432,6 +488,17 @@ public class JobRunnerRest {
         return jobUri;
     }
     
+    /**
+     * Helper method to GET the response from the web server as a JSONObject.
+     * Use this, for example, to GET the taskInfo.json object from, the server.
+     * <pre>
+       GET 127.0.0.1:8080/gp/rest/v1/tasks/ConvertLineEndings
+     * </pre>
+     * 
+     * @param uri
+     * @return
+     * @throws Exception
+     */
     public JSONObject getJsonObject(final URI uri) throws Exception {
         HttpClient client = new DefaultHttpClient();
         HttpGet get = new HttpGet(uri);
@@ -471,7 +538,6 @@ public class JobRunnerRest {
             }
         }
     }
-
     
     public JSONObject getJob(final URI jobUri) throws Exception {
         return getJsonObject(jobUri);
@@ -522,7 +588,7 @@ public class JobRunnerRest {
         }
     }
     
-    private void writeToFile( final InputStream in, final File toFile, final long maxNumBytes) 
+    private void writeToFile(final InputStream in, final File toFile, final long maxNumBytes) 
     throws IOException
     //throws MaxFileSizeException, WriteToFileException
     {
@@ -560,6 +626,5 @@ public class JobRunnerRest {
             }
         }
     }
-
 
 }
