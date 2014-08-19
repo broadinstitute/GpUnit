@@ -10,6 +10,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -223,7 +224,7 @@ public class JobRunnerRest {
        }
      * </pre>
      */
-    private JSONObject initJsonObject(final String lsid) throws JSONException, IOException, GpUnitException {
+    private JSONObject initJsonObject(final String lsid) throws GpUnitException, JSONException {
         final JSONObject obj=new JSONObject();
         obj.put("lsid", lsid);
         final JSONArray paramsJsonArray=new JSONArray();
@@ -452,21 +453,41 @@ public class JobRunnerRest {
         return inputFileParams;
     }
 
-    public URI submitJob() throws JSONException, UnsupportedEncodingException, IOException, Exception {
+    public URI submitJob() throws GpUnitException {
         // make REST call to validate that the module.lsid (which could be a taskName or LSID)
         // is installed on the server
         final String taskNameOrLsid = test.getModule();
         final JSONObject taskInfo=getTask(taskNameOrLsid);
-        final String lsid=taskInfo.getString("lsid");
         
-        JSONObject job = initJsonObject(lsid);
+        JSONObject job;
+        try {
+            final String lsid=taskInfo.getString("lsid");
+            job = initJsonObject(lsid);
+        }
+        catch (JSONException e) {
+            throw new GpUnitException("Error preparing JSON object to POST to "+addJobUrl, e);
+        }
         
         HttpClient client = new DefaultHttpClient();
         HttpPost post = new HttpPost(addJobUrl.toExternalForm());
         post = setAuthHeaders(post);
-        post.setEntity(new StringEntity(job.toString()));
+        try {
+            post.setEntity(new StringEntity(job.toString()));
+        }
+        catch (UnsupportedEncodingException e) {
+            throw new GpUnitException("Error preparing HTTP request, POST "+addJobUrl, e);
+        }
 
-        HttpResponse response = client.execute(post);
+        HttpResponse response;
+        try {
+            response = client.execute(post);
+        }
+        catch (ClientProtocolException e) {
+            throw new GpUnitException("Error executing HTTP request, POST "+addJobUrl, e);
+        }
+        catch (IOException e) {
+            throw new GpUnitException("Error executing HTTP request, POST "+addJobUrl, e);
+        }
         final int statusCode=response.getStatusLine().getStatusCode();
         final boolean success;
         //when adding a job, expecting a status code of ...
@@ -481,7 +502,7 @@ public class JobRunnerRest {
         }
         if (!success) {
             String message="POST "+addJobUrl.toExternalForm()+" failed! "+statusCode+": "+response.getStatusLine().getReasonPhrase();
-            throw new Exception(message);
+            throw new GpUnitException(message);
         }
         
         String jobLocation=null;
@@ -490,10 +511,18 @@ public class JobRunnerRest {
             jobLocation=locations[0].getValue();
         }
         if (jobLocation==null) {
-            throw new Exception("Missing required response header: Location");
+            final String message="POST "+addJobUrl.toExternalForm()+" failed! Missing required response header: Location";
+            throw new GpUnitException(message);
         }
-        URI jobUri=new URI(jobLocation);
-        return jobUri;
+        URI jobUri;
+        try {
+            jobUri = new URI(jobLocation);
+            return jobUri;
+        }
+        catch (URISyntaxException e) {
+            final String message="POST "+addJobUrl.toExternalForm()+" failed! "+e.getLocalizedMessage();
+            throw new GpUnitException(message, e);
+        }
     }
     
     /**
