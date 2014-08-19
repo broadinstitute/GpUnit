@@ -507,12 +507,22 @@ public class JobRunnerRest {
      * @return
      * @throws Exception
      */
-    public JSONObject getJsonObject(final URI uri) throws Exception {
+    public JSONObject getJsonObject(final URI uri) throws GpUnitException //throws Exception 
+    {
         HttpClient client = new DefaultHttpClient();
         HttpGet get = new HttpGet(uri);
         get = setAuthHeaders(get);
         
-        HttpResponse response=client.execute(get);
+        final HttpResponse response;
+        try {
+            response=client.execute(get);
+        }
+        catch (ClientProtocolException e) {
+            throw new GpUnitException("Error getting job status from uri="+uri, e);
+        }
+        catch (IOException e) {
+            throw new GpUnitException("Error getting job status from uri="+uri, e);
+        }
         final int statusCode=response.getStatusLine().getStatusCode();
         final boolean success;
         if (statusCode >= 200 && statusCode < 300) {
@@ -523,13 +533,13 @@ public class JobRunnerRest {
         }
         if (!success) {
             String message="GET "+uri.toString()+" failed! "+statusCode+": "+response.getStatusLine().getReasonPhrase();
-            throw new Exception(message);
+            throw new GpUnitException(message);
         }
         
         HttpEntity entity = response.getEntity();
         if (entity == null) {
-            //the response should contain an entity
-            throw new Exception("The response should contain an entity");
+            final String message="GET "+uri.toString()+" failed! The response should contain an entity";
+            throw new GpUnitException(message);
         }
 
         BufferedReader reader=null;
@@ -540,9 +550,23 @@ public class JobRunnerRest {
             JSONObject job=new JSONObject(jsonTokener);
             return job;
         }
+        catch (IOException e) {
+            final String message="GET "+uri.toString()+", I/O error handling response";
+            throw new GpUnitException(message, e);
+        }
+        catch (JSONException e) {
+            final String message="GET "+uri.toString()+", JSON error parsing response";
+            throw new GpUnitException(message, e);
+        }
         finally {
             if (reader != null) {
-                reader.close();
+                try {
+                    reader.close();
+                }
+                catch (IOException e) {
+                    final String message="GET "+uri.toString()+", I/O error closing reader";
+                    throw new GpUnitException(message, e);
+                }
             }
         }
     }
