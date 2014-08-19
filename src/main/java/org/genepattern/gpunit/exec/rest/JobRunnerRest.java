@@ -571,7 +571,7 @@ public class JobRunnerRest {
         }
     }
     
-    public JSONObject getJob(final URI jobUri) throws Exception {
+    public JSONObject getJob(final URI jobUri) throws GpUnitException {
         return getJsonObject(jobUri);
     }
     

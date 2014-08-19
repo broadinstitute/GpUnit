@@ -45,13 +45,8 @@ public class RestClientUtil {
     {
         Thread.sleep(sleep);
         JSONObject job=null;
-        try {
-            job=runner.getJob(jobUri);
-        }
-        catch (Exception e) {
-            throw new GpUnitException("Error getting jobStatus from: "+jobUri+
-                    " Must connect to a GP server running version 3.8.2 or greater.", e);
-        }
+        job=runner.getJob(jobUri);
+
         if (job==null) {
             throw new IllegalArgumentException("job==null");
         }
