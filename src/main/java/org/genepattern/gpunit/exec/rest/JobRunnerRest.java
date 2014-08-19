@@ -507,7 +507,7 @@ public class JobRunnerRest {
      * @return
      * @throws Exception
      */
-    public JSONObject getJsonObject(final URI uri) throws GpUnitException //throws Exception 
+    public JSONObject getJsonObject(final URI uri) throws GpUnitException 
     {
         HttpClient client = new DefaultHttpClient();
         HttpGet get = new HttpGet(uri);
