@@ -137,6 +137,7 @@ public class JobResultDownloaderSoap implements JobResultDownloader {
     }
     
     /** Converts a string into something you can safely insert into a URL. */
+    @SuppressWarnings("deprecation")
     public static String encodeURIcomponent(String str) {
         String encoded = str;
         try {
