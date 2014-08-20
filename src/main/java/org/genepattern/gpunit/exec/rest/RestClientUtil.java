@@ -8,22 +8,26 @@ import org.genepattern.gpunit.test.BatchModuleTestObject;
 import org.genepattern.gpunit.test.BatchProperties;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.Assert;
 
 public class RestClientUtil {
-    
-    public static void runTest(BatchProperties batchProps, BatchModuleTestObject testObject) throws Exception {
+    public static void runTest(BatchProperties batchProps, BatchModuleTestObject testObject) throws GpUnitException {
         JobRunnerRest runner=new JobRunnerRest(batchProps, testObject.getTestCase());
         //1) run the job
         final URI jobUri=runner.submitJob();
 
         //2) poll for job completion
-        int count=0;
-        int maxtries = 20;
-        int initialSleep = 1000;
-        JSONObject jobResult=waitForJob(runner, jobUri, initialSleep, initialSleep, maxtries, count); 
+        final long jobCompletionTimeout_ms=1000L*batchProps.getJobCompletionTimeout();
+        JSONObject jobResult=pollForJobCompletion(runner, jobUri, System.currentTimeMillis(), jobCompletionTimeout_ms);
 
         //3) validate job results  
-        String jobId=jobResult.getString("jobId");
+        String jobId="";
+        try {
+            jobId = jobResult.getString("jobId");
+        }
+        catch (JSONException e) {
+            Assert.fail("Unexpected JSON exception getting jobId from jobResult: "+e.getLocalizedMessage());
+        }
         File jobResultDir=batchProps.getJobResultDir(testObject, jobId);
         
         JobResultValidatorRest validator=new JobResultValidatorRest(batchProps, testObject, jobResultDir);
@@ -40,46 +44,79 @@ public class RestClientUtil {
     }
     
     //helper methods for polling for job completion, could be made generic
-    private static JSONObject waitForJob(final JobRunnerRest runner, final URI jobUri, final int sleep, final int initialSleep, final int maxTries, final int count) 
-    throws InterruptedException, GpUnitException
-    {
-        Thread.sleep(sleep);
-        JSONObject job=null;
-        job=runner.getJob(jobUri);
-
-        if (job==null) {
-            throw new IllegalArgumentException("job==null");
+    /**
+     * When polling for job completion, get the amount of time to wait before the next callback,
+     * as a function of the total time elapsed.
+     * 
+     * @param dateStarted_ms
+     * @param timeElapsed_ms
+     * @return
+     */
+    public static long getSleepInterval(long dateStarted_ms, long timeElapsed_ms) {
+        long delta_s=(long) Math.floor(timeElapsed_ms/1000L);
+        if      (delta_s <=120L ) {  // poll every 2 seconds for the first 2 minutes
+            return 2000L;
         }
-        boolean isFinished;
-        try {
-            isFinished=job.getJSONObject("status").getBoolean("isFinished");
+        else if (delta_s <= 300L) { // poll every 5 seconds for the next 3 minutes (5 minutes total)
+            return 5000L;
         }
-        catch (JSONException e) {
-            throw new GpUnitException("Error parsing JSON object from: "+jobUri, e);
+        else if (delta_s <= 600L) { // poll every 10 seconds for anything less than 10 minutes
+            return 10000L;
         }
-        if (isFinished) {
-            return job;
+        else if (delta_s <= 3600L) { // poll every 20 seconds for anything less than an hour
+            return 20000L;
         }
-        return waitForJob(runner, jobUri, incrementSleep(initialSleep, maxTries, count), initialSleep, maxTries, count+1);
+        else {                       // poll every minute after an hour 
+            return 60000L;
+        }
     }
     
     /**
-     * Make the sleep time go up as it takes longer to exec. eg for 100 tries of 1000ms (1 sec) first 20 are 1 sec each
-     * next 20 are 2 sec each next 20 are 4 sec each next 20 are 8 sec each any beyond this are 16 sec each
+     * Poll for job completion, fail the test if the running time of the job exceeds the given jobTimeout interval.
+     * 
+     * @param runner
+     * @param jobUri
+     * @param dateStarted
+     * @param jobCompletionTimeout_ms, the maximum amount of time, in milliseconds, to wait for the job to complete.
+     * @return
+     * @throws InterruptedException
+     * @throws GpUnitException
      */
-    private static int incrementSleep(int init, int maxTries, int count) {
-        if (count < (maxTries * 0.2)) {
-            return init;
+    private static JSONObject pollForJobCompletion(final JobRunnerRest runner, final URI jobUri, final long timeStarted_ms, final long jobCompletionTimeout_ms) 
+    throws GpUnitException
+    {
+        while(true) { 
+            final long timeElapsed=System.currentTimeMillis()-timeStarted_ms;
+            final long sleepInterval=getSleepInterval(timeStarted_ms, timeElapsed);
+            // timeout check
+            if (timeElapsed>jobCompletionTimeout_ms) {
+                Assert.fail(String.format("test timed out after %.2f%n seconds, job="+jobUri, (timeElapsed/1000.0)));
+            }
+            try {
+                Thread.sleep(sleepInterval);
+            }
+            catch (InterruptedException e) {
+                Assert.fail(String.format("test interrupted after %.2f%n seconds, job="+jobUri, (timeElapsed/1000.0)));
+                Thread.currentThread().interrupt();
+                return null;
+            }
+        
+            JSONObject job=runner.getJob(jobUri);
+            if (job==null) {
+                Assert.fail("job==null");
+                return null;
+            }
+            boolean isFinished;
+            try {
+                isFinished=job.getJSONObject("status").getBoolean("isFinished");
+            }
+            catch (JSONException e) {
+                throw new GpUnitException("Error parsing JSON object from: "+jobUri, e);
+            }
+            if (isFinished) {
+                return job;
+            }
         }
-        if (count < (maxTries * 0.4)) {
-            return init * 2;
-        }
-        if (count < (maxTries * 0.6)) {
-            return init * 4;
-        }
-        if (count < (maxTries * 0.8)) {
-            return init * 8;
-        }
-        return init * 16;
     }
+    
 }

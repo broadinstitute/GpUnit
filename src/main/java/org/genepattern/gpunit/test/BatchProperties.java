@@ -63,15 +63,46 @@ public class BatchProperties {
      */
     final static public String PROP_DELETE_JOBS="gpunit.delete.jobs";
 
-    //
-    // for handling file uploads ...
-    //
-    /**
-     * 
-     */
     final static public String PROP_UPLOAD_DIR="gpunit.upload.dir";
     final static public String PROP_SERVER_DIR="gpunit.server.dir";
     final static public String PROP_DIFF_DIR="gpunit.diff.dir";
+    
+    /**
+     * Set the 'gpunit.numThreads' system property to override the default number of junit tests to run in parallel.
+     */
+    public static final String PROP_NUM_THREADS="gpunit.numThreads";
+
+    /**
+     * Set the 'gpunit.shutdownTimeout' system property to override the default shutdownTimeout. 
+     * The amount of time, in seconds, to wait for all tests to complete. Jobs which have not yet completed 
+     * will not be recorded in the junit test report. This should rarely come into play because the 
+     * 'gpunit.testTimeout' and/or the 'gpunit.jobCompletionTimeout' will occur first, under normal circumstances.
+     * 
+     * On shutdowmTimeout, all parallel junit tests are terminated without recording to junit report.
+     *  
+     */
+    public static final String PROP_SHUTDOWN_TIMEOUT="gpunit.shutdownTimeout";
+
+    /**
+     * Set the 'gpunit.testTimeout' system property to override the default testTimeout.
+     * The total amount of time, in seconds, to wait for each junit test to complete
+     * including the time it takes to submit the job to the GP server, to run on the server, 
+     * and to validate the results.
+     * 
+     * On testTimeout, the junit test will fail with a timeout error.
+     * 
+     */
+    public static final String PROP_TEST_TIMEOUT="gpunit.testTimeout";
+    
+    /**
+     * Set the 'gpunit.jobCompletionTimeout' system property to override the default jobCompletionTimeout interval.
+     * The amount of time, in seconds, to poll for job completion. This interval is computed from the time the job
+     * is submitted (rather than the time it actually starts running).
+     * 
+     * On jobCompletionTimeout, the junit test will fail with a timeout error.
+     * 
+     */
+    public static final String PROP_JOB_COMPLETION_TIMEOUT="gpunit.jobCompletionTimeout";
     
     private String gpUrl = "http://127.0.0.1:8080";
     private String gpUsername =  "test";
@@ -97,6 +128,11 @@ public class BatchProperties {
      */
     private boolean deleteJobs=true;
     
+    // the amount of time, in seconds, to allow each GenePattern job to run
+    private final int jobCompletionTimeout;
+    
+    // the amount of time, in seconds, to allow each junit test to run
+    private final int testTimeout;
     
     public BatchProperties() throws GpUnitException {
         //initialize values from system properties
@@ -135,8 +171,115 @@ public class BatchProperties {
             this.deleteJobs=Boolean.getBoolean(PROP_DELETE_JOBS);
         }
         this.batchOutputDir=_initBatchOutputDir();
+        
+        this.testTimeout=initTestTimeout();
+        this.jobCompletionTimeout=initJobCompletionTimeout();
+    }
+
+    public static int getIntegerProperty(final String propName, int defaultValue) throws GpUnitException {
+        if (System.getProperties().containsKey(propName)) {
+            String propValue=System.getProperty(propName).trim();
+            if (propValue.length()==0) {
+                return defaultValue;
+            }
+            else if (propValue.startsWith("INF")) {
+                // Infinity
+                return Integer.MAX_VALUE;
+            }
+            else {
+                try {
+                    return Integer.parseInt(propValue);
+                }
+                catch (NumberFormatException e) {
+                    throw new GpUnitException("Error parsing "+propName+"="+propValue);
+                }
+            }
+        }
+        return defaultValue;
     }
     
+    /**
+     * Helper method for initializing 'shutdownTimeout' from System properties.
+     * If 'shutdownTimeout' is set, use it. 
+     * Otherwise, use the greater of testTimeout and jobCompletionTimeout padded by one minute.
+     * Otherwise use hard-coded default value of 1500 seconds.
+     * 
+     * @return
+     * @throws GpUnitException
+     */
+    public static int initShutdownTimeout() throws GpUnitException {
+        // if 'shutdownTimeout' is set, use it,
+        int shutdownTimeout=BatchProperties.getIntegerProperty(BatchProperties.PROP_SHUTDOWN_TIMEOUT, -1);
+        if (shutdownTimeout>0) {
+            return shutdownTimeout;
+        }
+        // otherwise, use the greater of testTimeout and jobCompletionTimeout padded by one minute
+        int testTimeout=BatchProperties.getIntegerProperty(BatchProperties.PROP_TEST_TIMEOUT, -1);
+        int jobCompletionTimeout=BatchProperties.getIntegerProperty(BatchProperties.PROP_JOB_COMPLETION_TIMEOUT, -1);
+        int max = Math.max(testTimeout,  jobCompletionTimeout);
+        if (max>0) {
+            return 60+max;
+        }
+        // otherwise use default
+        return 1500;
+    }
+    
+    /**
+     * Helper method for initializing 'testTimeout' from System properties.
+     * If 'testTimeout' is set, use it.
+     * Otherwise, if 'jobCompletionTimeout' is set, padded by one minute.
+     * Otherwise, if 'shutdownTimeout' is set, use it.
+     * Otherwise, use hard-coded default value of 1200 seconds.
+     * 
+     * @return
+     */
+    public static int initTestTimeout() throws GpUnitException {
+        int testTimeout=BatchProperties.getIntegerProperty(BatchProperties.PROP_TEST_TIMEOUT, -1);
+        if (testTimeout>0) {
+            return testTimeout;
+        }
+
+        int jobCompletionTimeout=BatchProperties.getIntegerProperty(BatchProperties.PROP_JOB_COMPLETION_TIMEOUT, -1);
+        if (jobCompletionTimeout>0) {
+            return 60+jobCompletionTimeout;
+        }
+
+        int shutdownTimeout=BatchProperties.getIntegerProperty(BatchProperties.PROP_SHUTDOWN_TIMEOUT, -1);
+        if (shutdownTimeout>0) {
+            return shutdownTimeout;
+        }
+
+        return 1200;
+    }
+    
+    /**
+     * Helper method for initializing 'jobCompletionTimeout' from System properties.
+     * If 'jobCompletionTimeout' is set, use it.
+     * Otherwise if 'testTimeout' is set, use it.
+     * Otherwise if 'shutdownTimeout' is set, use it.
+     * Otherwise, use hard-coded value of 900 seconds.
+     * 
+     * @return
+     * @throws GpUnitException
+     */
+    public static int initJobCompletionTimeout() throws GpUnitException {
+        int jobCompletionTimeout=BatchProperties.getIntegerProperty(BatchProperties.PROP_JOB_COMPLETION_TIMEOUT, -1);
+        if (jobCompletionTimeout>0) {
+            return jobCompletionTimeout;
+        }
+
+        int testTimeout=BatchProperties.getIntegerProperty(BatchProperties.PROP_TEST_TIMEOUT, -1);
+        if (testTimeout>0) {
+            return testTimeout;
+        }
+
+        int shutdownTimeout=BatchProperties.getIntegerProperty(BatchProperties.PROP_SHUTDOWN_TIMEOUT, -1);
+        if (shutdownTimeout>0) {
+            return shutdownTimeout;
+        }
+
+        return 900;
+    } 
 
     public String getGpUrl() {
         return gpUrl;
@@ -269,6 +412,20 @@ public class BatchProperties {
         }
         File jobResultDir=new File(batchOutputDir, dirname);
         return jobResultDir;
+    }
+
+    /**
+     * @see #PROP_JOB_COMPLETION_TIMEOUT
+     */
+    public int getJobCompletionTimeout() {
+        return jobCompletionTimeout;
+    }
+
+    /**
+     * @see #PROP_TEST_TIMEOUT
+     */
+    public int getTestTimeout() {
+        return testTimeout;
     }
 
 }

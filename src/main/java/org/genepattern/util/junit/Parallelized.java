@@ -1,11 +1,11 @@
 package org.genepattern.util.junit;
 
+import org.genepattern.gpunit.test.BatchProperties;
 import org.junit.runners.Parameterized;
 
 
 /**
- * Run junit tests in parallel,
- * set 'junit.parallel.threads' system property to define the number of jobs to run in parallel.
+ * Run junit tests in parallel.
  * 
  * @author pcarr
  */
@@ -13,11 +13,13 @@ public class Parallelized
     extends Parameterized 
 {
     
-    public Parallelized(Class klass) throws Throwable{
+    public Parallelized(Class<?> klass) throws Throwable {
         super(klass);
-        setScheduler(new ThreadPoolScheduler());
+        int numThreads=BatchProperties.getIntegerProperty(BatchProperties.PROP_NUM_THREADS, 32);
+        int shutdownTimeout=BatchProperties.initShutdownTimeout();
+        ThreadPoolScheduler scheduler=new ThreadPoolScheduler(numThreads, shutdownTimeout);
+        setScheduler(scheduler);
     }
-    
 
 }
 

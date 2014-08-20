@@ -18,7 +18,9 @@ import org.genepattern.util.junit.Parallelized;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized.Parameters;
 
@@ -56,11 +58,6 @@ public class BatchModuleTest {
     @Parameters(name="{1}")
     public static Collection<Object[]> data() throws GpUnitException {
         loadGpunitDefaultProperties();
-        
-        String numThreadsProp = System.getProperty("junit.parallel.threads");
-        if (numThreadsProp == null) {
-            System.setProperty("junit.parallel.threads", "32");
-        }
         
         Collection<Object[]> testCases;
 
@@ -120,6 +117,13 @@ public class BatchModuleTest {
         }
     }
 
+    protected int getTestTimeout() {
+        return 1000*batchProps.getTestTimeout();
+    }
+    
+    @Rule
+    public Timeout timeout = new Timeout(getTestTimeout());
+
     @BeforeClass 
     public static void beforeClass() throws GpUnitException {
         batchProps = BatchProperties.Factory.initFromProps();
@@ -130,7 +134,7 @@ public class BatchModuleTest {
         //if necessary, delete the batch output directory
         //only do this for directories created specifically for this batch run of 
         //    gp-unit tests
-        if (!batchProps.getSaveDownloads()) {
+        if (batchProps != null && !batchProps.getSaveDownloads()) {
             if (batchProps.getCreatedBatchOutputDir()) {
                 File batchOutputDir=batchProps.getBatchOutputDir();
                 if (batchOutputDir != null) {
@@ -151,7 +155,7 @@ public class BatchModuleTest {
     }
     
     @Test
-    public void runJobAndWait() throws Exception {
+    public void gpunit() throws Exception {
         try {
             //submit a job via new REST API
             if (batchProps.getClient().equals(BatchProperties.GpUnitClient.REST)) {

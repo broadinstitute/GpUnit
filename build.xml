@@ -57,8 +57,6 @@ report.dir: ${report.dir}
         <property name="gpunit.batch.name" value="run_${DSTAMP}_${TSTAMP}" />
         <property name="gpunit.save.downloads" value="false" />
         <property name="gpunit.delete.jobs" value="true" />
-        <property name="gpunit.shutdowntimeout" value="300" />
-        <property name="gpunit.numthreads" value="5" />
         <property name="report.run.dir" location="${report.dir}/${gpunit.batch.name}" />
         <mkdir dir="${report.run.dir}" />
         <symlink link="${report.dir}/current" resource="${report.run.dir}" overwrite="true" failonerror="false" />
@@ -68,6 +66,11 @@ report.dir: ${report.dir}
         <property name="gpunit.upload.dir" value="" />
         <property name="gpunit.server.dir" value="" />
         
+        <property name="gpunit.numThreads" value="" />
+        <!-- timeout intervals in seconds, when set to the empty string, use default values built into GpUnit -->
+        <property name="gpunit.shutdownTimeout" value="" /> <!-- Global timeout, exit junit after this timeout period. -->
+        <property name="gpunit.jobCompletionTimeout" value="" /> <!-- Job poll timeout, stop polling for GP job completion after this timeout -->
+        <property name="gpunit.testTimeout" value="" /> <!-- Junit test timeout, fail an indidivual junit test when this timeout is reached -->
     </target>
 
     <!-- in order to compile gp-unit, and to run gp-unit tests, must download the client library, 
@@ -132,9 +135,9 @@ report.dir: ${report.dir}
       -->
     <macrodef name="run-tests">
         <attribute name="testcases" />
-        <attribute name="numthreads" default="5" />
+        <attribute name="numThreads" default="${gpunit.numThreads}" />
         <!-- when running jobs in parallel, this is the max time in seconds to wait before finishing the test -->
-        <attribute name="shutdowntimeout" default="300" /> 
+        <attribute name="shutdownTimeout" default="${gpunit.shutdownTimeout}" /> 
         <attribute name="junit.formatter" default="xml" /> <!-- 'brief' | 'xml' | 'html' -->
         <attribute name="showoutput" default="true" />
         <attribute name="usefile" default="true" />
@@ -150,8 +153,7 @@ report.dir: ${report.dir}
                 <test name="org.genepattern.gpunit.test.BatchModuleTest" outfile="TEST-all" todir="${report.run.dir}"/>
                 <classpath refid="gpunit.classpath" />
                 <sysproperty key="gpunit.testcase.dirs" value="@{testcases}" />
-                <sysproperty key="junit.parallel.threads" value="@{numthreads}" />
-                <sysproperty key="junit.parallel.shutdown.timeout" value="@{shutdowntimeout}" />
+                
 
                 <sysproperty key="genePatternUrl" value="${gp.url}" />
                 <sysproperty key="username" value="${gp.user}" />
@@ -165,6 +167,11 @@ report.dir: ${report.dir}
                 
                 <sysproperty key="gpunit.upload.dir" value="${gpunit.upload.dir}" />
                 <sysproperty key="gpunit.server.dir" value="${gpunit.server.dir}" />
+                
+                <sysproperty key="gpunit.numThreads" value="@{numThreads}" />
+                <sysproperty key="gpunit.shutdownTimeout" value="@{shutdownTimeout}" />
+                <sysproperty key="gpunit.testTimeout" value="${gpunit.testTimeout}" />
+                <sysproperty key="gpunit.jobCompletionTimeout" value="${gpunit.jobCompletionTimeout}" />
             </junit>
 
             <junitreport todir="${report.run.dir}">
@@ -183,13 +190,11 @@ report.dir: ${report.dir}
             <pathelement location="./tests/protocols" />
         </path>
         <property name="all-protocols.testcases" refid="all-protocols.path" /> 
-        <property name="gpunit.numthreads" value="5" />
         <!-- the max amount of time to wait, in seconds, before terminating the unit test -->
-        <property name="gpunit.shutdowntimeout" value="300" />
         <run-tests 
             testcases="${all-protocols.testcases}" 
-            numthreads="${gpunit.numthreads}" 
-            shutdowntimeout="${gpunit.shutdowntimeout}"
+            numThreads="5" 
+            shutdownTimeout="300"
         />
     </target>
 
@@ -201,19 +206,6 @@ report.dir: ${report.dir}
         <run-tests testcases="${saved-jobs.testcases}" />
     </target>
     
-    <target name="gpunit-gistic-workshop" depends="package">
-        <path id="tests.path">
-            <!-- pathelement location="./tests/GISTIC/workshop_2012_06_05/from_saved_jobs/13479" / -->
-            <!-- pathelement location="./tests/GISTIC/workshop_2012_06_05/test_cases" / -->
-            <pathelement location="./tests/GISTIC/workshop_2012_06_05/from_saved_jobs/13734" />
-        </path>
-        <!-- the max amount of time to wait, in seconds, before terminating the unit test -->
-        <property name="gpunit.shutdowntimeout" value="30" />
-        <property name="tests.testcases" refid="tests.path" /> 
-        <run-tests testcases="${tests.testcases}"
-            shutdowntimeout="${gpunit.shutdowntimeout}" />
-    </target>
-
     <target name="gpunit" depends="package">
         <property name="gpunit.testfolder" location="./tests" />
         <path id="testfolder.path">
@@ -221,8 +213,8 @@ report.dir: ${report.dir}
         </path>
         <property name="testcases" refid="testfolder.path" /> 
         <run-tests testcases="${testcases}"
-            numthreads="${gpunit.numthreads}" 
-            shutdowntimeout="${gpunit.shutdowntimeout}" />
+            numThreads="${gpunit.numThreads}" 
+            shutdownTimeout="${gpunit.shutdownTimeout}" />
     </target>
     
     <target name="gpunit-cufflinks" depends="package">
@@ -230,13 +222,10 @@ report.dir: ${report.dir}
             <pathelement location="${gpunit.testfolder}" />
         </path>
         <property name="testcases" refid="testfolder.path" />
-        <property name="gpunit.numthreads" value="5" />
-        <!-- the max amount of time to wait, in seconds, before terminating the unit test -->
-        <property name="gpunit.shutdowntimeout" value="1800" />
         <run-tests 
             testcases="${testcases}" 
-            numthreads="${gpunit.numthreads}" 
-            shutdowntimeout="${gpunit.shutdowntimeout}"
+            numthreads="5" 
+            shutdownTimeout="1800"
         />
     </target>
 
