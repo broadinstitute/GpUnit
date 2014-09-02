@@ -8,6 +8,7 @@ import java.io.InputStream;
 import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.ModuleTestObject;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.parser.ParserException;
 
 /**
  * Parse an input file into a test case object.
@@ -54,8 +55,11 @@ public class ModuleTestParserYaml {
             ModuleTestObject obj = yaml.loadAs(is, ModuleTestObject.class);
             return obj;
         }
+        catch (ParserException e) {
+            throw new GpUnitException("Error parsing test yaml file: "+e.toString());
+        }
         catch (Throwable t) {
-            throw new GpUnitException("Error parsing test file", t);
+            throw new GpUnitException("Error parsing test yaml file: "+t.getLocalizedMessage(), t);
         }
     }
 }

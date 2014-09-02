@@ -156,6 +156,10 @@ public class BatchModuleTest {
     
     @Test
     public void gpunit() throws Exception {
+        if (testObj.getInitException() != null) {
+            Assert.fail(testObj.getInitException().getLocalizedMessage());
+        }
+
         try {
             //submit a job via new REST API
             if (batchProps.getClient().equals(BatchProperties.GpUnitClient.REST)) {
