@@ -41,17 +41,18 @@ Requirements
 --------------------
 Using GpUnit
 --------------------
-The easiest way to get started is to get the latest version of GpUnit from SVN:
-    svn export https://svn.broadinstitute.org/gp2/trunk/modules/util/gp-unit 
+The easiest way to get started is to get the latest version of GpUnit from GitHub:
+    https://github.com/broadinstitute/GpUnit
 Edit the configuration file as necessary.
     gpunit.properties
-Then run the ant 'gpunit' target.
+    gpunit.default.properties
+Run the ant 'gpunit' target.
     ant gpunit
-Then view the report
+View the JUnit report.
     open reports/html/index.html
 
 This target runs the default suite of GpUnit tests on the default 
-GenePattern Server using the deault username and password.
+GenePattern Server using the default username and password.
 The output of this target is a JUnit report.
 
 To use non-default values (which you should), you must customize
@@ -122,9 +123,9 @@ that is all you need to do.
 If you want to build the GpUnit jar file first run this command:
     ant package
 
-Both the 'gpunit' and 'package' targets require the GP Java Client.
-Normally, this gets installed for you automatically.
-See below for more details.
+Both the 'gpunit' and 'package' targets require the GenePattern Java Client.
+This is required for the 'SOAP' client callbacks which are built into
+GpUnit. This gets installed for you automatically.
 
 --------------------
 Initializing GP Java Client
@@ -172,9 +173,3 @@ part of the validation process.
 
 For more information, see the comments in the java source code.
 Start with the org.genepattern.gpunit.test.BatchModuleTest.java class.
-
-
-TODO:
-* label the gp-unit jar
-* improve properties for username, password, and gp server
-** by convention, look in a well named properties file, otherwise prompt the user
