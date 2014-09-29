@@ -1,9 +1,9 @@
-Gpunit: A testing framework for GenePattern Modules.
+GpUnit: A testing framework for GenePattern Modules.
 
 --------------------
-About Gpunit
+About GpUnit
 --------------------
-Gpunit is a testing framework for GenePattern Modules. The framework
+GpUnit is a testing framework for GenePattern Modules. The framework
 consists of:
     1) a yaml file format for declaring test cases
     2) an ant build file for executing test cases as junit tests
@@ -39,7 +39,7 @@ Requirements
   download the Java client library from the server before running the tests.
 
 --------------------
-Using Gpunit
+Using GpUnit
 --------------------
 The easiest way to get started is to get the latest version of gpunit from SVN:
     svn export https://svn.broadinstitute.org/gp2/trunk/modules/util/gp-unit 
@@ -88,13 +88,13 @@ You run a test or suite of tests with the ant gpunit target.
     ant gpunit
 
 --------------------
-Customizing Gpunit
+Customizing GpUnit
 --------------------
 There are a number of ways to customize gpunit. For details,
 look at the comments in the gpunit.properties file.
 
 --------------------
-Gpunit Yaml Format
+GpUnit Yaml Format
 --------------------
 A gpunit test case is declared in a YAML file. While there is no schema
 for a gpunit yaml file (it is schemaless), there is an implicit schema.
@@ -114,7 +114,7 @@ External URLs work automatically because they are passed by
 reference when you download the job.
 
 --------------------
-Building Gpunit
+Building GpUnit
 --------------------
 The ant 'gpunit' target will build gpunit when necessary. In most cases
 that is all you need to do.
@@ -129,14 +129,14 @@ See below for more details.
 --------------------
 Initializing GP Java Client
 --------------------
-Gpunit runs jobs on a (usually) remote GenePattern Server. By default,
-gpunit uses SOAP client calls for interacting with the GP server. When you 
-run the gpunit target from ant, if necessary it will automatically download 
-the Java client before building gpunit. For more details look at the build.xml file.
+GpUnit runs jobs on a (usually) remote GenePattern Server. By default,
+it makes REST client calls to a running GenePattern server. The REST
+API was added to GenePattern with the 3.6.0 release.
 
-There is also a REST API for connecting to the GP server (circa 3.6.0). In
-it's present incarnation, REST API methods are coded directly into the
-gpunit project.
+You can switch to the SOAP client with the 'gpunit.client=SOAP' configuration option.
+With the SOAP client, when you run the gpunit target from ant, if necessary it will 
+automatically download the Java SOAP client before building GpUnit. 
+For more details look at the build.xml file.
 
 --------------------
 How it works
