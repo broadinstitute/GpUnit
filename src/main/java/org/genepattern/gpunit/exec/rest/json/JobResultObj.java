@@ -4,9 +4,20 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.genepattern.gpunit.GpUnitException;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
+/**
+ * Wrapper class for a job result, as returned by the REST API call to the 
+ * 'rest/v1/jobs/{jobId}' endpoint.
+ * @author pcarr
+ *
+ */
 public class JobResultObj {
     public static class OutputFile {
         final String name;
@@ -68,13 +79,6 @@ public class JobResultObj {
         private boolean isFinished=false;
         private List<OutputFile> outputFiles=null;
         
-//        private List<OutputFile> getOutputFiles() {
-//            if (outputFiles==null) {
-//                return Collections.emptyList();
-//            }
-//            return Collections.unmodifiableList(outputFiles);
-//        }
-//
         public Builder jobId(final String jobId) {
             this.jobId=jobId;
             return this;
@@ -101,36 +105,65 @@ public class JobResultObj {
         public JobResultObj build() {
             return new JobResultObj(this);
         }
-        
-        // org.json specific code
-        
-        public Builder jsonObject(JSONObject jsonObject) throws Exception { 
-            jobId(jsonObject.getString("jobId"));
-            hasError(initHasError(jsonObject));
-            isFinished(initIsFinished(jsonObject));
-            
+
+        // GSON specific code
+        public Builder gsonObject(JsonObject jsonObject) {
+            // init jobId
+            jobId(jsonObject.get("jobId").getAsString());
+
+            //init hasError and isFinished
+            final JsonObject status=jsonObject.get("status").getAsJsonObject();
+            final boolean hasError=status.get("hasError").getAsBoolean();
+            final boolean isFinished=status.get("isFinished").getAsBoolean();
+            hasError(hasError);
+            isFinished(isFinished);
+
             // initialize the list of output files
-            JSONArray outputFilesJsonArray=jsonObject.getJSONArray("outputFiles");
-            int numFiles=outputFilesJsonArray.length();
+            JsonArray outputFilesJsonArray=jsonObject.get("outputFiles").getAsJsonArray();
+            int numFiles=outputFilesJsonArray.size();
             for(int i=0; i<numFiles; ++i) {
-                final JSONObject outputFileJsonObj=outputFilesJsonArray.getJSONObject(i);
-                final JSONObject linkJsonObject=outputFileJsonObj.getJSONObject("link");
-                final String name=linkJsonObject.getString("name"); 
-                final String href=linkJsonObject.getString("href");
+                final JsonObject outputFileJsonObj=outputFilesJsonArray.get(i).getAsJsonObject();
+                final JsonObject linkJsonObject=outputFileJsonObj.get("link").getAsJsonObject();
+                final String name=linkJsonObject.get("name").getAsString();
+                final String href=linkJsonObject.get("href").getAsString();
                 OutputFile outputFile = new OutputFile(name, href);
                 addOutputFile(outputFile);
+            }
+
+            return this;
+        }
+        
+        // org.json specific code
+        public Builder jsonObject(JSONObject jsonObject) throws GpUnitException { 
+            try {
+                // init jobId
+                jobId(jsonObject.getString("jobId"));
+
+                //init hasError
+                JSONObject status=jsonObject.getJSONObject("status");
+                boolean hasError=status.getBoolean("hasError");
+                hasError(hasError);
+
+                // init isFinished
+                isFinished(jsonObject.getJSONObject("status").getBoolean("isFinished"));
+
+                // initialize the list of output files
+                JSONArray outputFilesJsonArray=jsonObject.getJSONArray("outputFiles");
+                int numFiles=outputFilesJsonArray.length();
+                for(int i=0; i<numFiles; ++i) {
+                    final JSONObject outputFileJsonObj=outputFilesJsonArray.getJSONObject(i);
+                    final JSONObject linkJsonObject=outputFileJsonObj.getJSONObject("link");
+                    final String name=linkJsonObject.getString("name"); 
+                    final String href=linkJsonObject.getString("href");
+                    OutputFile outputFile = new OutputFile(name, href);
+                    addOutputFile(outputFile);
+                }
+            }
+            catch (JSONException e) {
+                throw new GpUnitException("Error initializing JobResultObj from JSON representation: "+e.getLocalizedMessage(), e);
             }
             return this;
         }
         
-        private boolean initHasError(JSONObject obj) throws Exception {
-            JSONObject status=obj.getJSONObject("status");
-            boolean hasError=status.getBoolean("hasError");
-            return hasError;
-        }
-        
-        private boolean initIsFinished(JSONObject obj) throws Exception {
-            return obj.getJSONObject("status").getBoolean("isFinished");
-        } 
     }
 }

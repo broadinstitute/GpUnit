@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -36,12 +37,17 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.ModuleTestObject;
 import org.genepattern.gpunit.exec.rest.json.JobResultObj;
+import org.genepattern.gpunit.exec.rest.json.TaskObj;
 import org.genepattern.gpunit.test.BatchProperties;
 import org.genepattern.gpunit.yaml.InputFileUtil;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 /**
  * Run a job on a GP server, using the REST API.
@@ -278,8 +284,6 @@ public class JobRunnerRest {
         String orig = batchProps.getGpUsername()+":"+batchProps.getGpPassword();
         //encoding  byte array into base 64
         byte[] encoded = Base64.encodeBase64(orig.getBytes());
-        //System.out.println("Original String: " + orig );
-        //System.out.println("Base64 Encoded String : " + new String(encoded));
 
         final String basicAuth="Basic "+new String(encoded);
         message.setHeader("Authorization", basicAuth);
@@ -354,67 +358,20 @@ public class JobRunnerRest {
         throw new GpUnitException("Unexpected error uploading file '"+localFile.getAbsolutePath()+"'");
     }
     
-    private JSONObject getTask(final String taskNameOrLsid) throws GpUnitException {
-        HttpClient client = new DefaultHttpClient();
+    private TaskObj getTaskObj(final String taskNameOrLsid) throws GpUnitException {
         final String urlStr=getTaskUrl.toExternalForm()+"/"+taskNameOrLsid;
-        
-        HttpGet get = new HttpGet(urlStr);
-        get = setAuthHeaders(get);
-        HttpResponse response=null;
+        URI taskUri;
         try {
-            response=client.execute(get);
+            taskUri = new URI(urlStr);
         }
-        catch (ClientProtocolException e) {
-            throw new GpUnitException("Error executing HTTP request, GET "+urlStr, e);
-        }
-        catch (IOException e) {
-            throw new GpUnitException("Error executing HTTP request, GET "+urlStr, e);
-        }
-        final int statusCode=response.getStatusLine().getStatusCode();
-        final boolean success;
-        if (statusCode >= 200 && statusCode < 300) {
-            success=true;
-        }
-        else {
-            success=false;
-        }
-        if (!success) {
-            String message="GET "+urlStr+" failed! "+statusCode+": "+response.getStatusLine().getReasonPhrase();
-            throw new GpUnitException(message);
+        catch (URISyntaxException e) {
+            throw new GpUnitException("URI syntax exception in "+urlStr, e);
         }
         
-        HttpEntity entity = response.getEntity();
-        if (entity == null) {
-            //the response should contain an entity
-            throw new GpUnitException("The response should contain an entity");
-        }
-
-        BufferedReader reader=null;
-        try {
-            reader=new BufferedReader(
-                    new InputStreamReader( response.getEntity().getContent() ));
-            JSONTokener jsonTokener=new JSONTokener(reader);
-            JSONObject task=new JSONObject(jsonTokener);
-            return task;
-        }
-        catch (IOException e) {
-            throw new GpUnitException("Error getting HTTP content from GET "+urlStr, e);
-        }
-        catch (JSONException e) {
-            throw new GpUnitException("Error parsing JSON response from GET "+urlStr, e);
-        }
-        finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                }
-                catch (IOException e) {
-                    throw new GpUnitException("Unexpected exception thrown closing reader!");
-                }
-            }
-        }
+        JsonObject jsonObject=readJsonObjectFromUri(taskUri);
+        return new TaskObj.Builder().fromJsonObject(jsonObject).build();
     }
-
+    
     private String getInputFilePname(final JSONObject param) throws GpUnitException {
         if (param==null) {
             throw new GpUnitException("param==null");
@@ -459,14 +416,14 @@ public class JobRunnerRest {
         // make REST call to validate that the module.lsid (which could be a taskName or LSID)
         // is installed on the server
         final String taskNameOrLsid = test.getModule();
-        final JSONObject taskInfo=getTask(taskNameOrLsid);
+        final TaskObj taskInfo=getTaskObj(taskNameOrLsid);
+        final String lsid=taskInfo.getLsid();
         
         JSONObject job;
         try {
-            final String lsid=taskInfo.getString("lsid");
             job = initJsonObject(lsid);
         }
-        catch (JSONException e) {
+        catch (Exception e) {
             throw new GpUnitException("Error preparing JSON object to POST to "+addJobUrl, e);
         }
         
@@ -528,7 +485,7 @@ public class JobRunnerRest {
     }
     
     /**
-     * Helper method to GET the response from the web server as a JSONObject.
+     * Helper method to GET the response from the web server as a JobResultObj.
      * Use this, for example, to GET the taskInfo.json object from, the server.
      * <pre>
        GET 127.0.0.1:8080/gp/rest/v1/tasks/ConvertLineEndings
@@ -538,8 +495,21 @@ public class JobRunnerRest {
      * @return
      * @throws Exception
      */
-    public JSONObject getJsonObject(final URI uri) throws GpUnitException 
-    {
+    public JobResultObj getJobResultObj(final URI uri) throws GpUnitException {
+        JsonObject jsonObject=readJsonObjectFromUri(uri);
+        JobResultObj jobResultObj=new JobResultObj.Builder().gsonObject(jsonObject).build();
+        return jobResultObj;
+    }
+    
+    /**
+     * GET the JSON representation of the contents at the given URI.
+     * This is a general purpose helper method for working with the GenePattern REST API.
+     * 
+     * @param uri
+     * @return
+     * @throws GpUnitException
+     */
+    protected JsonObject readJsonObjectFromUri(final URI uri) throws GpUnitException {
         HttpClient client = new DefaultHttpClient();
         HttpGet get = new HttpGet(uri);
         get = setAuthHeaders(get);
@@ -549,10 +519,10 @@ public class JobRunnerRest {
             response=client.execute(get);
         }
         catch (ClientProtocolException e) {
-            throw new GpUnitException("Error getting job status from uri="+uri, e);
+            throw new GpUnitException("Error getting contents from uri="+uri, e);
         }
         catch (IOException e) {
-            throw new GpUnitException("Error getting job status from uri="+uri, e);
+            throw new GpUnitException("Error getting contents from uri="+uri, e);
         }
         final int statusCode=response.getStatusLine().getStatusCode();
         final boolean success;
@@ -576,18 +546,21 @@ public class JobRunnerRest {
         BufferedReader reader=null;
         try {
             reader=new BufferedReader(
-                    new InputStreamReader( response.getEntity().getContent() ));
-            JSONTokener jsonTokener=new JSONTokener(reader);
-            JSONObject job=new JSONObject(jsonTokener);
-            return job;
+                    new InputStreamReader( response.getEntity().getContent() )); 
+            JsonObject jsonObject=readJsonObject(reader);
+            return jsonObject;
         }
         catch (IOException e) {
             final String message="GET "+uri.toString()+", I/O error handling response";
             throw new GpUnitException(message, e);
         }
-        catch (JSONException e) {
-            final String message="GET "+uri.toString()+", JSON error parsing response";
+        catch (Exception e) {
+            final String message="GET "+uri.toString()+", Error parsing JSON response";
             throw new GpUnitException(message, e);
+        }
+        catch (Throwable t) {
+            final String message="GET "+uri.toString()+", Unexpected error reading response";
+            throw new GpUnitException(message, t);
         }
         finally {
             if (reader != null) {
@@ -602,26 +575,22 @@ public class JobRunnerRest {
         }
     }
     
-    private JSONObject getJob(final URI jobUri) throws GpUnitException {
-        return getJsonObject(jobUri);
-    }
-    
-    public JSONObject getJobStatus(final URI jobUri) throws Exception {
-        URI statusUri=new URI(jobUri.toString()+"/status.json");
-        return getJsonObject(statusUri);
-    }
-    
-    public JobResultObj getJobResultObj(final URI jobUri) throws GpUnitException {
-        JSONObject job=getJob(jobUri);
-        if (job==null) {
-            return null;
+    /**
+     * Helper class which creates a new JsonObject by parsing the contents from the
+     * given Reader.
+     * 
+     * @param reader, an open and initialized reader, for example from an HTTP response.
+     *     The calling method must close the reader.
+     * @return
+     * @throws GpUnitException
+     */
+    protected JsonObject readJsonObject(final Reader reader) throws GpUnitException {
+        JsonParser parser = new JsonParser();
+        JsonElement jsonElement=parser.parse(reader);
+        if (jsonElement == null) {
+            throw new GpUnitException("JsonParser returned null JsonElement");
         }
-        try {
-            return new JobResultObj.Builder().jsonObject(job).build();
-        }
-        catch (Throwable t) {
-            throw new GpUnitException("Error initializing jobObject from url="+jobUri, t);
-        }
+        return jsonElement.getAsJsonObject();
     }
     
     public void downloadFile(final URL from, final File toFile) throws Exception {
