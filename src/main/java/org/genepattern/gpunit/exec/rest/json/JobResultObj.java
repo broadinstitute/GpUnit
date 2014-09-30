@@ -4,11 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.genepattern.gpunit.GpUnitException;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -130,38 +125,6 @@ public class JobResultObj {
                 addOutputFile(outputFile);
             }
 
-            return this;
-        }
-        
-        // org.json specific code
-        public Builder jsonObject(JSONObject jsonObject) throws GpUnitException { 
-            try {
-                // init jobId
-                jobId(jsonObject.getString("jobId"));
-
-                //init hasError
-                JSONObject status=jsonObject.getJSONObject("status");
-                boolean hasError=status.getBoolean("hasError");
-                hasError(hasError);
-
-                // init isFinished
-                isFinished(jsonObject.getJSONObject("status").getBoolean("isFinished"));
-
-                // initialize the list of output files
-                JSONArray outputFilesJsonArray=jsonObject.getJSONArray("outputFiles");
-                int numFiles=outputFilesJsonArray.length();
-                for(int i=0; i<numFiles; ++i) {
-                    final JSONObject outputFileJsonObj=outputFilesJsonArray.getJSONObject(i);
-                    final JSONObject linkJsonObject=outputFileJsonObj.getJSONObject("link");
-                    final String name=linkJsonObject.getString("name"); 
-                    final String href=linkJsonObject.getString("href");
-                    OutputFile outputFile = new OutputFile(name, href);
-                    addOutputFile(outputFile);
-                }
-            }
-            catch (JSONException e) {
-                throw new GpUnitException("Error initializing JobResultObj from JSON representation: "+e.getLocalizedMessage(), e);
-            }
             return this;
         }
         
