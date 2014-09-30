@@ -10,10 +10,13 @@ import java.util.Map;
 import org.genepattern.gpunit.ModuleTestObject;
 import org.genepattern.gpunit.test.BatchProperties;
 import org.genepattern.gpunit.yaml.GpUnitFileParser;
-import org.json.JSONArray;
-import org.json.JSONObject;
+
 import org.junit.Before;
 import org.junit.Test;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 public class TestJobRunnerRest {
     private String pname="inputFileGroup";
@@ -43,11 +46,12 @@ public class TestJobRunnerRest {
         assertEquals("values[0]", "ftp://gpftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.gct", groupedEntries.get(0).getValues().get(3));
         
         //asJson
-        JSONObject jsonObj=new JSONObject(groupedEntries.get(0));
-        assertEquals("json.name", pname, jsonObj.getString("name"));
+        Gson gson=new Gson();
+        JsonObject jsonObj=gson.toJsonTree(groupedEntries.get(0)).getAsJsonObject();
+        assertEquals("json.name", pname, jsonObj.get("name").getAsString());
         assertEquals("Not expecting a 'groupId'", false, jsonObj.has("groupId"));
-        JSONArray jsonArr=jsonObj.getJSONArray("values");
-        assertEquals("values JSONArray.length", 4, jsonArr.length());
+        JsonArray jsonArr=jsonObj.get("values").getAsJsonArray();
+        assertEquals("values JSONArray.length", 4, jsonArr.size());
     }
     
     @Test
@@ -61,13 +65,14 @@ public class TestJobRunnerRest {
         assertEquals("num groups", 2, groupedEntries.size());
         
         // convert to JSON for validation
-        JSONObject jsonObjA=new JSONObject(groupedEntries.get(0));
-        JSONObject jsonObjB=new JSONObject(groupedEntries.get(1));
+        Gson gson=new Gson();
+        JsonObject jsonObjA=gson.toJsonTree(groupedEntries.get(0)).getAsJsonObject();
+        JsonObject jsonObjB=gson.toJsonTree(groupedEntries.get(1)).getAsJsonObject();
         
-        assertEquals("group[0].groupId", "Group A", jsonObjA.getString("groupId"));
-        assertEquals("group[0].num values", 2, jsonObjA.getJSONArray("values").length());
-        assertEquals("group[1].groupId", "Group B", jsonObjB.getString("groupId"));
-        assertEquals("group[1].num values", 2, jsonObjB.getJSONArray("values").length());
+        assertEquals("group[0].groupId", "Group A", jsonObjA.get("groupId").getAsString());
+        assertEquals("group[0].num values", 2, jsonObjA.get("values").getAsJsonArray().size());
+        assertEquals("group[1].groupId", "Group B", jsonObjB.get("groupId").getAsString());
+        assertEquals("group[1].num values", 2, jsonObjB.get("values").getAsJsonArray().size());
     }
     
 }

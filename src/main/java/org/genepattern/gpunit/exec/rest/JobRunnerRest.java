@@ -16,11 +16,9 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.Header;
@@ -41,13 +39,13 @@ import org.genepattern.gpunit.exec.rest.json.TaskObj;
 import org.genepattern.gpunit.test.BatchProperties;
 import org.genepattern.gpunit.yaml.InputFileUtil;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 
 /**
  * Run a job on a GP server, using the REST API.
@@ -215,7 +213,7 @@ public class JobRunnerRest {
         }
         return updatedValue;
     }
-
+    
     /**
      * Initialize the JSONObject to PUT into the /jobs resource on the GP server.
      * Upload data files when necessary. For each file input parameter, if it's a local file, upload it and save the URL.
@@ -232,29 +230,33 @@ public class JobRunnerRest {
        }
      * </pre>
      */
-    private JSONObject initJsonObject(final String lsid) throws GpUnitException, JSONException {
-        final JSONObject obj=new JSONObject();
-        obj.put("lsid", lsid);
-        final JSONArray paramsJsonArray=new JSONArray();
+    private JsonObject initJobInputJson_asGSON(final String lsid) throws GpUnitException {
+        final JsonObject obj=new JsonObject();
+        obj.addProperty("lsid", lsid);
+        final JsonArray paramsJsonArray=new JsonArray();
         for(final Entry<String,Object> paramYamlEntry : test.getParams().entrySet()) {
             final List<ParamEntry> paramValues=prepareInputValues(paramYamlEntry.getKey(), paramYamlEntry.getValue());
             if (paramValues==null || paramValues.size()==0) {
                 // replace empty list with list containing the empty string
-                JSONObject paramObj=new JSONObject();
-                paramObj.put("name", paramYamlEntry.getKey());
-                JSONArray valuesArr=new JSONArray();
-                valuesArr.put("");
-                paramObj.put("values", valuesArr);
-                paramsJsonArray.put(paramObj);
+                JsonObject paramObj=new JsonObject();
+                paramObj.addProperty("name", paramYamlEntry.getKey());
+                JsonArray valuesArr=new JsonArray();
+                valuesArr.add(new JsonPrimitive(""));
+                //paramObj.put("values", valuesArr);
+                paramObj.add("values", valuesArr);
+                //paramsJsonArray.put(paramObj);
+                paramsJsonArray.add(paramObj);
             }
             else {
+                Gson gson = new GsonBuilder().create();
                 for(final ParamEntry paramValue : paramValues) {
-                    JSONObject paramValueToJson=new JSONObject(paramValue);
-                    paramsJsonArray.put(paramValueToJson);
+                    JsonElement jsonElement=gson.toJsonTree(paramValue);
+                    paramsJsonArray.add(jsonElement);
                 }
             }
         }
-        obj.put("params", paramsJsonArray);
+        //obj.put("params", paramsJsonArray);
+        obj.add("params", paramsJsonArray);
         return obj;
     }
 
@@ -371,46 +373,6 @@ public class JobRunnerRest {
         JsonObject jsonObject=readJsonObjectFromUri(taskUri);
         return new TaskObj.Builder().fromJsonObject(jsonObject).build();
     }
-    
-    private String getInputFilePname(final JSONObject param) throws GpUnitException {
-        if (param==null) {
-            throw new GpUnitException("param==null");
-        }
-        final String[] names=JSONObject.getNames(param);
-        if (names==null) {
-            throw new GpUnitException("names==null");
-        }
-        if (names.length==0) {
-            throw new GpUnitException("names.length==0");
-        }
-        if (names.length>1) {
-            throw new GpUnitException("names.length=="+names.length);
-        }
-        final String pname=names[0];
-        try {
-            final String type=param.getJSONObject(pname).getJSONObject("attributes").getString("type");
-            if (type.equals("java.io.File")) {
-                return pname;
-            }
-        }
-        catch (Throwable t) {
-            throw new GpUnitException("Error getting type for parameter="+pname, t);
-        }
-        return null;
-    }
-    
-    protected Set<String> getInputFileParamNames(JSONObject taskInfo) throws JSONException, GpUnitException {
-        Set<String> inputFileParams=new HashSet<String>();
-        JSONArray params=taskInfo.getJSONArray("params");
-        for(int i=0; i<params.length(); ++i) {
-            final JSONObject param=params.getJSONObject(i);
-            final String pname=getInputFilePname(param);
-            if (pname != null) {
-                inputFileParams.add(pname);
-            }
-        }
-        return inputFileParams;
-    }
 
     public URI submitJob() throws GpUnitException {
         // make REST call to validate that the module.lsid (which could be a taskName or LSID)
@@ -419,9 +381,9 @@ public class JobRunnerRest {
         final TaskObj taskInfo=getTaskObj(taskNameOrLsid);
         final String lsid=taskInfo.getLsid();
         
-        JSONObject job;
+        JsonObject job;
         try {
-            job = initJsonObject(lsid);
+            job = initJobInputJson_asGSON(lsid);
         }
         catch (Exception e) {
             throw new GpUnitException("Error preparing JSON object to POST to "+addJobUrl, e);
