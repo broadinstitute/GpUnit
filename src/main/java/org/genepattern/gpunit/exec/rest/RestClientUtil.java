@@ -10,23 +10,34 @@ import org.genepattern.gpunit.test.BatchProperties;
 import org.junit.Assert;
 
 public class RestClientUtil {
-    public static void runTest(BatchProperties batchProps, BatchModuleTestObject testObject) throws GpUnitException {
-        JobRunnerRest runner=new JobRunnerRest(batchProps, testObject.getTestCase());
+    public static void runTest(BatchProperties batchProps, BatchModuleTestObject testObject) throws GpUnitException 
+    {
+        JobRunnerRest runner;
+        try {
+            runner=new JobRunnerRest(batchProps, testObject.getTestCase());
+        }
+        catch (GpUnitException e) {
+            Assert.fail("Error preparing job submission: "+e.getLocalizedMessage());
+            return;
+        }
+        
         //1) run the job
-        final URI jobUri=runner.submitJob();
+        final URI jobUri;
+        try {
+            jobUri=runner.submitJob();
+        }
+        catch (GpUnitException e) {
+            Assert.fail("Error submitting job: "+e.getLocalizedMessage());
+            return;
+        }
 
         //2) poll for job completion
         final long jobCompletionTimeout_ms=1000L*batchProps.getJobCompletionTimeout();
         final JobResultObj jobResult=pollForJobCompletion(runner, jobUri, System.currentTimeMillis(), jobCompletionTimeout_ms);
 
         //3) validate job results  
-        String jobId="";
-        try {
-            jobId = jobResult.getString("jobId");
-        }
-        catch (Exception e) {
-            Assert.fail("Unexpected JSON exception getting jobId from jobResult: "+e.getLocalizedMessage());
-        }
+        String jobId=jobResult.getJobId();
+        Assert.assertNotNull("jobId==null", jobId);
         File jobResultDir=batchProps.getJobResultDir(testObject, jobId);
         
         JobResultValidatorRest validator=new JobResultValidatorRest(batchProps, testObject, jobResultDir);

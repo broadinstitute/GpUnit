@@ -1,5 +1,7 @@
 package org.genepattern.gpunit.exec.rest;
 
+import static org.junit.Assert.assertNotNull;
+
 import java.io.File;
 
 import org.genepattern.gpunit.GpUnitException;
@@ -29,15 +31,10 @@ public class JobResultValidatorRest extends JobResultValidatorGeneric {
 
     @Override
     public void checkInit() {
-        Assert.assertNotNull("jobResult==null", jobResult);
-        
-        try {
-            final String jobId=jobResult.getString("jobId");
-            super.setJobId(jobId);
-        }
-        catch (Exception e) {
-            Assert.fail("Error getting 'jobId': "+e.getLocalizedMessage());
-        }
+        assertNotNull("jobResult==null", jobResult);
+        final String jobId=jobResult.getJobId();
+        assertNotNull("jobId==null", jobId);
+        super.setJobId(jobId);
         
         Assert.assertNotNull("restClient==null", restClient);
         this.downloader=new JobResultDownloaderRest(getDownloadDir(), getBatchProperties());

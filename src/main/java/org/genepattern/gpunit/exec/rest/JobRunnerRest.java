@@ -43,7 +43,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-
 /**
  * Run a job on a GP server, using the REST API.
  * 
@@ -59,7 +58,8 @@ public class JobRunnerRest {
     private URL addJobUrl;
     private URL getTaskUrl;
 
-    public JobRunnerRest(final BatchProperties batchProps, final ModuleTestObject test) throws GpUnitException {
+    public JobRunnerRest(final BatchProperties batchProps, final ModuleTestObject test) throws GpUnitException 
+    {
         if (batchProps==null) {
             throw new IllegalArgumentException("batchProps==null");
         }
@@ -73,7 +73,8 @@ public class JobRunnerRest {
         this.getTaskUrl=initGetTaskUrl();
     }
 
-    private URL initAddFileUrl() throws GpUnitException {
+    private URL initAddFileUrl() throws GpUnitException 
+    {
         String gpUrl=batchProps.getGpUrl();
         if (!gpUrl.endsWith("/")) {
             gpUrl += "/";
@@ -83,7 +84,7 @@ public class JobRunnerRest {
             return new URL(gpUrl);
         }
         catch (MalformedURLException e) {
-            throw new GpUnitException(e);
+            throw new GpUnitException("Error initializing path to the 'job_input' endpoint", e);
         }
     }
 
@@ -97,7 +98,7 @@ public class JobRunnerRest {
             return new URL(gpUrl);
         }
         catch (MalformedURLException e) {
-            throw new GpUnitException(e);
+            throw new GpUnitException("Error initializing path to the 'jobs' endpoint", e);
         }
     }
     
@@ -111,7 +112,7 @@ public class JobRunnerRest {
             return new URL(gpUrl);
         }
         catch (MalformedURLException e) {
-            throw new GpUnitException(e);
+            throw new GpUnitException("Error initializing path to the 'tasks' endpoint", e);
         }
     }
     
@@ -615,7 +616,12 @@ public class JobRunnerRest {
         if (job==null) {
             return null;
         }
-        return new JobResultObj(job);
+        try {
+            return new JobResultObj.Builder().jsonObject(job).build();
+        }
+        catch (Throwable t) {
+            throw new GpUnitException("Error initializing jobObject from url="+jobUri, t);
+        }
     }
     
     public void downloadFile(final URL from, final File toFile) throws Exception {
