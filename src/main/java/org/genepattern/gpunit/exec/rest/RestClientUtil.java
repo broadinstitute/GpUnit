@@ -4,10 +4,9 @@ import java.io.File;
 import java.net.URI;
 
 import org.genepattern.gpunit.GpUnitException;
+import org.genepattern.gpunit.exec.rest.json.JobResultObj;
 import org.genepattern.gpunit.test.BatchModuleTestObject;
 import org.genepattern.gpunit.test.BatchProperties;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.junit.Assert;
 
 public class RestClientUtil {
@@ -18,14 +17,14 @@ public class RestClientUtil {
 
         //2) poll for job completion
         final long jobCompletionTimeout_ms=1000L*batchProps.getJobCompletionTimeout();
-        JSONObject jobResult=pollForJobCompletion(runner, jobUri, System.currentTimeMillis(), jobCompletionTimeout_ms);
+        final JobResultObj jobResult=pollForJobCompletion(runner, jobUri, System.currentTimeMillis(), jobCompletionTimeout_ms);
 
         //3) validate job results  
         String jobId="";
         try {
             jobId = jobResult.getString("jobId");
         }
-        catch (JSONException e) {
+        catch (Exception e) {
             Assert.fail("Unexpected JSON exception getting jobId from jobResult: "+e.getLocalizedMessage());
         }
         File jobResultDir=batchProps.getJobResultDir(testObject, jobId);
@@ -82,7 +81,7 @@ public class RestClientUtil {
      * @throws InterruptedException
      * @throws GpUnitException
      */
-    private static JSONObject pollForJobCompletion(final JobRunnerRest runner, final URI jobUri, final long timeStarted_ms, final long jobCompletionTimeout_ms) 
+    private static JobResultObj pollForJobCompletion(final JobRunnerRest runner, final URI jobUri, final long timeStarted_ms, final long jobCompletionTimeout_ms) 
     throws GpUnitException
     {
         while(true) { 
@@ -101,20 +100,18 @@ public class RestClientUtil {
                 return null;
             }
         
-            JSONObject job=runner.getJob(jobUri);
+            JobResultObj job=runner.getJobResultObj(jobUri);
             if (job==null) {
                 Assert.fail("job==null");
                 return null;
             }
-            boolean isFinished;
             try {
-                isFinished=job.getJSONObject("status").getBoolean("isFinished");
+                if (job.isFinished()) {
+                    return job;
+                }
             }
-            catch (JSONException e) {
+            catch (Exception e) {
                 throw new GpUnitException("Error parsing JSON object from: "+jobUri, e);
-            }
-            if (isFinished) {
-                return job;
             }
         }
     }

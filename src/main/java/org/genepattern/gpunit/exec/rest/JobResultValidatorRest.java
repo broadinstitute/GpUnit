@@ -4,15 +4,14 @@ import java.io.File;
 
 import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.download.JobResultDownloader;
+import org.genepattern.gpunit.exec.rest.json.JobResultObj;
 import org.genepattern.gpunit.test.BatchModuleTestObject;
 import org.genepattern.gpunit.test.BatchProperties;
 import org.genepattern.gpunit.validator.JobResultValidatorGeneric;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.junit.Assert;
 
 public class JobResultValidatorRest extends JobResultValidatorGeneric {
-    private JSONObject jobResult;
+    private JobResultObj jobResult;
     private JobRunnerRest restClient;
     private JobResultDownloaderRest downloader=null;
 
@@ -24,7 +23,7 @@ public class JobResultValidatorRest extends JobResultValidatorGeneric {
         this.restClient=restClient;
     }
     
-    public void setJobStatus(final JSONObject jobResult) {
+    public void setJobStatus(final JobResultObj jobResult) {
         this.jobResult=jobResult;
     }
 
@@ -36,7 +35,7 @@ public class JobResultValidatorRest extends JobResultValidatorGeneric {
             final String jobId=jobResult.getString("jobId");
             super.setJobId(jobId);
         }
-        catch (JSONException e) {
+        catch (Exception e) {
             Assert.fail("Error getting 'jobId': "+e.getLocalizedMessage());
         }
         
@@ -55,11 +54,9 @@ public class JobResultValidatorRest extends JobResultValidatorGeneric {
     @Override
     public boolean hasStdError() {
         try {
-            JSONObject status=jobResult.getJSONObject("status");
-            boolean hasError=status.getBoolean("hasError");
-            return hasError;
+            return jobResult.hasError();
         }
-        catch (JSONException e) {
+        catch (Exception e) {
             Assert.fail("Error getting 'hasError' for jobId="+
                     getJobId()+": "+e.getLocalizedMessage());
         }

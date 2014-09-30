@@ -35,6 +35,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.ModuleTestObject;
+import org.genepattern.gpunit.exec.rest.json.JobResultObj;
 import org.genepattern.gpunit.test.BatchProperties;
 import org.genepattern.gpunit.yaml.InputFileUtil;
 import org.json.JSONArray;
@@ -127,7 +128,7 @@ public class JobRunnerRest {
      * @throws GpUnitException
      * @throws JSONException
      */
-    protected List<ParamEntry> prepareInputValues(String pname, Object yamlValue) throws GpUnitException, JSONException {
+    protected List<ParamEntry> prepareInputValues(String pname, Object yamlValue) throws GpUnitException {
         // if it's an array ...
         if (yamlValue instanceof List<?>) {
             // expecting a List<String,Object>
@@ -146,7 +147,7 @@ public class JobRunnerRest {
     }
     
     @SuppressWarnings("unchecked")
-    protected ParamEntry initJsonValueFromYamlList(final String pname, final Object yamlValue) throws GpUnitException, JSONException {
+    protected ParamEntry initJsonValueFromYamlList(final String pname, final Object yamlValue) throws GpUnitException {
         List<Object> yamlList;
         try {
             yamlList = (List<Object>) yamlValue;
@@ -163,7 +164,7 @@ public class JobRunnerRest {
     }
 
     @SuppressWarnings("unchecked")
-    protected List<ParamEntry> initJsonValueFromYamlMap(final String pname, final Object yamlValue) throws GpUnitException, JSONException {
+    protected List<ParamEntry> initJsonValueFromYamlMap(final String pname, final Object yamlValue) throws GpUnitException {
         Map<String,List<Object>> yamlValueMap;
         try {
             yamlValueMap = (Map<String,List<Object>>) yamlValue;
@@ -600,13 +601,21 @@ public class JobRunnerRest {
         }
     }
     
-    public JSONObject getJob(final URI jobUri) throws GpUnitException {
+    private JSONObject getJob(final URI jobUri) throws GpUnitException {
         return getJsonObject(jobUri);
     }
     
     public JSONObject getJobStatus(final URI jobUri) throws Exception {
         URI statusUri=new URI(jobUri.toString()+"/status.json");
         return getJsonObject(statusUri);
+    }
+    
+    public JobResultObj getJobResultObj(final URI jobUri) throws GpUnitException {
+        JSONObject job=getJob(jobUri);
+        if (job==null) {
+            return null;
+        }
+        return new JobResultObj(job);
     }
     
     public void downloadFile(final URL from, final File toFile) throws Exception {

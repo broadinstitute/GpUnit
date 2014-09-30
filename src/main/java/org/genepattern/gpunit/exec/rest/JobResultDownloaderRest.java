@@ -2,12 +2,13 @@ package org.genepattern.gpunit.exec.rest;
 
 import java.io.File;
 import java.net.URL;
+import java.util.List;
 
 import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.download.JobResultDownloaderGeneric;
+import org.genepattern.gpunit.exec.rest.json.JobResultObj;
+import org.genepattern.gpunit.exec.rest.json.JobResultObj.OutputFile;
 import org.genepattern.gpunit.test.BatchProperties;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 public class JobResultDownloaderRest extends JobResultDownloaderGeneric {
     public JobResultDownloaderRest(final File downloadDir, final BatchProperties props) {
@@ -16,20 +17,16 @@ public class JobResultDownloaderRest extends JobResultDownloaderGeneric {
 
     private JobRunnerRest runner;
     
-    public void setJobResult(final JSONObject jobResult) throws Exception {
+    public void setJobResult(final JobResultObj jobResult) throws Exception {
         if (jobResult==null) {
             throw new IllegalArgumentException("jobResult==null");
         }
-        
-        //here is where we initialize the list of result files
-        JSONArray outputFiles=jobResult.getJSONArray("outputFiles");
-        int numFiles=outputFiles.length();
-        for(int i=0; i<numFiles; ++i) {
-            final JSONObject outputFile=outputFiles.getJSONObject(i);
-            final JSONObject link=outputFile.getJSONObject("link");
-            final String href=link.getString("href");
-            final String pathname=link.getString("name");            
-            final URL url = new URL(href);
+
+        // initialize the list of result files
+        List<OutputFile> outputFiles=jobResult.getOutputFiles();
+        for(final OutputFile outputFile : outputFiles) {
+            final String pathname=outputFile.getName();
+            final URL url = new URL(outputFile.getHref());
             addOutputFilename(pathname, url);
         }
     }
