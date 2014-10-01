@@ -17,6 +17,9 @@ This project is distributed with several 3rd party libraries.
     commons-codec-1.3.jar
     commons-compress-1.8.jar
 
-6) mockito (https://code.google.com/p/mockito/), MIT License (http://www.opensource.org/licenses/mit-license.php)
+6) hamcrest (https://code.google.com/p/hamcrest/), New BSD License (http://opensource.org/licenses/BSD-3-Clause)
+    hamcrest-core-1.3.jar
+    
+7) mockito (https://code.google.com/p/mockito/), MIT License (http://www.opensource.org/licenses/mit-license.php)
     mockito-core-1.9.5.jar
 
