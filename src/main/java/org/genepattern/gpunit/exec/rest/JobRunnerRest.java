@@ -127,23 +127,26 @@ public class JobRunnerRest {
      * @param yamlValue, this is an object from the right-hand side of the parameter declaration in the
      *     yaml file. It can be a String, a File, a List of String, a List of File, or a Map of file groupings.
      *     
-     * @return jsonValue, the JSON representation to be uploaded to the GenePattern REST API. It can be one of these types
-     *     (based on the JSON.org spec): Boolean, Double, Integer, JSONArray, JSONObject, Long, String, or the JSONObject.NULL object.
+     * @return a List of parameters, as ParamEntry instances. 
      *     
      * @throws GpUnitException
-     * @throws JSONException
      */
     protected List<ParamEntry> prepareInputValues(String pname, Object yamlValue) throws GpUnitException {
+        if (yamlValue==null) {
+            //special-case, handle null yamlValue
+            return null;
+        }
+        
         // if it's an array ...
         if (yamlValue instanceof List<?>) {
             // expecting a List<String,Object>
-            ParamEntry values=initJsonValueFromYamlList(pname, yamlValue);
+            ParamEntry values=initParamEntryFromYamlList(pname, yamlValue);
             return Arrays.asList(new ParamEntry[]{values});
         }
         // or a map of grouped values ...
         else if (yamlValue instanceof Map<?,?>) {
             // expecting a Map<String,Object>
-            return initJsonValueFromYamlMap(pname, yamlValue);
+            return initParamEntriesFromYamlMap(pname, yamlValue);
         }
         ParamEntry paramEntry = new ParamEntry(pname);
         String value=initJsonValueFromYamlObject(yamlValue);
@@ -152,7 +155,7 @@ public class JobRunnerRest {
     }
     
     @SuppressWarnings("unchecked")
-    protected ParamEntry initJsonValueFromYamlList(final String pname, final Object yamlValue) throws GpUnitException {
+    protected ParamEntry initParamEntryFromYamlList(final String pname, final Object yamlValue) throws GpUnitException {
         List<Object> yamlList;
         try {
             yamlList = (List<Object>) yamlValue;
@@ -169,7 +172,7 @@ public class JobRunnerRest {
     }
 
     @SuppressWarnings("unchecked")
-    protected List<ParamEntry> initJsonValueFromYamlMap(final String pname, final Object yamlValue) throws GpUnitException {
+    protected List<ParamEntry> initParamEntriesFromYamlMap(final String pname, final Object yamlValue) throws GpUnitException {
         Map<String,List<Object>> yamlValueMap;
         try {
             yamlValueMap = (Map<String,List<Object>>) yamlValue;
@@ -230,37 +233,45 @@ public class JobRunnerRest {
        }
      * </pre>
      */
-    private JsonObject initJobInputJson_asGSON(final String lsid) throws GpUnitException {
+    private JsonObject initJobInputJsonObject(final String lsid) throws GpUnitException {
         final JsonObject obj=new JsonObject();
         obj.addProperty("lsid", lsid);
         final JsonArray paramsJsonArray=new JsonArray();
         for(final Entry<String,Object> paramYamlEntry : test.getParams().entrySet()) {
-            final List<ParamEntry> paramValues=prepareInputValues(paramYamlEntry.getKey(), paramYamlEntry.getValue());
-            if (paramValues==null || paramValues.size()==0) {
+            Object value = paramYamlEntry.getValue();
+            List<ParamEntry> paramValues=null;            
+            if (value!=null) {
+                paramValues=prepareInputValues(paramYamlEntry.getKey(), value);
+            }
+            if (value==null) {
+                //special-case, ignore parameter with null value in yaml file
+            }
+            else if (paramValues==null || paramValues.size()==0) {
                 // replace empty list with list containing the empty string
                 JsonObject paramObj=new JsonObject();
                 paramObj.addProperty("name", paramYamlEntry.getKey());
                 JsonArray valuesArr=new JsonArray();
                 valuesArr.add(new JsonPrimitive(""));
-                //paramObj.put("values", valuesArr);
                 paramObj.add("values", valuesArr);
-                //paramsJsonArray.put(paramObj);
                 paramsJsonArray.add(paramObj);
             }
             else {
-                Gson gson = new GsonBuilder().create();
+                Gson gson = new GsonBuilder().disableHtmlEscaping().create();
                 for(final ParamEntry paramValue : paramValues) {
                     JsonElement jsonElement=gson.toJsonTree(paramValue);
                     paramsJsonArray.add(jsonElement);
                 }
             }
         }
-        //obj.put("params", paramsJsonArray);
         obj.add("params", paramsJsonArray);
         return obj;
     }
 
     private URL uploadFileIfNecessary(final String value) throws GpUnitException {
+        if (value==null) {
+            // null arg, should be ignored
+            return null;
+        }
         try {
             URL url=new URL(value);
             return url;
@@ -383,7 +394,7 @@ public class JobRunnerRest {
         
         JsonObject job;
         try {
-            job = initJobInputJson_asGSON(lsid);
+            job = initJobInputJsonObject(lsid);
         }
         catch (Exception e) {
             throw new GpUnitException("Error preparing JSON object to POST to "+addJobUrl, e);
