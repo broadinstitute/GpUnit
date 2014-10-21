@@ -1,16 +1,20 @@
 #lsid=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00230:8.3
 #
 name: Valid Parameter Set 1
-description: This is a test of defaults
+description: This is a using S pombe paired end data
 module: TopHat
 params:
-       bowtie.index: "ftp://gpftp.broadinstitute.org/module_support_files/bowtie2/index/by_genome/Saccharomyces_cerevisiae_sacCer3_UCSC/"
-       reads.pair.1: [ "ftp://gpftp.broadinstitute.org/gpunit/TopHat/input/s.cerevisiae_mutant.fastq" ]
+       GTF.file: "ftp://gpftp.broadinstitute.org/example_data/rna_seq/annotations/genes.gff3"
+       bowtie.index: "ftp://gpftp.broadinstitute.org/example_data/rna_seq/bowtie_index/S_pombe_genome.zip"
+       reads.pair.1: [ "ftp://gpftp.broadinstitute.org/example_data/rna_seq/reads/S_pombe/Sp_ds/Sp_ds_1.fq.gz" ]
+       reads.pair.2: [ "ftp://gpftp.broadinstitute.org/example_data/rna_seq/reads/S_pombe/Sp_ds/Sp_ds_2.fq.gz" ]
        mate.inner.dist: "50"
+       library.type: "fr-firststrand"
        transcriptome.only: "no"
        min.anchor.length: "8"
        max.splice.mismatches: "0"
-       max.intron.length: "500000"
+       min.intron.length: "10"
+       max.intron.length: "1000"
        max.insertion.length: "3"
        max.deletion.length: "3"
        max.multihits: "20"
@@ -18,7 +22,7 @@ params:
        coverage.search: "--no-coverage-search"
        fusion.anchor.length: "20"
        fusion.read.mismatches: "2"
-       output.prefix: "<reads.pair.1_basename>"
+       output.prefix: "Sp_log"
        
 #
 # custom job queue flags to pass through to the GP server
@@ -33,4 +37,4 @@ assertions:
 # Because this is for load testing,
 # No need to diff actual result files with expected result files
 #
-        jobStatus: success
+      jobStatus: success
