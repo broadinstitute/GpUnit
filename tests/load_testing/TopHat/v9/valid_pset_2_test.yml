@@ -25,7 +25,7 @@ params:
 #
 # custom job queue flags to pass through to the GP server
 #
-       job.memory: "2 Gb"
+       job.memory: "28 Gb"
        #job.queue: "preview"
        #lsf.project: "gpunit_job"
        #job.extraArgs: [ "-g", "/genepattern/gpprod/long" ]
