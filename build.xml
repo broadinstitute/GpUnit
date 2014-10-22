@@ -56,7 +56,7 @@ report.dir: ${report.dir}
         <property name="gpunit.outputdir" value="./jobResults" />
         <property name="gpunit.batch.name" value="run_${DSTAMP}_${TSTAMP}" />
         <property name="gpunit.save.downloads" value="false" />
-        <property name="gpunit.delete.jobs" value="true" />
+        <property name="gpunit.delete.jobs" value="false" />
         <property name="report.run.dir" location="${report.dir}/${gpunit.batch.name}" />
         <mkdir dir="${report.run.dir}" />
         <symlink link="${report.dir}/current" resource="${report.run.dir}" overwrite="true" failonerror="false" />
