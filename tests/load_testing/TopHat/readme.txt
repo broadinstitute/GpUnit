@@ -20,7 +20,7 @@ For best results set the following in your 'gpunit.default.properties' file:
 The tests in the 'short' folder are designed to complete quickly, so that you can verify 
 the installation of the module and the configuration of your server and GpUnit client.
 
-The test in the 'long' folder are designed to establish baseline performance metrics for
+The tests in the 'long' folder are designed to establish baseline performance metrics for
 the TopHat module on the compute cluster.
 
     

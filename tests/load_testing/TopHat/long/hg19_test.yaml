@@ -1,5 +1,5 @@
 description: Longer running test case for TopHat module with human (hg1) dataset. Expected runtime is about an hour.
-# initially tested on GP hosted server running TopHat v. 8.3
+# initially tested on Broad hosted server running TopHat v. 8.3
 #lsid=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00230:8.3
 module: TopHat
 params:
@@ -24,7 +24,7 @@ params:
 #
 # custom job queue flags to pass through to the GP server
 #
-       job.memory: "28 Gb"
+       job.memory: "8 Gb"
 
 assertions:
 #
