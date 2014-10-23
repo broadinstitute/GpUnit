@@ -74,7 +74,7 @@ public class JobResultValidatorRest extends JobResultValidatorGeneric {
 
     @Override
     public void deleteJob() throws GpUnitException {
-        throw new GpUnitException("Method not implemented!");
+        throw new GpUnitException("GpUnit configuration error, deleteJob Method not implemented!");
     }
 
 }
