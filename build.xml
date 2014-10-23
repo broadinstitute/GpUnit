@@ -12,7 +12,7 @@
     <property name="gpunit.properties" value="gpunit.properties" />
     <property file="${gpunit.properties}" />
 
-    <property name="gp.host" value="gpdev.broadinstitute.org" />
+    <property name="gp.host" value="127.0.0.1" />
     <property name="gp.port" value="" />
     <property name="gp.user" value="test" />
     <property name="gp.password" value="test" />
