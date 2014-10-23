@@ -1,5 +1,0 @@
-gp.user=test
-gp.password=test
-gp.host=gpdev.broadinstitute.org
-gpunit.testfolder=./tests/Cufflinks_2.0.2_suite/fastTests/
-gpunit.numthreads=32
