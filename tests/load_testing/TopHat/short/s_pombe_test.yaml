@@ -1,14 +1,7 @@
-# 
-# Short running test case for TopHat module, with S pombe dataset
-# Expecting runtime is a few seconds
-#
+name: short_S_pombe
+description: Short running test case for TopHat module using S pombe paired end data. Expected runtime is a few seconds.
+# initially tested on GP hosted server running TopHat v. 8.3
 #lsid=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00230:8.3
-#
-# Note: must use REST client because 'reads.pair.1' and 'reads.pair.2' values are passed as an array
-#     This type of input is not supported by the SOAP client
-#
-name: Valid Parameter Set 1
-description: This is a using S pombe paired end data
 module: TopHat
 params:
        GTF.file: "ftp://gpftp.broadinstitute.org/example_data/rna_seq/annotations/genes.gff3"
@@ -35,7 +28,6 @@ params:
 # custom job queue flags to pass through to the GP server
 # Note: Must use the REST client for this to work
        job.memory: "2 Gb"
-       #job.queue: "preview"
 
 assertions:
 #

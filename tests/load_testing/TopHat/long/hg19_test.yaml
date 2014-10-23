@@ -1,7 +1,6 @@
+description: Longer running test case for TopHat module with human (hg1) dataset. Expected runtime is about an hour.
+# initially tested on GP hosted server running TopHat v. 8.3
 #lsid=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00230:8.3
-#
-name: Valid Parameter Set 1
-description: This is a test using Human Data
 module: TopHat
 params:
        GTF.file: "ftp://gpftp.broadinstitute.org/module_support_files/annotation/gtf/Homo_sapiens_hg19_UCSC.gtf"
@@ -26,9 +25,6 @@ params:
 # custom job queue flags to pass through to the GP server
 #
        job.memory: "28 Gb"
-       #job.queue: "preview"
-       #lsf.project: "gpunit_job"
-       #job.extraArgs: [ "-g", "/genepattern/gpprod/long" ]
 
 assertions:
 #
