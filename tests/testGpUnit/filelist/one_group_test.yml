@@ -1,0 +1,7 @@
+#
+# test file list feature
+#
+module: TestFileGroup
+params: 
+    # upload one group containing one file
+    inputFileGroup: { "GroupA": [ ../input/all_aml_test.cls, ../input/all_aml_train.cls ] }

@@ -1,0 +1,12 @@
+#
+# test file list feature
+# Note: Must run this with the rest client
+#    gpunit.client=REST
+#
+module: TestFileGroup
+params: 
+    inputFileGroup: ../input/all_aml_test.cls
+assertions:
+    files:
+        "stdout.txt":
+            diff: "one_file_stdout.txt"

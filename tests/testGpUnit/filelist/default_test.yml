@@ -1,0 +1,14 @@
+#
+# test file list feature
+# Note: Must run these tests with the REST client
+#    gpunit.client=REST
+#
+module: TestFileGroup
+params: 
+    # upload multiple groups containing multiple files
+    inputFileGroup: { "Train": [ ../input/all_aml_train.cls, ../input/all_aml_train.gct ],
+                      "Test": [ ../input/all_aml_test.cls, ../input/all_aml_test.gct ]  }
+assertions:
+    files:
+        "stdout.txt":
+            diff: "default_stdout.txt"

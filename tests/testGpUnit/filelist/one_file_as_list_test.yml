@@ -1,0 +1,11 @@
+#
+# test file list feature
+#
+module: TestFileGroup
+params: 
+    # upload one datafile, as a list of values
+    inputFileGroup: [ ../input/all_aml_test.cls ]
+assertions:
+    files:
+        "stdout.txt":
+            diff: "one_file_stdout.txt"
