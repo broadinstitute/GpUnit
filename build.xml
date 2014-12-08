@@ -75,7 +75,15 @@ report.dir: ${report.dir}
 
     <!-- in order to compile gp-unit, and to run gp-unit tests, must download the client library, 
          for SOAP client calls to the GP server -->
-    <target name="gp-client-lib" depends="init" unless="gp-client-lib-exists">
+    <target name="gp-server-online">
+        <description>Check that there is a server running at the 'gp.url'</description>
+        <condition property="gp-server-online">
+            <http url="${gp.url}/gp/" />
+        </condition>
+        <fail unless="gp-server-online" message="Server is not online: ${gp.url}/gp/" />
+    </target>
+
+    <target name="gp-client-lib" depends="init,gp-server-online" unless="gp-client-lib-exists">
         <description>If necessary, download the Java Programming Library from the server, and unzip into a local directory</description>
 
         <property name="http.url" value="${gp.url}/gp/downloads/GenePattern.zip" />
@@ -192,7 +200,7 @@ report.dir: ${report.dir}
         <run-tests testcases="${saved-jobs.testcases}" />
     </target>
     
-    <target name="gpunit" depends="package">
+    <target name="gpunit" depends="package,gp-server-online">
         <property name="gpunit.testfolder" location="./tests" />
         <path id="testfolder.path">
             <pathelement location="${gpunit.testfolder}" />
