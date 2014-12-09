@@ -1,0 +1,447 @@
+/*
+The Broad Institute
+ SOFTWARE COPYRIGHT NOTICE AGREEMENT
+ This software and its documentation are copyright (2003-2012) by the
+ Broad Institute. All rights are reserved.
+
+ This software is supplied without any warranty or guaranteed support
+ whatsoever. The Broad Institute cannot be responsible for its
+ use, misuse, or functionality.
+*/
+
+html, body
+{
+	margin: 0;			/* Remove body margin/padding */
+	padding: 0;
+    height: 100%;
+    width: 100%;
+    font-size: 14px;
+}
+
+
+div.hidden
+{
+    display: none;
+}
+
+.loginDivClass
+{
+    width: 500px;
+    height: 185px;
+    top: 50%;
+    margin-top: -95px;
+    left: 50%;
+    margin-left: -250px;
+    position: absolute;
+    text-align: center;
+    border: solid #C5D6EB 1px;
+}
+
+.loginTable
+{
+    width: 100%;
+    margin: 8px 9px 6px 5px;
+}
+
+
+#loginDiv input
+{
+    width: 250px;
+    height: 20px;
+}
+
+.floatLeft
+{
+    float: left;
+}
+
+.floatRight
+{
+    float: right;
+}
+
+table
+{
+    table-layout: auto;    
+}
+
+table td
+{
+    padding: 4px;
+}
+
+.pDescription
+{
+    font-size: 12px;        
+}
+
+#mTable
+{
+    font-size: 13px;
+    width: 100%;
+}
+
+#selectedTask
+{
+    font-size: 17px;
+    font-weight: bold;
+    color: #151B8D;
+}
+
+#topRight
+{
+    font-size: 14px;
+}
+
+.outer-west
+{
+    padding: 0;
+    margin: 0;
+}
+
+.outer-center
+{
+    padding: 0;
+    margin: 0;
+    overflow: auto;
+}
+
+#configTable
+{
+    width: 500px;
+    margin: auto;
+}
+
+.typeMetadata
+{
+    margin-left: 6px;
+}
+
+.ui-dialog-titlebar
+{
+    height: 5px;
+    font-size: 12px;
+}
+
+#validValuesTable
+{
+    float: left;
+}
+
+#invalidValuesTable
+{
+    float: right;
+}
+
+.numSelector
+{
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.rangeSelector
+{
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.minRange
+{
+    margin-left: 5px;
+    margin-right: 5px;
+    width: 50px;
+}
+
+.maxRange
+{
+    margin-left: 5px;
+    margin-right: 5px;
+    width: 50px;
+}
+
+.ui-multiselect
+{
+    margin-left: 5px;
+    margin-right: 5px;  
+}
+
+.pSetLabel
+{
+    font-size: 16px;
+    font-weight: bold;
+    color: #151B8D;
+}
+
+.pSetTable
+{
+    width: 100%;
+}
+
+.pSetTable td
+{
+    padding: 4px;
+}
+
+.nondefaultValue
+{
+    background-color: #FFF8C6;
+}
+
+.pSetDiv
+{
+    margin-left: 4px;
+    margin-bottom: 10px;
+}
+
+.header
+{
+    font-weight: bold;
+    font-size: 15px;
+    width: 100%;
+    background: pink;
+    padding: 2px;
+}
+
+.module_header
+{
+    margin-bottom: 15px;
+}
+
+.middle-south
+{
+    margin: 0px auto 0px auto;
+    text-align: center;
+}
+
+
+.spacing .middle-north
+{
+    /*min-height: 70px; */
+    padding-top: 9px;
+}
+
+.pSetHeading
+{
+    margin: 0;
+    font-size: 16px;
+    position: relative;
+    color: #333366;
+    background-color: #C5D6EB;
+    padding: 3px;
+    cursor: pointer;
+    font-weight:bold;
+}
+
+.imgcollapse, .imgexpand
+{
+    margin-right: 3px;
+}
+
+.rangeValue
+{
+    width: 80px !important;;
+}
+
+input[type="text"]
+{
+    width: 300px;
+    height: 19px;
+}
+
+#groupSetDiv
+{
+    font-size: 15px;
+    font-weight: bold;
+}
+
+#viewTab
+{
+    height: 97%;
+    border: 0;
+    font-size: 12px;
+}
+
+#settingsTab
+{
+    height: 97%;
+    border: 0;
+}
+
+.outerwest
+{
+    width: 350px;
+}
+
+button:disabled {
+  opacity: 0.5;
+}
+
+#title
+{
+    text-align: left;
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.selected
+{
+    background: #A9E9A9;
+}
+
+.actionBar
+{
+    width: 100%;
+    background: #D8D8D8;
+    margin-top: 0;
+    margin-bottom: 5px;
+    padding: 2px;
+}
+
+#updateDiv
+{
+    max-height: 470px;
+    overflow: auto;
+}
+
+.ui-dialog .ui-dialog-titlebar
+{
+    height: 5px; /* or whatever you want */
+}
+
+#updateParamsTable
+{
+    padding: 4px;
+    width: 100%;
+    font-size: 11px;
+}
+
+#updateParamsTable input
+{
+    width: 130px;
+    height: 10px;
+}
+
+.even
+{
+    background-color:#F0F0F0;
+}
+
+.custom-combobox {
+    position: relative;
+    display: inline-block;
+}
+.custom-combobox-toggle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    margin-left: 0;
+    padding: 0;
+    /* support: IE7 */
+    *height: 1.7em;
+    *top: 0.1em;
+}
+.custom-combobox-input {
+    margin: 0;
+    padding: 0.1em;
+}
+
+#loginDiv table tr td
+{
+    text-align: left;
+}
+
+.ui-dialog .ui-dialog-titlebar
+{
+    height: 24px;
+    font-size: 14px;
+}
+
+.dialog
+{
+    font-size: 12px;
+}
+
+.dialog table tr td
+{
+    padding: 4px;
+}
+
+.dialog input[type="text"]
+{
+    width: 140px;
+}
+
+.images
+{
+    margin-left: 5px;
+    margin-right: 3px;
+}
+
+#savedParamSets
+{
+    margin-top: 4px;
+}
+
+.psetLocationTable
+{
+    width: 100%;
+}
+
+.psetLocationTable tr:last-child td
+{
+    border-bottom: 1px solid #778899;
+}
+
+.testOption
+{
+    width: 190px;
+}
+
+
+#editRunSettings
+{
+    padding-left: 10px;
+}
+
+.editSettingsTable
+{
+   margin: 8px 9px 6px 4px;
+}
+
+.updateModVersionStatus
+{
+    margin-left: 4px;
+}
+
+.pSetActionBar
+{
+    width: 100%;
+    background: #E8E8E8;
+    padding: 2px;
+    margin: 5px 0 5px -5px;
+}
+
+.pSetDescriptionEdit
+{
+    width: 60%;
+    height: 60px;
+}
+
+.pSetDescriptionFinalDiv
+{
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.pSetDescriptionFinal
+{
+    font-size: 12px;
+    font-weight: normal;
+}
+
+.editTestTable
+{
+    width: 100%;
+}
+

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="createWar" name="Automatrix">
+
+    <property name="website" value="website"/>
+    <property name="src" value="src"/>
+    <property name="build" value="${website}/WEB-INF/classes"/>
+    <property  name="lib" value="${website}/WEB-INF/lib"/>
+    <property name="java.target" value="1.5" />
+    <property name="jarFile" value="automatedtest.jar" />
+    <property name="automatrix.app" value="automatrix.war" />
+    <property name="buildDir" value="build" />
+
+    <path id="library.classpath">
+        <fileset dir="${lib}">
+            <include name="*.jar" />
+        </fileset>
+        <fileset dir="../lib">
+            <include name="*.jar" />
+        </fileset>
+    </path>
+
+    <target  name="compile">
+        <mkdir dir="${build}"/>
+        <javac debug="true" classpathref="library.classpath" destdir="${build}"
+               srcdir="${src}"
+               />
+    </target>
+
+    <target  name="clean">
+        <delete dir="${build}/org"/>
+        <delete file="${jarFile}"/>
+        <delete file="${automatrix.app}"/>
+    </target>
+
+    <target  name="packageJar" depends="clean, compile">
+        <jar basedir="${build}" defaultexcludes="true" includes="*.class" jarfile="${buildDir}/${jarFile}"/>
+    </target>
+
+
+    <target name="packageJarAndCopyGpuUnit" depends="clean, compile, packageJar">
+        <copy todir="${website}/WEB-INF/lib">
+            <fileset dir="../lib"/>
+        </copy>
+    </target>
+
+
+    <target name="createWar" depends="packageJarAndCopyGpuUnit">
+        <war destfile="${buildDir}/${automatrix.app}" webxml="${website}/WEB-INF/web.xml">
+            <zipfileset dir="${website}/js" prefix="js" includes="*.js"/>
+            <zipfileset dir="${website}/styles" prefix="styles"/>
+            <fileset dir="${website}" includes="index.xhtml"/>
+
+            <classes dir="${website}/WEB-INF/classes"/>
+            <webinf dir="../src/3rd-party" prefix="WEB-INF/gpunit/src/3rd-party"/>
+            <webinf dir="../src/main" prefix="WEB-INF/gpunit/src/main"/>
+
+            <webinf dir="../lib" prefix="WEB-INF/gpunit/lib"/>
+            <lib dir="${website}/WEB-INF/lib"/>
+            <webinf file="../build.xml" prefix="WEB-INF/gpunit"/>
+        </war>
+    </target>
+    
+</project>
