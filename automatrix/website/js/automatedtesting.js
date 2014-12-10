@@ -258,7 +258,7 @@ function loadModule(taskId)
     var REST_ALL_TASKS = "/rest/v1/tasks/";
 
     $.ajax({
-        type: "POST",
+        type: "GET",
         url: test_editor.server + REST_ALL_TASKS + taskId,
         xhrFields: {
             withCredentials: true
