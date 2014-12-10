@@ -28,8 +28,8 @@
 
     <target  name="clean">
         <delete dir="${build}/org"/>
-        <delete file="${jarFile}"/>
-        <delete file="${automatrix.app}"/>
+        <delete file="${build}/${jarFile}"/>
+        <delete file="${build}/${automatrix.app}"/>
     </target>
 
     <target  name="packageJar" depends="clean, compile">
