@@ -20,6 +20,7 @@
     </path>
 
     <target  name="compile">
+        <echo message="Creating build directory.."/>
         <mkdir dir="${build}"/>
         <javac debug="true" classpathref="library.classpath" destdir="${build}"
                srcdir="${src}"
