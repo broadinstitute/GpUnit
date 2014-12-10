@@ -1462,33 +1462,22 @@ function updateParameterSetGroup()
 {
     var lsidNoVersion = test_editor.lsid;
 
-    var lastIndex = test_editor.lsid.lastIndexOf(":") - 1;
+    var lastIndex = test_editor.lsid.lastIndexOf(":");
 
     lsidNoVersion = lsidNoVersion.substring(0, lastIndex);
 
+
     //retrieve latest version of module
+    var REST_ALL_TASKS = "/rest/v1/tasks/";
+
     $.ajax({
-        type: "POST",
-        url:  window.location.pathname + "AutomatedTest/load",
-        data: { "lsid" : lsidNoVersion,
-                "server" : test_editor.server,
-                "username" : test_editor.username,
-                "password": $("#password").val()},
+        type: "GET",
+        url: test_editor.server + REST_ALL_TASKS + lsidNoVersion,
+        xhrFields: {
+            withCredentials: true
+        },
         success: function(response) {
-            var message = response["MESSAGE"];
-            var error = response["ERROR"];
-
-            if (error !== undefined && error !== null)
-            {
-                alert(error);
-                return;
-            }
-            if (message !== undefined && message !== null) {
-                alert(message);
-                return;
-            }
-
-            handleParameterSetGroupUpdate(response["parameters"], response["module"]);
+            handleParameterSetGroupUpdate(response);
         },
         error: function (xhr, ajaxOptions, thrownError) {
             alert(xhr.status);
@@ -1498,76 +1487,82 @@ function updateParameterSetGroup()
     });
 }
 
-function handleParameterSetGroupUpdate(parameterInfo, moduleInfo)
+function handleParameterSetGroupUpdate(module)
 {
     var updatedParams = {};
 
+    var parameterInfos = module["params"];
     var curParameterNameSelect = $("<select class='pNameSelect'/>");
     curParameterNameSelect.append("<option value='' selected='selected'>Select new parameter</option>");
 
     //get data about the parameters for the latest module
     var currentParamsObj = {};
-    for(var t=0;t<parameterInfo.length;t++)
+    for(var t=0;t<parameterInfos.length;t++)
     {
-        var obj = {};
-        obj.defaultValue = parameterInfo[t].default_value;
+        var paramsObject = parameterInfos[t];
+        var paramName = Object.keys(paramsObject);
+        if(paramName.length == 1) {
+            var parameter = paramsObject[paramName];
 
-        var optional = true;
-        if(parameterInfo[t].optional.length <= 0)
-        {
-            optional = false;
-        }
+            var obj = {};
+            obj.defaultValue = parameter.attributes.default_value;
 
-        obj.optional = optional;
-        if(parameterInfo[t].value != undefined &&
-            parameterInfo[t].value != null &&
-            parameterInfo[t].value.indexOf(";") != -1)
-        {
-            var choices = parameterInfo[t].value;
+            var optional = true;
+            if (parameter.attributes.optional.length <= 0) {
+                optional = false;
+            }
+
+            obj.optional = optional;
+            var choiceInfo = parameter.choiceInfo;
+
+            var defaultFound = false;
+            var firstChoiceValue = null;
             var choiceMap = {};
-
-            var firstChoice = "";
-            var result = choices.split(';');
-
-            for(var j=0;j<result.length;j++)
+            //get display value if this is a choice list
+            if(choiceInfo != undefined && choiceInfo != null && choiceInfo != "")
             {
-                var rowdata = result[j].split("=");
+                var result = choiceInfo.choices;
 
-                var displayValue = "";
-                var pvalue = "";
-                if(rowdata.length > 1)
+                for(var j=0;j<result.length;j++)
                 {
-                    displayValue = rowdata[1];
-                    pvalue = rowdata[0];
-                }
-                else
-                {
-                    pvalue = rowdata[0];
-                    displayValue = rowdata[0] ;
+                    var displayValue = result[j].label;
+                    var value = result[j].value;
+
+
+                    if(value == parameter.attributes.default_value)
+                    {
+                        defaultFound = true;
+                    }
+                    //if no default value is specified for the
+                    //then the first choice will be used
+                    if(j==0)
+                    {
+                        firstChoiceValue = value;
+                    }
+
+                    choiceMap[value] = displayValue;
                 }
 
-                if(j == 0)
+                if(!defaultFound)
                 {
-                    firstChoice = pvalue;
+                    parameter.attributes.default_value = firstChoiceValue;
                 }
 
-                choiceMap[pvalue] = displayValue;
+                //if there is no default value set that to
+                if (obj.defaultValue == undefined
+                    || obj.defaultValue == null
+                    || choiceMap[obj.defaultValue] == undefined
+                    || choiceMap[obj.defaultValue] == null) {
+                    obj.defaultValue = firstChoice;
+                }
+
+                obj.choiceMap = choiceMap;
+
             }
 
-            //if there is no default value set that to
-            if(obj.defaultValue == undefined
-                || obj.defaultValue == null
-                || choiceMap[obj.defaultValue] == undefined
-                || choiceMap[obj.defaultValue] == null)
-            {
-                obj.defaultValue = firstChoice;
-            }
-
-            obj.choiceMap = choiceMap;
+            currentParamsObj[paramName] = obj;
+            curParameterNameSelect.append("<option value='" + paramName + "'>" + paramName + " </option>");
         }
-
-        currentParamsObj[parameterInfo[t].name] = obj;
-        curParameterNameSelect.append("<option value='" + parameterInfo[t].name + "'>" + parameterInfo[t].name + " </option>");
     }
 
     //now find parameters that need to be updated
@@ -1866,8 +1861,8 @@ function handleParameterSetGroupUpdate(parameterInfo, moduleInfo)
                 var groupInfo = parameterSets["group_info"];
 
                 //update the module lsid and name
-                groupInfo["lsid"] = moduleInfo["LSID"];
-                groupInfo["module"] = moduleInfo["name"];
+                groupInfo["lsid"] = module["lsid"];
+                groupInfo["module"] = module["name"];
 
                 //update the parameter sets
                 for(var i=0;i<parameterSets["param_sets"].length;i++)
