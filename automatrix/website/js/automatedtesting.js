@@ -647,24 +647,29 @@ function loadAllTestsResultsInfo(testResultsByParamSet)
         listingDiv.append(listingDetails);
 
         var testResults = testResultsByParamSet[paramSetNames[p]];
-        for(var t=0;t<testResults.length;t++)
-        {
-            var rLink = $("<a href='#'>" + testResults[t].name +"</a>");
-            $("<li/>").append(rLink).appendTo(listingDetails);
-
-            rLink.data("link", testResults[t].reportLink);
-            rLink.data("pset", paramSetNames[p]);
-            rLink.click(function(event)
+        for(var t=0;t<testResults.length;t++) {
+            if (testResults[t].reportLink != undefined && testResults[t].reportLink != null)
             {
-                event.preventDefault();
+                var rLink = $("<a href='#'>" + testResults[t].name + "</a>");
+                $("<li/>").append(rLink).appendTo(listingDetails);
 
-                $(".middle-center").empty();
-                $(".middle-north").empty();
-                centerInnerLayout.open("north");
-                centerInnerLayout.sizePane("north", 47);
-                $(".middle-north").append("<div class='header'>"+ $(this).data("pset") + ": " + $(this).text()+ "</div>");
-                $(".middle-center").append('<iframe src="' + $(this).data("link") + '" width="97%" height="97%"></iframe>');
-            });
+                rLink.data("link", testResults[t].reportLink);
+                rLink.data("pset", paramSetNames[p]);
+                rLink.click(function (event) {
+                    event.preventDefault();
+
+                    $(".middle-center").empty();
+                    $(".middle-north").empty();
+                    centerInnerLayout.open("north");
+                    centerInnerLayout.sizePane("north", 47);
+                    $(".middle-north").append("<div class='header'>" + $(this).data("pset") + ": " + $(this).text() + "</div>");
+                    $(".middle-center").append('<iframe src="' + $(this).data("link") + '" width="97%" height="97%"></iframe>');
+                });
+            }
+            else
+            {
+                $("<li/>").append(testResults[t].name).appendTo(listingDetails);
+            }
         }
         $("#viewTestResults").append(listingDiv);
         listingDiv.accordion({

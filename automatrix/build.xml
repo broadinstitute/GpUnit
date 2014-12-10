@@ -37,14 +37,14 @@
     </target>
 
 
-    <target name="packageJarAndCopyGpuUnit" depends="clean, compile, packageJar">
+    <target name="packageJarAndCopyGpUnit" depends="clean, compile, packageJar">
         <copy todir="${website}/WEB-INF/lib">
             <fileset dir="../lib"/>
         </copy>
     </target>
 
 
-    <target name="createWar" depends="packageJarAndCopyGpuUnit">
+    <target name="createWar" depends="packageJarAndCopyGpUnit">
         <war destfile="${buildDir}/${automatrix.app}" webxml="${website}/WEB-INF/web.xml">
             <zipfileset dir="${website}/js" prefix="js" includes="*.js"/>
             <zipfileset dir="${website}/styles" prefix="styles"/>

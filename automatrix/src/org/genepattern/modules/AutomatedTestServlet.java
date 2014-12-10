@@ -927,11 +927,26 @@ public class AutomatedTestServlet extends HttpServlet
                         testResultDetails.addProperty("name", df.format(cal.getTime()));
 
                         //check if there is a report html file
-                        File reportHtml = new File(testResultDir[r].getAbsolutePath() + "/reports/html/index.html");
+                        String reportPath = "/reports";
+                        File reportMainDir = new File(testResultDir[r].getAbsolutePath(), reportPath);
+                        File[] contents = reportMainDir.listFiles();
+                        if(contents != null)
+                        {
+                            for(File file: contents)
+                            {
+                                if(file.isDirectory() && !file.getName().equals("current"))
+                                {
+                                    reportPath += "/" + file.getName();
+                                }
+                            }
+                        }
+                        reportPath += "/html/index.html";
+                        File reportHtml = new File(testResultDir[r].getAbsolutePath(), reportPath);
                         log.error("report html: " + reportHtml.getAbsolutePath());
                         if(reportHtml.exists())
                         {
-                            String reportLink = PARAM_SETS_DIR + "/" + allParamSetDirs[t].getName() + "/" + testResultsDir[0].getName() + "/" + testResultDir[r].getName() + "/reports/html/index.html";
+                            String reportLink = PARAM_SETS_DIR + "/" + allParamSetDirs[t].getName() + "/"
+                                    + testResultsDir[0].getName() + "/" + testResultDir[r].getName() + reportPath;
                             testResultDetails.addProperty("reportLink", reportLink);
                         }
 
