@@ -21,8 +21,8 @@
 
     <target  name="compile">
         <echo message="Creating build directory.."/>
-        <mkdir dir="${buildDir}"/>
-        <javac debug="true" classpathref="library.classpath" destdir="${buildDir}"
+        <mkdir dir="${build}"/>
+        <javac debug="true" classpathref="library.classpath" destdir="${build}"
                srcdir="${src}"
                />
     </target>
@@ -33,12 +33,8 @@
         <delete file="${buildDir}/${automatrix.app}"/>
     </target>
 
-    <target  name="packageJar" depends="clean, compile">
-        <jar basedir="${buildDir}" defaultexcludes="true" includes="*.class" jarfile="${buildDir}/${jarFile}"/>
-    </target>
 
-
-    <target name="packageJarAndCopyGpUnit" depends="clean, compile, packageJar">
+    <target name="packageJarAndCopyGpUnit" depends="clean, compile">
         <copy todir="${website}/WEB-INF/lib">
             <fileset dir="../lib"/>
         </copy>
