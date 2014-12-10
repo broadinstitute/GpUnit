@@ -6,7 +6,7 @@
     <property name="build" value="${website}/WEB-INF/classes"/>
     <property  name="lib" value="${website}/WEB-INF/lib"/>
     <property name="automatrix.app" value="automatrix.war" />
-    <property name="buildDir" value="build" />
+    <property name="distDir" value="dist" />
 
     <path id="library.classpath">
         <fileset dir="${lib}">
@@ -27,7 +27,7 @@
 
     <target  name="clean">
         <delete dir="${build}"/>
-        <delete file="${buildDir}/${automatrix.app}"/>
+        <delete file="${distDir}/${automatrix.app}"/>
     </target>
 
 
@@ -39,7 +39,8 @@
 
 
     <target name="createWar" depends="packageJarAndCopyGpUnit">
-        <war destfile="${buildDir}/${automatrix.app}" webxml="${website}/WEB-INF/web.xml">
+        <mkdir dir="${distDir}"/>
+        <war destfile="${distDir}/${automatrix.app}" webxml="${website}/WEB-INF/web.xml">
             <zipfileset dir="${website}/js" prefix="js" includes="*.js"/>
             <zipfileset dir="${website}/styles" prefix="styles"/>
             <fileset dir="${website}" includes="index.xhtml"/>
