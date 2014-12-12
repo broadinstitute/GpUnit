@@ -450,8 +450,10 @@ button:disabled {
     height: 15px;
 }
 
-.label
+.middle-north #selectModulePanel
 {
-    font: 4px !important;
+    background: #87d1e6;
 }
+
+
 

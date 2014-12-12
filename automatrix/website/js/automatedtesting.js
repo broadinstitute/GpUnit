@@ -102,10 +102,10 @@ function loadAllTasks()
             loadAllTasksInfo(modules);
         },
         error: function (xhr, ajaxOptions, thrownError) {
-            alert("Error status: " + xhr.status);
+            createErrorMsg("Get Module List", "Error status: " + xhr.status);
             if(thrownError != null && thrownError != "")
             {
-                alert(thrownError);
+                createErrorMsg("Get Module List", thrownError);
             }
         }
     })
@@ -173,7 +173,7 @@ function loadModuleInfo(taskId, lsidVersions)
         var index = test_editor.lsid.lastIndexOf(":");
         if(index == -1)
         {
-            alert("An error occurred while loading module versions.\nInvalid lsid: " + $(this).val());
+            createErrorMsg("Module Versions", "An error occurred while loading module versions.\nInvalid lsid: " + $(this).val());
         }
 
         var lsidNoVersion = test_editor.lsid.substring(0, index);
@@ -218,8 +218,11 @@ function loadModule(taskId)
             loadModuleInfo(taskId, response["lsidVersions"]);
         },
         error: function (xhr, ajaxOptions, thrownError) {
-            alert(xhr.status);
-            alert(thrownError);
+            createErrorMsg("Get Module Versions", "Error status: " + xhr.status);
+            if(thrownError != null && thrownError != "")
+            {
+                createErrorMsg("Get Module Versions", thrownError);
+            }
         },
         dataType: "json"
     });
@@ -238,8 +241,11 @@ function loadModule(taskId)
             loadParameterInfo(params);
         },
         error: function (xhr, ajaxOptions, thrownError) {
-            alert(xhr.status);
-            alert(thrownError);
+            createErrorMsg("Load Module", "Error status: " + xhr.status);
+            if(thrownError != null && thrownError != "")
+            {
+                createErrorMsg("Load Module", thrownError);
+            }
         },
         dataType: "json"
     });
@@ -491,20 +497,23 @@ function loadAllParamSetGroups()
 
             if (error !== undefined && error !== null)
             {
-                alert(error);
+                createErrorMsg("Get Parameter Set Names", error);
                 return;
             }
 
             if (message !== undefined && message !== null) {
-                alert(message);
+                createInfoMsg("Get Parameter Set Names", message);
                 return;
             }
 
             loadAllParamSetsInfo(response["param_sets_by_loc"]);
         },
         error: function (xhr, ajaxOptions, thrownError) {
-            alert(xhr.status);
-            alert(thrownError);
+            createErrorMsg("Get Parameter Set Names", "Error status: " + xhr.status);
+            if(thrownError != null && thrownError != "")
+            {
+                createErrorMsg("Get Parameter Set Names", thrownError);
+            }
         },
         dataType: "json"
     });
@@ -522,12 +531,12 @@ function addPSetGroupLocation(location)
 
             if (error !== undefined && error !== null)
             {
-                alert(error);
+                createErrorMsg("Add Parameter Set Location",error);
                 return;
             }
 
             if (message !== undefined && message !== null) {
-                alert(message);
+                createInfoMsg("Add Parameter Set Location",message);
                 return;
             }
 
@@ -535,8 +544,11 @@ function addPSetGroupLocation(location)
             loadAllParamSetGroups();
         },
         error: function (xhr, ajaxOptions, thrownError) {
-            alert(xhr.status);
-            alert(thrownError);
+            createErrorMsg("Add Parameter Set Location", "Error status: " + xhr.status);
+            if(thrownError != null && thrownError != "")
+            {
+                createErrorMsg("Add Parameter Set Location", thrownError);
+            }
         },
         dataType: "json"
     });
@@ -554,12 +566,12 @@ function removePSetGroupLocation(location)
 
             if (error !== undefined && error !== null)
             {
-                alert(error);
+                createErrorMsg("Remove Parameter Set",error);
                 return;
             }
 
             if (message !== undefined && message !== null) {
-                alert(message);
+                createInfoMsg("Remove Parameter Set", message);
                 return;
             }
 
@@ -567,8 +579,11 @@ function removePSetGroupLocation(location)
             loadAllParamSetGroups();
         },
         error: function (xhr, ajaxOptions, thrownError) {
-            alert(xhr.status);
-            alert(thrownError);
+            createErrorMsg("Remove Parameter Set", "Error status: " + xhr.status);
+            if(thrownError != null && thrownError != "")
+            {
+                createErrorMsg("Remove Parameter Set", thrownError);
+            }
         },
         dataType: "json"
     });
@@ -585,19 +600,22 @@ function loadAllTestResults()
 
             if (error !== undefined && error !== null)
             {
-                alert(error);
+                createErrorMsg("Get Test Results", error);
                 return;
             }
             if (message !== undefined && message !== null) {
-                alert(message);
+                createInfoMsg("Get Test Results",message);
                 return;
             }
 
             loadAllTestsResultsInfo(response["test_results"]);
         },
         error: function (xhr, ajaxOptions, thrownError) {
-            alert(xhr.status);
-            alert(thrownError);
+            createErrorMsg("Get Test Results", "Error status: " + xhr.status);
+            if(thrownError != null && thrownError != "")
+            {
+                createErrorMsg("Get Test Results", thrownError);
+            }
         },
         dataType: "json"
     });
@@ -678,7 +696,7 @@ function configureAndRunTests()
                 }
                 else
                 {
-                    alert("Please enter a server, username and/or password.");
+                    createErrorMsg("Server Login", "Please enter a server, username and/or password.");
                 }
             },
             Cancel: function()
@@ -718,20 +736,19 @@ function runTests ()
 
             if (error !== undefined && error !== null)
             {
-                alert(error);
+                createErrorMsg("Run Tests", error);
                 return;
             }
             if (message !== undefined && message !== null) {
-                alert(message);
+                createInfoMsg("Run Tests", message);
                 return;
             }
         },
         error: function (xhr, ajaxOptions, thrownError) {
-            alert(xhr.status);
-
+            createErrorMsg("Run Tests", "Error status: " + xhr.status);
             if(thrownError != null && thrownError != "")
             {
-                alert(thrownError);
+                createErrorMsg("Run Tests", thrownError);
             }
         },
         complete: function()
@@ -820,22 +837,22 @@ function loadAllParamSetsInfo(paramSetsGroupsByLoc)
 
                         if (error !== undefined && error !== null)
                         {
-                            alert(error);
+                            createErrorMsg("Get Parameter Set", error);
                             return;
                         }
                         if (message !== undefined && message !== null)
                         {
-                            alert(message);
+                            createInfoMsg("Get Parameter Set", message);
                             return;
                         }
 
                         loadParamSetGroup(paramSetGroup);
                     },
                     error: function (xhr, ajaxOptions, thrownError) {
-                        alert(xhr.status);
+                        createErrorMsg("Get Parameter Set", "Error status: " + xhr.status);
                         if(thrownError != null && thrownError != "")
                         {
-                            alert(thrownError);
+                            createErrorMsg("Get Parameter Set", thrownError);
                         }
                     },
                     dataType: "json"
@@ -888,7 +905,7 @@ function displayMainPage()
 {
     if(mainLayout == null)
     {
-        alert("An error occurred while loading the page");
+        createErrorMsg("Initialization Error", "An error occurred while loading the page");
         return;
     }
 
@@ -937,7 +954,7 @@ function removeParameterSet(id)
         }
     }
     console.log("Could not delete the parameter set with id: " + id);
-    alert("Could not delete the parameter set with id: " + id);
+    createErrorMsg("Remove Parameter Set", "Could not delete the parameter set with id: " + id);
     return false;
 }
 
@@ -957,7 +974,7 @@ function updateParameterSet(id, paramSet)
         }
     }
     console.log("Could not update parameter set with id: " + id);
-    alert("Could not update the parameter set with id: " + id);
+    createErrorMsg("Update Parameter Set", "Could not update the parameter set with id: " + id);
     return false;
 }
 
@@ -1465,10 +1482,10 @@ function updateParameterSetGroup()
             handleParameterSetGroupUpdate(response);
         },
         error: function (xhr, ajaxOptions, thrownError) {
-            alert("Error status: " + xhr.status);
+            createErrorMsg("Load Module", "Error status: " + xhr.status);
             if(thrownError != null && thrownError != "")
             {
-                alert(thrownError);
+                createErrorMsg("Load Module", thrownError);
             }
         },
         dataType: "json"
@@ -1950,7 +1967,7 @@ function handleParameterSetGroupUpdate(module)
                 }
 
                 viewParameterSets(parameterSets, false);
-                alert("Update complete: "  + "\n" + numParamsRemoved + " parameters removed"
+                createInfoMsg("Update Parameter Set", "Update complete: "  + "\n" + numParamsRemoved + " parameters removed"
                   + "\n" + numNewParameters + " parameters added");
                 $( this ).dialog( "close" );
             }
@@ -2028,7 +2045,7 @@ function viewParameterSets(pGroupObj, enableRun)
     var index = test_editor.lsid.lastIndexOf(":");
     if(index == -1)
     {
-        alert("An error occurred while loading module versions.\nInvalid lsid: " + $(this).val());
+        createErrorMsg("Module Versions", "An error occurred while loading module versions.\nInvalid lsid: " + $(this).val());
     }
     var versionnum = test_editor.lsid.substring(index+1, test_editor.lsid.length);
 
@@ -2074,7 +2091,7 @@ function viewParameterSets(pGroupObj, enableRun)
         }
         else
         {
-            alert("Please specify the name of the parameter set group");
+            createErrorMsg("Save Parameter Set", "Please specify the name of the parameter set group");
         }
     });
     $(".middle-south").append(saveButton);
@@ -2122,11 +2139,11 @@ function saveTests()
             var error = response["ERROR"];
             if (error !== undefined && error !== null)
             {
-                alert(error);
+                createErrorMsg("Save Parameter Sets", error);
                 return;
             }
             if (message !== undefined && message !== null) {
-                alert(message);
+                createInfoMsg("Save Parameter Sets", message);
             }
             loadAllParamSetGroups();
 
@@ -2135,10 +2152,10 @@ function saveTests()
             toggleRunButton(true);            
         },
         error: function (xhr, ajaxOptions, thrownError) {
-            alert("Error status: " + xhr.status);
+            createErrorMsg("Save Parameter Sets", "Error status: " + xhr.status);
             if(thrownError != null && thrownError != "")
             {
-                alert(thrownError);
+                createErrorMsg("Save Parameter Sets", thrownError);
             }
         },
         dataType: "json"
@@ -2283,13 +2300,44 @@ $.widget( "custom.combobox", {
     }
 });
 
-function createErrorMsg(message)
+function createInfoMsg(title, message)
+{
+    var infoDiv = $("<div/>");
+    var infoContents = $('<p> <span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>'
+        + '<strong>Error: </strong></p>');
+    infoContents.append(message);
+    infoDiv.append(errorContents);
+
+    infoDiv.dialog({
+        title: title,
+        width: 480,
+        buttons: {
+            "OK": function()
+            {
+                $(this).dialog("close");
+            }
+        }
+    });
+}
+
+function createErrorMsg(title, message)
 {
     var errorDiv = $("<div/>");
     var errorContents = $('<p> <span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>'
-     + '<strong>Error:</strong> </p>');
+     + '<strong>Error: </strong></p>');
     errorContents.append(message);
-    $(".middle-center").prepend(errorDiv);
+    errorDiv.append(errorContents);
+
+    errorDiv.dialog({
+        title: title,
+        width: 480,
+        buttons: {
+            "OK": function()
+            {
+                $(this).dialog("close");
+            }
+        }
+    });
 }
 
 function updateModuleVersions(versions)
@@ -2302,7 +2350,7 @@ function updateModuleVersions(versions)
     var index = test_editor.lsid.lastIndexOf(":");
     if(index == -1)
     {
-        alert("An error occurred while loading module versions.\nInvalid lsid: " + $(this).val());
+        createErrorMsg("Update Module Version", "An error occurred while loading module versions.\nInvalid lsid: " + $(this).val());
     }
 
     $(".moduleVersionSelect").empty();
@@ -2916,9 +2964,9 @@ $(document).ready(function()
                             minValue = parseFloat(minValue);
                         }
 
-                        if(minValue == NaN)
+                        if(isNaN(minValue))
                         {
-                            alert("Minimum range value must be a number");
+                            createErrorMsg("Invalid Range", "Minimum range value must be a number");
                             $(this).val("");
                             return;
                         }
@@ -2927,14 +2975,14 @@ $(document).ready(function()
                         {
                             if(maxValue == minValue)
                             {
-                                alert("Minimum range value cannot be the same as the maximum range value");
+                                createErrorMsg("Invalid Range", "Minimum range value cannot be the same as the maximum range value");
                                 $(this).val("");
                                 return;
                             }
 
                             if(minValue > maxValue)
                             {
-                                alert("Minimum range value cannot be greater than the max range value");
+                                createErrorMsg("Invalid Range", "Minimum range value cannot be greater than the max range value");
                                 $(this).val("");
                                 return;
                             }
@@ -3001,9 +3049,9 @@ $(document).ready(function()
                             maxValue = parseFloat(maxValue);
                         }
 
-                        if(maxValue == NaN)
+                        if(isNaN(maxValue))
                         {
-                            alert("Maximum range value must be a number");
+                            createErrorMsg("Invalid Range", "Maximum range value must be a number");
                             $(this).val("");
                             return;
                         }
@@ -3012,14 +3060,14 @@ $(document).ready(function()
                         {
                             if(maxValue == minValue)
                             {
-                                alert("Maximum range value cannot be the same as the minimum range value");
+                                createErrorMsg("Invalid Range", "Maximum range value cannot be the same as the minimum range value");
                                 $(this).val("");
                                 return;
                             }
 
                             if(maxValue < minValue)
                             {
-                                alert("Maximum range value cannot be less than the minimum range value");
+                                createErrorMsg("Invalid Range", "Maximum range value cannot be less than the minimum range value");
                                 $(this).val("");
                                 return;
                             }
@@ -3294,12 +3342,12 @@ $(document).ready(function()
     {
         if($("#server").val() == undefined || $("#server").val() == null || $("#server").val().length < 1)
         {
-            alert("Please enter a server name");
+            createErrorMsg("Server Login", "Please enter a server name");
         }
 
         if($("#username").val() == undefined || $("#username").val() == null || $("#username").val().length < 1)
         {
-            alert("Please enter a user name");
+            createErrorMsg("Server Login", "Please enter a user name");
         }
 
         $.ajax({
@@ -3315,11 +3363,11 @@ $(document).ready(function()
 
                 if (error !== undefined && error !== null)
                 {
-                    alert(error);
+                    createErrorMsg("Module Versions", error);
                     return;
                 }
                 if (message !== undefined && message !== null) {
-                    alert(message);
+                    createInfoMsg("Module Versions", message);
                     return;
                 }
 
@@ -3327,11 +3375,11 @@ $(document).ready(function()
                 $(".updateModVersionStatus").show();
             },
             error: function (xhr, ajaxOptions, thrownError) {
-                alert("Error status: " + xhr.status);
+                createErrorMsg("Module Versions", "Error status: " + xhr.status);
 
                 if(thrownError != null && thrownError != undefined &&thrownError != "")
                 {
-                    alert(thrownError);
+                    createErrorMsg("Module Versions", thrownError);
                 }
             },
             dataType: "json"
