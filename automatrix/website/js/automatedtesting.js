@@ -102,45 +102,15 @@ function loadAllTasks()
             loadAllTasksInfo(modules);
         },
         error: function (xhr, ajaxOptions, thrownError) {
-            alert(xhr.status);
-            alert(thrownError);
+            alert("Error status: " + xhr.status);
+            if(thrownError != null && thrownError != "")
+            {
+                alert(thrownError);
+            }
         }
     })
 
 }
-
-/*function loadAllTasks()
-{
-    $.ajax({
-        type: "POST",
-        url: window.location.pathname + "AutomatedTest/getTasks",
-        data: { "server" : test_editor.server,
-                "username" : test_editor.username,
-                "password": $("#password").val()},
-        success: function(response) {
-            var message = response["MESSAGE"];
-            var error = response["ERROR"];
-            var module = response["module"];
-
-            if (error !== undefined && error !== null)
-            {
-                alert(error);
-                return;
-            }
-            if (message !== undefined && message !== null) {
-                alert(message);
-                return;
-            }
-
-            loadAllTasksInfo(response["modules"]);
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-            alert(xhr.status);
-            alert(thrownError);
-        },
-        dataType: "json"
-    });
-} */
 
 function loadAllTasksInfo(modules)
 {
@@ -668,7 +638,7 @@ function loadAllTestsResultsInfo(testResultsByParamSet)
             }
             else
             {
-                $("<li/>").append(testResults[t].name).appendTo(listingDetails);
+                $("<li/>").append(testResults[t].name + "(no report)").appendTo(listingDetails);
             }
         }
         $("#viewTestResults").append(listingDiv);
@@ -758,7 +728,11 @@ function runTests ()
         },
         error: function (xhr, ajaxOptions, thrownError) {
             alert(xhr.status);
-            alert(thrownError);
+
+            if(thrownError != null && thrownError != "")
+            {
+                alert(thrownError);
+            }
         },
         complete: function()
         {
@@ -859,7 +833,10 @@ function loadAllParamSetsInfo(paramSetsGroupsByLoc)
                     },
                     error: function (xhr, ajaxOptions, thrownError) {
                         alert(xhr.status);
-                        alert(thrownError);
+                        if(thrownError != null && thrownError != "")
+                        {
+                            alert(thrownError);
+                        }
                     },
                     dataType: "json"
                 });
@@ -1144,7 +1121,7 @@ function addParameterSet( parameterSet)
     deleteButton.button().click(function()
     {
         //remove parameter set from listing
-        var parentDiv = $(this).parent(".pSetDiv");
+        var parentDiv = $(this).parents(".pSetDiv");
         var pSetTable = parentDiv.find(".pSetTable");
         var pSetId = deleteButton.data("pSetId");
 
@@ -1437,7 +1414,7 @@ function addParameterSet( parameterSet)
 
     //add ability to toggle visibility of parameter sets
     var pSetHeading = $("<p class='pSetHeading'>" + pSetName +"</p>");
-    $(".middle-center").append(pSetHeading);
+    //$(".middle-center").append(pSetHeading);
     var imagecollapse = $("<img class='imgcollapse' src='styles/images/black_section_collapsearrow.png' alt='some_text' width='11' height='11'/>");
     var imageexpand = $("<img class='imgexpand' src='styles/images/black_section_expandarrow.png' alt='some_text' width='11' height='11'/>");
 
@@ -1454,7 +1431,15 @@ function addParameterSet( parameterSet)
         $(this).children(".imgexpand:first").toggle();
     });
 
-    $(".middle-center").append(pSetDiv);
+    var divAccordion = $("<div/>");
+    divAccordion.append("<h3>" + pSetName + "</h3>");
+    divAccordion.append(pSetDiv);
+    divAccordion.accordion({
+        collapsible: true,
+        heightStyle: "content"
+    });
+    $(".middle-center").append(divAccordion);
+
     updateTestTable(pSetId);
 }
 
@@ -1480,8 +1465,11 @@ function updateParameterSetGroup()
             handleParameterSetGroupUpdate(response);
         },
         error: function (xhr, ajaxOptions, thrownError) {
-            alert(xhr.status);
-            alert(thrownError);
+            alert("Error status: " + xhr.status);
+            if(thrownError != null && thrownError != "")
+            {
+                alert(thrownError);
+            }
         },
         dataType: "json"
     });
@@ -1993,13 +1981,12 @@ function viewParameterSets(pGroupObj, enableRun)
     $(".middle-center").append(actionBarDiv);
     
     var paramGroupSetDiv = $("<div id='groupSetDiv'/>");
-    paramGroupSetDiv.append("Enter name of parameter set group*: ");
+    paramGroupSetDiv.append("<label class='label' for='paramSetGroupName'> Enter name of parameter set group*: </label>");
     paramGroupSetDiv.append("<input id='paramSetGroupName' type='text'/>");
-    //paramGroupSetDiv.append("<p>" + selectedModuleText + "</p>");
 
     //add check mark to indicate whether to overwrite the tests
     paramGroupSetDiv.append("<input type='checkbox' name='overwriteTests' id='overwriteTests' checked='true'/>");
-    paramGroupSetDiv.append("<label for='overwriteTests'>overwrite existing tests</label>");
+    paramGroupSetDiv.append("<label class='label' for='overwriteTests'>overwrite existing tests</label>");
     $(document).on("change", "#overwriteTests", function()
     {
         if(!$(this).is(':checked'))
@@ -2148,8 +2135,11 @@ function saveTests()
             toggleRunButton(true);            
         },
         error: function (xhr, ajaxOptions, thrownError) {
-            alert(xhr.status);
-            alert(thrownError);
+            alert("Error status: " + xhr.status);
+            if(thrownError != null && thrownError != "")
+            {
+                alert(thrownError);
+            }
         },
         dataType: "json"
     });
@@ -2293,6 +2283,15 @@ $.widget( "custom.combobox", {
     }
 });
 
+function createErrorMsg(message)
+{
+    var errorDiv = $("<div/>");
+    var errorContents = $('<p> <span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>'
+     + '<strong>Error:</strong> </p>');
+    errorContents.append(message);
+    $(".middle-center").prepend(errorDiv);
+}
+
 function updateModuleVersions(versions)
 {
     if(versions == undefined || versions == null)
@@ -2404,11 +2403,11 @@ $(document).ready(function()
 
     $("#viewTab").tabs({
         active: 0,
-        select: function( event, ui )
+        activate: function( event, ui )
         {
             test_editor.currentParamSetGroup = null;
 
-            var index = ui.index;
+            var index = ui.newTab.index();
             if(index == 1)
             {
                 //view parameter sets
@@ -3328,8 +3327,12 @@ $(document).ready(function()
                 $(".updateModVersionStatus").show();
             },
             error: function (xhr, ajaxOptions, thrownError) {
-                alert(xhr.status);
-                alert(thrownError);
+                alert("Error status: " + xhr.status);
+
+                if(thrownError != null && thrownError != undefined &&thrownError != "")
+                {
+                    alert(thrownError);
+                }
             },
             dataType: "json"
         });

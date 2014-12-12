@@ -26,8 +26,8 @@ div.hidden
 
 .loginDivClass
 {
-    width: 500px;
-    height: 185px;
+    width: 570px;
+    height: 180px;
     top: 50%;
     margin-top: -95px;
     left: 50%;
@@ -46,7 +46,7 @@ div.hidden
 
 #loginDiv input
 {
-    width: 250px;
+    width: 350px;
     height: 20px;
 }
 
@@ -196,9 +196,9 @@ table td
 .header
 {
     font-weight: bold;
-    font-size: 15px;
+    font-size: 16px;
     width: 100%;
-    background: pink;
+    background: #87d1e6;
     padding: 2px;
 }
 
@@ -226,7 +226,7 @@ table td
     font-size: 16px;
     position: relative;
     color: #333366;
-    background-color: #C5D6EB;
+    background-color: #87d1e6;
     padding: 3px;
     cursor: pointer;
     font-weight:bold;
@@ -443,5 +443,15 @@ button:disabled {
 .editTestTable
 {
     width: 100%;
+}
+.ui-accordion-header
+{
+    background: #87d1e6;
+    height: 15px;
+}
+
+.label
+{
+    font: 4px !important;
 }
 
