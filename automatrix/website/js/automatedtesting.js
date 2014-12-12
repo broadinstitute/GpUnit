@@ -150,13 +150,11 @@ function loadModuleInfo(taskId, lsidVersions)
 
     var selectModulePanel = $(
         '<div id="selectModulePanel"> ' +
-            '    <div id="topLeft" class="floatLeft"></div> ' +
-            '    <div id="topRight" class="floatRight">  ' +
-            '        <span id="showDescriptionSpan"> ' +
-            '            <input type="checkbox" id="showDescription"/>   ' +
-            '            <label for="showDescription">Show parameter descriptions</label><br/>  ' +
-            '        </span> ' +
-            '    </div>  ' +
+            '   <span id="topLeft" class="header"></span> ' +
+            '   <span id="showDescriptionSpan" class="floatRight"> ' +
+            '       <input type="checkbox" id="showDescription"/>   ' +
+            '       <label for="showDescription">Show parameter descriptions</label><br/>  ' +
+            '   </span> ' +
             '</div>');
 
     $(".middle-north").empty();
