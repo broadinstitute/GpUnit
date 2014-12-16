@@ -675,8 +675,8 @@ function configureAndRunTests()
     $("#editRunSettings").show();
 
     $("#loginDiv").dialog({
-        width: 550,
-        height: 470,
+        width: 670,
+        height: 545,
         modal: true,
         title: "Enter the GenePattern server to run tests on",
         buttons: {
@@ -687,7 +687,7 @@ function configureAndRunTests()
                     $("#runSettings").empty();
                     $("#runSettings").append("<p> Server: " + $("#server").val() + "</p>");
                     $("#runSettings").append("<p> Username: " + $("#username").val() + "</p>");
-                    $("#settingsTab").tabs( 'select', 1);
+                    $("#settingsTab").tabs('option', 'active', 1);
 
                     runTests();
                     $(this).dialog("close");
@@ -2394,15 +2394,28 @@ $(document).ready(function()
         }
     });
 
-    $("input[name='gpUnitClient']").change(function()
+    /*$("input[name='gpUnitClient']").change(function()
+    {
+        if($(this).val() != null && $(this).val() != undefined && $(this).val() != "")
+        {
+            test_editor.gpUnitClient = $(this).val();
+        }
+    });*/
+
+    $("select[name='gpUnitClient']").multiselect(
+        {
+            multiple: false,
+            selectedList: 1
+        }
+    );
+
+    $("select[name='gpUnitClient']").change(function(event)
     {
         if($(this).val() != null && $(this).val() != undefined && $(this).val() != "")
         {
             test_editor.gpUnitClient = $(this).val();
         }
     });
-    //$("#loginDiv").append(runSettingsDiv);
-    //});
 
     var refreshParamSetsBtn = $("<button>Refresh</button>");
     refreshParamSetsBtn.button().click(function()
@@ -2470,7 +2483,6 @@ $(document).ready(function()
     $("#settingsTab").tabs({
         active: 0
     });
-
 
     //add tooltips
     $("#viewParamSets").tooltip({
