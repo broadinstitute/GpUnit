@@ -174,7 +174,7 @@ table td
 
 .pSetTable
 {
-    width: 100%;
+    width: 90%;
 }
 
 .pSetTable td
@@ -455,6 +455,9 @@ button:disabled {
     background: #87d1e6;
 }
 
+.label{
+    font-size: 13px;
+}
 
 
 

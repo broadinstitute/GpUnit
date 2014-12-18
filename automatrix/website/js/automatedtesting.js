@@ -976,6 +976,29 @@ function updateParameterSet(id, paramSet)
     return false;
 }
 
+function extractFromJson(jsonObj, table, td)
+{
+    var keys = Object.keys(jsonObj);
+    for(var k=0;k<keys.length;k++)
+    {
+        table.append("<tr>" + td + " <td>" +  keys[k] + ":</td></tr>");
+
+        if($.isPlainObject(jsonObj[keys[k]]))
+        {
+            td += "<td/>";
+
+            table = extractFromJson(jsonObj[keys[k]], table, td);
+        }
+        else
+        {
+            table.append("<tr>" + td + "<td/><td>" + jsonObj[keys[k]] + "</td></tr>");
+
+        }
+    }
+
+    return table;
+}
+
 //update a given a test/assertion table listing id
 function updateTestTable(id)
 {
@@ -990,7 +1013,26 @@ function updateTestTable(id)
     console.log("keys: " + testsKeys);
     for(var q=0;q<testsKeys.length;q++)
     {
-        testsTable.append("<tr><td>" + testsKeys[q]+ " = " + tests[testsKeys[q]] + "</td></tr>");
+        if($.isArray(tests[testsKeys[q]]))
+        {
+            var filesTable = $("<table/>");
+            filesTable.append("<tr><td>" + testsKeys[q] + "</td></tr>");
+            var td = "<td/>";
+            for(var t=0;t<tests[testsKeys[q]].length;t++)
+            {
+                var tObject =  tests[testsKeys[q]][t];
+                if($.isPlainObject(tObject))
+                {
+                    filesTable = extractFromJson(tObject, filesTable, td);
+                }
+            }
+
+            testsTable.append(filesTable);
+        }
+        else
+        {
+            testsTable.append("<tr><td>" + testsKeys[q]+ " = " + tests[testsKeys[q]] + "</td></tr>");
+        }
     }
 }
 
@@ -1342,6 +1384,9 @@ function addParameterSet( parameterSet)
 
                     availableTests.append("<option value='jobStatus'>jobStatus</option>");
                     availableTests.append("<option value='numFiles'>numFiles</option>");
+                    availableTests.append("<option value='exitCode'>exitCode</option>");
+                    availableTests.append("<option value='files'>files</option>");
+
                     var nameTd = $("<td/>");
                     nameTd.append(availableTests);
                     tr.append(nameTd);
@@ -1360,7 +1405,15 @@ function addParameterSet( parameterSet)
 
                     $(this).parents("div:first").find("table").append(tr);
 
-                    availableTests.combobox();
+                    availableTests.combobox({
+                        select: function () {
+                            if ($(this).val() == "files") {
+                                $(this).parents("tr").first().find("input[name='tvalue']")
+                                    .replaceWith("<textarea name='tvalue' type='text'/>");
+                            }
+                        }
+                    });
+
                 });
 
                 $(this).append(addTest);
@@ -1383,10 +1436,24 @@ function addParameterSet( parameterSet)
                     //now set their name and value
                     var tr = table.find("tr:last");
 
-                    //update value of the hidden select field and also the new combobox field
-                    tr.find("select[name='tname']").val(testsKeys[q]);
-                    tr.find(".custom-combobox-input").val(testsKeys[q]);
-                    tr.find("input[name='tvalue']").val(tests[testsKeys[q]]);
+                    if(testsKeys[q] != "files")
+                    {
+                        //update value of the hidden select field and also the new combobox field
+                        tr.find("select[name='tname']").val(testsKeys[q]);
+                        tr.find(".custom-combobox-input").val(testsKeys[q]);
+                        tr.find("input[name='tvalue']").val(tests[testsKeys[q]]);
+                    }
+                    else
+                    {
+                        //update value of the hidden select field and also the new combobox field
+                        tr.find("select[name='tname']").val(testsKeys[q]);
+                        tr.find(".custom-combobox-input").val(testsKeys[q]);
+
+                        var textarea = $("<textarea name='tvalue'/>");
+                        textarea.val(JSON.stringify(tests[testsKeys[q]]));
+                        tr.find("input[name='tvalue']").replaceWith(textarea);
+                    }
+
                 }
 
                 table.find("tbody").sortable();
@@ -1402,6 +1469,12 @@ function addParameterSet( parameterSet)
                     {
                         var tname = $(this).find("select[name='tname']").val();
                         var tvalue = $(this).find("input[name='tvalue']").val();
+
+                        if(tname == "files")
+                        {
+                            tvalue = $(this).find("textarea[name='tvalue']").val();
+                            tvalue = JSON.parse(tvalue);
+                        }
 
                         if((tname == undefined && tvalue == undefined)
                             || (tname == "" && tvalue==""))
@@ -1446,7 +1519,7 @@ function addParameterSet( parameterSet)
         $(this).children(".imgexpand:first").toggle();
     });
 
-    var divAccordion = $("<div/>");
+    var divAccordion = $("<div class='pSetCollapseDiv'/>");
     divAccordion.append("<h3>" + pSetName + "</h3>");
     divAccordion.append(pSetDiv);
     divAccordion.accordion({
@@ -1996,7 +2069,7 @@ function viewParameterSets(pGroupObj, enableRun)
     $(".middle-center").append(actionBarDiv);
     
     var paramGroupSetDiv = $("<div id='groupSetDiv'/>");
-    paramGroupSetDiv.append("<label class='label' for='paramSetGroupName'> Enter name of parameter set group*: </label>");
+    paramGroupSetDiv.append("<label class='label' for='paramSetGroupName'> Name of parameter set group*: </label>");
     paramGroupSetDiv.append("<input id='paramSetGroupName' type='text'/>");
 
     //add check mark to indicate whether to overwrite the tests
@@ -2143,6 +2216,7 @@ function saveTests()
             if (message !== undefined && message !== null) {
                 createInfoMsg("Save Parameter Sets", message);
             }
+
             loadAllParamSetGroups();
 
             test_editor.currentParamSetGroup = parameterSets["group_info"].name;
@@ -2301,10 +2375,9 @@ $.widget( "custom.combobox", {
 function createInfoMsg(title, message)
 {
     var infoDiv = $("<div/>");
-    var infoContents = $('<p> <span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>'
-        + '<strong>Error: </strong></p>');
+    var infoContents = $('<p/>');
     infoContents.append(message);
-    infoDiv.append(errorContents);
+    infoDiv.append(infoContents);
 
     infoDiv.dialog({
         title: title,

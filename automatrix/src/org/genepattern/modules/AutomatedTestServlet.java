@@ -2,6 +2,8 @@ package org.genepattern.modules;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import org.apache.log4j.Logger;
+import org.genepattern.gpunit.GpAssertions;
+import org.genepattern.gpunit.TestFileObj;
 import org.genepattern.webservice.*;
 import org.genepattern.util.LSID;
 import org.genepattern.util.GPConstants;
@@ -11,6 +13,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.ServletContext;
+import org.genepattern.gpunit.ModuleTestObject;
 import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -94,7 +97,7 @@ public class AutomatedTestServlet extends HttpServlet
         }
         catch(IOException io)
         {
-            io.printStackTrace();
+            log.error(io.getMessage());
         }
 
         return result;
@@ -201,6 +204,46 @@ public class AutomatedTestServlet extends HttpServlet
 
     }
 
+    private JsonObject getAssertionsObj(GpAssertions gpAssertions)
+    {
+        JsonObject assertionsObj = new JsonObject();
+
+        assertionsObj.addProperty("jobStatus", gpAssertions.getJobStatus());
+        assertionsObj.addProperty("exitCode", gpAssertions.getExitCode());
+
+        if(gpAssertions.getNumFiles() != -1)
+        {
+            assertionsObj.addProperty("numFiles", gpAssertions.getNumFiles());
+        }
+
+
+        if(gpAssertions.getFiles() != null && gpAssertions.getFiles().size() > 0)
+        {
+            JsonArray files = new JsonArray();
+
+            for (Map.Entry<String, TestFileObj> entry : gpAssertions.getFiles().entrySet())
+            {
+                JsonObject paramsObj = new JsonObject();
+
+                JsonObject diffObj = new JsonObject();
+                diffObj.addProperty("diff", entry.getValue().getDiff());
+
+                Gson gson = new Gson();
+                JsonElement diffCmd = gson.toJsonTree(entry.getValue().getDiffCmd());
+
+                diffObj.add("diffCmd", diffCmd);
+
+                paramsObj.add(entry.getKey(), diffObj);
+
+                files.add(paramsObj);
+            }
+
+            assertionsObj.add("files", files);
+        }
+
+        return assertionsObj;
+    }
+
     public void loadParamSets(HttpServletRequest request, HttpServletResponse response)
     {
         String paramSetGroupName = request.getParameter("paramSetGroupName");
@@ -239,58 +282,44 @@ public class AutomatedTestServlet extends HttpServlet
                 if(file.getName().endsWith("yaml") ||
                         file.getName().endsWith("yml"))
                 {
-                    JsonObject paramSet = new JsonObject();
                     Yaml yaml = new Yaml();
-                    Object obj = yaml.load(new FileReader(file));
-                    log.info("After loading yaml file: " + file.getAbsolutePath());
-                    if (obj instanceof Map<?,?>)
+
+                    ModuleTestObject modObj = yaml.loadAs(new FileReader(file), ModuleTestObject.class);
+
+                    JsonObject paramSetGroupObj = new JsonObject();
+
+                    String pSetId = file.getName();
+                    pSetId = pSetId.replace(".yml", "");
+                    pSetId = pSetId.replace(".yaml", "");
+                    paramSetGroupObj.addProperty("id", pSetId);
+
+                    paramSetGroupObj.addProperty("module", modObj.getModule());
+                    paramSetGroupObj.addProperty("name", modObj.getName());
+
+                    JsonArray paramsArray = new JsonArray();
+                    Map<String, Object> paramMap = modObj.getParams();
+                    for (Map.Entry<String, Object> entry : paramMap.entrySet())
                     {
-                        Map<?,?> testCaseMap = (Map<?,?>) obj;
-                        Set keys = testCaseMap.keySet();
-                        Iterator<String> keyIt = keys.iterator();
-                        while(keyIt.hasNext())
+                        JsonObject paramsObj = new JsonObject();
+
+                        Gson gson = new Gson();
+                        JsonElement jsonValue = new JsonPrimitive("");
+                        if(entry.getValue() != null)
                         {
-                            String key = keyIt.next();
-                            Object paramsetObj = testCaseMap.get(key);
-
-                            if(key.equals("params"))
-                            {
-                                JsonArray parameters = new JsonArray();
-                                LinkedHashMap map = (LinkedHashMap)paramsetObj;
-                                Set pKeys = map.keySet();
-                                Iterator<String> pKeysIt = pKeys.iterator();
-                                while(pKeysIt.hasNext())
-                                {
-                                    String pKey = pKeysIt.next();
-                                    JsonObject pSet = new JsonObject();
-                                    pSet.addProperty("name", pKey);
-
-                                    String value =  (String)map.get(pKey);
-                                    //do not send null values to client, instead send empty string
-                                    if(value == null)
-                                    {
-                                        value= "";
-                                    }
-                                    pSet.addProperty("value", value);
-                                    parameters.add(pSet);
-                                }
-
-                                paramSet.add(key, parameters);
-                            }
-                            else
-                            {
-                                Gson gson = new Gson();
-                                JsonElement jsonElement = gson.toJsonTree(paramsetObj);
-                                paramSet.add(key, jsonElement);
-                            }
+                            jsonValue = gson.toJsonTree(entry.getValue());
                         }
-                    }
+                        paramsObj.add("value", jsonValue);
+                        paramsObj.addProperty("name", entry.getKey());
+                        paramsArray.add(paramsObj);
 
-                    String pSetKey = file.getName();
-                    pSetKey = pSetKey.replace(".yml", "");
-                    pSetKey = pSetKey.replace(".yaml", "");
-                    paramSet.addProperty("id", pSetKey);
-                    jsonParamsArray.add(paramSet);
+                    }
+                    paramSetGroupObj.add("params", paramsArray);
+
+                    JsonObject assertionsObj = getAssertionsObj(modObj.getAssertions());
+
+                    paramSetGroupObj.add("assertions", assertionsObj);
+
+                    jsonParamsArray.add(paramSetGroupObj);
                 }
                 if(file.getName().endsWith("json"))
                 {
@@ -308,6 +337,38 @@ public class AutomatedTestServlet extends HttpServlet
         {
             log.error(e);
             sendError(response, e.getMessage());
+        }
+    }
+
+    private void extractFromJson(JsonElement jsonElement, PrintWriter writer, String indent)
+    {
+        if (jsonElement.isJsonObject())
+        {
+            JsonObject jsonObj =  jsonElement.getAsJsonObject();
+            for (Map.Entry<String, JsonElement> entry : jsonObj.entrySet()) {
+                writer.print(indent + entry.getKey() + ":");
+                if (entry.getValue().isJsonObject() || entry.getValue().isJsonArray()) {
+                    writer.println();
+                    indent += " ";
+                    extractFromJson(entry.getValue(), writer, indent);
+                } else {
+                    writer.println(" " + entry.getValue().getAsString());
+                }
+            }
+        }
+
+        else if (jsonElement.isJsonArray())
+        {
+            JsonArray jsonArray =  jsonElement.getAsJsonArray();
+            for (JsonElement element : jsonArray) {
+                if (element.isJsonObject() || element.isJsonObject()) {
+                    indent += " ";
+                    extractFromJson(element, writer, indent);
+                    writer.println("");
+                } else {
+                    writer.println(" " + element.getAsString());
+                }
+            }
         }
     }
 
@@ -340,7 +401,6 @@ public class AutomatedTestServlet extends HttpServlet
 
             if( directoryName == null)
             {
-
                 directoryName = createNewDirectoryName();
             }
 
@@ -371,7 +431,7 @@ public class AutomatedTestServlet extends HttpServlet
                 if(!overwrite)
                 {
                     //parameter set group already exists so throw error
-                    throw new AlreadyExistsException("Parameter set group " + directoryName + " already exists");
+                    throw new  AlreadyExistsException("Parameter set group " + directoryName + " already exists");
                 }
             }
 
@@ -414,7 +474,7 @@ public class AutomatedTestServlet extends HttpServlet
                 String pSetKey = parameterSet.get("id").getAsString();
 
                 String pSetFileName = pSetKey;
-                if(!pSetKey.endsWith("_test"))
+                if(pSetKey != null && !pSetKey.endsWith("_test"))
                 {
                     pSetFileName += "_test.yml";
                 }
@@ -446,23 +506,16 @@ public class AutomatedTestServlet extends HttpServlet
                     for(int i=0;i<parameters.size();i++)
                     {
                         JsonObject parameter = parameters.get(i).getAsJsonObject();
-                        String value = parameter.get("value").getAsString();
+                        Object value = parameter.get("value");
 
-                        if(!value.equals(""))
-                        {
-                            value = "\"" + value + "\"";
-                        }
                         writer.println("       " +
                                 parameter.get("name").getAsString() + ": " + value);
                     }
 
                     JsonObject assertions = parameterSet.getAsJsonObject("assertions");
                     writer.println("assertions:");
-                    for (Map.Entry<String, JsonElement> entry : assertions.entrySet())
-                    {
-                        System.out.println(entry.getKey() + "/" + entry.getValue());
-                        writer.println("        " + entry.getKey() + ": " + entry.getValue());
-                    }
+                    String indent  =" ";
+                    extractFromJson(assertions, writer, indent);
                 }
                 finally
                 {
@@ -481,8 +534,7 @@ public class AutomatedTestServlet extends HttpServlet
             tempParamSetDir.renameTo(paramSetDir);
         }
         catch (Exception e) {
-            log.error("Error: " + e.getMessage());
-            log.info("Error: " + e.getMessage());
+            log.error("Error: " + e.getMessage(), e);
 
             if(!(e instanceof AlreadyExistsException) && !overwrite &&  paramSetDir != null && paramSetDir.exists())
             {
@@ -713,7 +765,7 @@ public class AutomatedTestServlet extends HttpServlet
         }
         catch(Exception e)
         {
-            e.printStackTrace();
+            log.error(e.getMessage());
             sendError(response, "Error: " + e.getMessage());
             return;
         }
@@ -1112,8 +1164,7 @@ public class AutomatedTestServlet extends HttpServlet
             writer.flush();
         }
         catch (IOException e) {
-            log.error("Error writing to the response in AutomatedTestServlet: " + content);
-            e.printStackTrace();
+            log.error("Error writing to the response in AutomatedTestServlet: " + content, e);
         }
         finally {
             if (writer != null) writer.close();
