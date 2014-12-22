@@ -34,7 +34,7 @@ div.hidden
     margin-left: -250px;
     position: absolute;
     text-align: center;
-    border: solid #C5D6EB 1px;
+    border: solid #C5D6EB 3px;
 }
 
 .loginTable
@@ -458,6 +458,12 @@ button:disabled {
 .label{
     font-size: 13px;
 }
+
+.highlightPSetEdit
+{
+    border: 2px red solid;
+}
+
 
 
 

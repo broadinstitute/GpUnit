@@ -105,7 +105,7 @@ function loadAllTasks()
             createErrorMsg("Get Module List", "Error status: " + xhr.status);
             if(thrownError != null && thrownError != "")
             {
-                createErrorMsg("Get Module List", thrownError);
+                createErrorMsg("Get Module List", htmlEncode(thrownError));
             }
         }
     })
@@ -162,7 +162,17 @@ function loadModuleInfo(taskId, lsidVersions)
 
     $("#showDescription").click(function()
     {
-        $(".pDescription").toggle();
+        var isChecked = $(this).is(':checked');
+
+        if(isChecked)
+        {
+            $(".pDescription").show();
+        }
+        else
+        {
+            $(".pDescription").hide();
+        }
+
     });
 
     $("#topLeft").append("<span id='selectedTask'>" + test_editor.module + " version </span>");
@@ -219,7 +229,7 @@ function loadModule(taskId)
             createErrorMsg("Get Module Versions", "Error status: " + xhr.status);
             if(thrownError != null && thrownError != "")
             {
-                createErrorMsg("Get Module Versions", thrownError);
+                createErrorMsg("Get Module Versions", htmlEncode(thrownError));
             }
         },
         dataType: "json"
@@ -242,11 +252,83 @@ function loadModule(taskId)
             createErrorMsg("Load Module", "Error status: " + xhr.status);
             if(thrownError != null && thrownError != "")
             {
-                createErrorMsg("Load Module", thrownError);
+                createErrorMsg("Load Module", htmlEncode(thrownError));
             }
         },
         dataType: "json"
     });
+}
+
+function populateChoiceDiv(parameter, container)
+{
+    var REST_ALL_TASKS = "/rest/v1/tasks/";
+
+    $.ajax({
+        type: "GET",
+        url: test_editor.server + REST_ALL_TASKS +  test_editor["module"] + "/" + parameter + "/choiceInfo.json",
+        xhrFields: {
+            withCredentials: true
+        },
+        success: function(response) {
+            choiceInfo = response;
+            var longChars = 1;
+            var fileChoice = $("<select class='fileChoice'/>");
+
+            for(var c=0;c<choiceInfo.choices.length;c++)
+            {
+                fileChoice.append("<option value='"+choiceInfo.choices[c].value+"'>"
+                    + choiceInfo.choices[c].label+"</option>");
+                if(choiceInfo.choices[c].label.length > longChars)
+                {
+                    longChars = choiceInfo.choices[c].label.length;
+                }
+            }
+
+            container.append(fileChoice);
+
+            fileChoice.multiselect({
+                multiple: true,
+                header: true,
+                selectedList: 1
+            });
+            fileChoice.data("pName", parameter);
+
+            fileChoice.multiselect("refresh");
+
+            fileChoice.change(function()
+            {
+                var pName = $(this).data("pName");
+
+                var selectedValues = $(this).multiselect("getChecked");
+
+                var validValues = [];
+                if(selectedValues.length > 0)
+                {
+                    for(var s=0;s<selectedValues.length;s++)
+                    {
+                        validValues.push(selectedValues[s].value);
+                    }
+                }
+
+                addPropertyToParamConfig(pName, "valid", validValues);
+                addPropertyToParamConfig(pName, "type","choice");
+            });
+
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            createErrorMsg("Load Module", "Error status: " + xhr.status);
+            if(thrownError != null && thrownError != "")
+            {
+                createErrorMsg("Load Module", htmlEncode(thrownError));
+            }
+        },
+        dataType: "json"
+    });
+}
+
+function jqEscape(str)
+{
+    return str.replace(/([;&,\.\+\*\~':"\!\^$%@\[\]\(\)=>\|])/g, '\\$1');
 }
 
 function loadParameterInfo(parametersArray)
@@ -290,6 +372,7 @@ function loadParameterInfo(parametersArray)
             if(parameter.attributes != undefined)
             {
                 var pTRow = $("<tr/>");
+                $("#pTable").append(pTRow);
 
                 var pName= paramName[0];
 
@@ -321,24 +404,71 @@ function loadParameterInfo(parametersArray)
                 var pType = parameter.attributes.type;
                 addPropertyToParamConfig(pName, "default", parameter.attributes.default_value);
 
+                var choiceInfo = parameter.choiceInfo;
+                var isChoiceInfo = choiceInfo != undefined && choiceInfo != null && choiceInfo != "";
                 if(pType == "java.io.File")
                 {
-                    //pTypeSelector.append("<option value='LOCAL_FILE'>Upload file</option>");
                     pTypeSelector.append("<option value='SERVER_FILE'>Enter server file path</option>");
                     multiSelect = false;
+
+                    isChoiceInfo = parameter.attributes.choiceDir != undefined && parameter.attributes.choiceDir != null
+                        && parameter.attributes.choiceDir != "";
+                    //check if this is a dynamic file drop down
+                    if(isChoiceInfo)
+                    {
+                        pTypeSelector.prepend("<option value='SELECT_FILE'>Select file from list</option>");
+
+                        var choice = $("<select class='fileChoice'/>");
+
+                        pTypeSelector.parent("td").append(choice);
+
+                        var choiceFileSelectRow = $("<tr id='" + jqEscape(pName)+ "_choice' class='choiceFile'/>");
+
+                        choiceFileSelectRow.append("<td/>");
+                        var choiceFileTd = $("<td/>");
+                        choiceFileSelectRow.append(choiceFileTd);
+                        $("#pTable").append(choiceFileSelectRow);
+
+                        populateChoiceDiv(pName, choiceFileTd);
+                    }
                     addPropertyToParamConfig(pName, "type", "file");
+
+
+                    var serverFileInput = $("<input class='fileInput' type='text'/>");
+                    serverFileInput.data("pName", pName);
+                    serverFileInput.change(function()
+                    {
+                        var pName = $(this).data("pName");
+                        var fileValue = $(this).val();
+
+                        var fileList = [];
+                        fileList.push(fileValue);
+
+                        addPropertyToParamConfig(pName, "valid", fileList);
+                        addPropertyToParamConfig(pName, "isFile", true);
+                    });
+
+                    var serverFileTd = $("<td/>");
+                    serverFileTd.append(serverFileInput);
+
+                    var serverFileSelectRow = $("<tr id='" + jqEscape(pName)+ "_file' class='serverFile'/>");
+                    serverFileSelectRow.append("<td/>");
+
+                    serverFileSelectRow.append(serverFileTd);
+
+                    $("#pTable").append(serverFileSelectRow);
+                    serverFileSelectRow.hide();
                 }
                 else
                 {
                     var defaultValue = "";
                     defaultValue = parameter.attributes.default_value;
-                    var choiceInfo = parameter.choiceInfo;
 
                     var defaultFound = false;
                     var firstChoiceValue = null;
                     var choiceMap = {};
                     //get display value if this is a choice list
-                    if(choiceInfo != undefined && choiceInfo != null && choiceInfo != "")
+                    if(isChoiceInfo)
                     {
                         var result = choiceInfo.choices;
 
@@ -346,7 +476,6 @@ function loadParameterInfo(parametersArray)
                         {
                             var displayValue = result[j].label;
                             var value = result[j].value;
-
 
                             if(value == parameter.attributes.default_value)
                             {
@@ -419,15 +548,16 @@ function loadParameterInfo(parametersArray)
                 pTd.append(pTypeSelector);
 
                 pTypeSelector.multiselect(
-                    {
-                        position: {
-                            my: 'left bottom',
-                            at: 'left top'
-                        },
-                        minWidth: 300,
-                        multiple: multiSelect,
-                        selectedList: 1
-                    });
+                {
+                    position: {
+                        my: 'left bottom',
+                        at: 'left top'
+                    },
+                    minWidth: 300,
+                    multiple: multiSelect,
+                    selectedList: 1,
+                    header: false
+                });
 
                 pTRow.append(pTd);
 
@@ -455,7 +585,6 @@ function loadParameterInfo(parametersArray)
                     pTRow.append(fixedValueTd);
                 }
 
-                $("#pTable").append(pTRow);
 
                 //add descriptions
                 $("#pTable").append("<tr class='pDescription'><td></td><td colspan='2'>" + htmlEncode(parameter.description) +"</td></tr>");
@@ -495,7 +624,7 @@ function loadAllParamSetGroups()
 
             if (error !== undefined && error !== null)
             {
-                createErrorMsg("Get Parameter Set Names", error);
+                createErrorMsg("Get Parameter Set Names", htmlEncode(error));
                 return;
             }
 
@@ -510,7 +639,7 @@ function loadAllParamSetGroups()
             createErrorMsg("Get Parameter Set Names", "Error status: " + xhr.status);
             if(thrownError != null && thrownError != "")
             {
-                createErrorMsg("Get Parameter Set Names", thrownError);
+                createErrorMsg("Get Parameter Set Names", htmlEncode(thrownError));
             }
         },
         dataType: "json"
@@ -529,7 +658,7 @@ function addPSetGroupLocation(location)
 
             if (error !== undefined && error !== null)
             {
-                createErrorMsg("Add Parameter Set Location",error);
+                createErrorMsg("Add Parameter Set Location", htmlEncode(error));
                 return;
             }
 
@@ -545,7 +674,7 @@ function addPSetGroupLocation(location)
             createErrorMsg("Add Parameter Set Location", "Error status: " + xhr.status);
             if(thrownError != null && thrownError != "")
             {
-                createErrorMsg("Add Parameter Set Location", thrownError);
+                createErrorMsg("Add Parameter Set Location", htmlEncode(thrownError));
             }
         },
         dataType: "json"
@@ -564,7 +693,7 @@ function removePSetGroupLocation(location)
 
             if (error !== undefined && error !== null)
             {
-                createErrorMsg("Remove Parameter Set",error);
+                createErrorMsg("Remove Parameter Set", htmlEncode(error));
                 return;
             }
 
@@ -580,7 +709,7 @@ function removePSetGroupLocation(location)
             createErrorMsg("Remove Parameter Set", "Error status: " + xhr.status);
             if(thrownError != null && thrownError != "")
             {
-                createErrorMsg("Remove Parameter Set", thrownError);
+                createErrorMsg("Remove Parameter Set", htmlEncode(thrownError));
             }
         },
         dataType: "json"
@@ -598,7 +727,7 @@ function loadAllTestResults()
 
             if (error !== undefined && error !== null)
             {
-                createErrorMsg("Get Test Results", error);
+                createErrorMsg("Get Test Results", htmlEncode(error));
                 return;
             }
             if (message !== undefined && message !== null) {
@@ -612,7 +741,7 @@ function loadAllTestResults()
             createErrorMsg("Get Test Results", "Error status: " + xhr.status);
             if(thrownError != null && thrownError != "")
             {
-                createErrorMsg("Get Test Results", thrownError);
+                createErrorMsg("Get Test Results", htmlEncode(thrownError));
             }
         },
         dataType: "json"
@@ -734,11 +863,11 @@ function runTests ()
 
             if (error !== undefined && error !== null)
             {
-                createErrorMsg("Run Tests", error);
+                createErrorMsg("Run Tests", htmlEncode(error));
                 return;
             }
             if (message !== undefined && message !== null) {
-                createInfoMsg("Run Tests", message);
+                createInfoMsg("Run Tests", htmlEncode(message));
                 return;
             }
         },
@@ -746,7 +875,7 @@ function runTests ()
             createErrorMsg("Run Tests", "Error status: " + xhr.status);
             if(thrownError != null && thrownError != "")
             {
-                createErrorMsg("Run Tests", thrownError);
+                createErrorMsg("Run Tests", htmlEncode(thrownError));
             }
         },
         complete: function()
@@ -835,12 +964,12 @@ function loadAllParamSetsInfo(paramSetsGroupsByLoc)
 
                         if (error !== undefined && error !== null)
                         {
-                            createErrorMsg("Get Parameter Set", error);
+                            createErrorMsg("Get Parameter Set", htmlEncode(error));
                             return;
                         }
                         if (message !== undefined && message !== null)
                         {
-                            createInfoMsg("Get Parameter Set", message);
+                            createInfoMsg("Get Parameter Set", htmlEncode(message));
                             return;
                         }
 
@@ -850,7 +979,7 @@ function loadAllParamSetsInfo(paramSetsGroupsByLoc)
                         createErrorMsg("Get Parameter Set", "Error status: " + xhr.status);
                         if(thrownError != null && thrownError != "")
                         {
-                            createErrorMsg("Get Parameter Set", thrownError);
+                            createErrorMsg("Get Parameter Set", htmlEncode(thrownError));
                         }
                     },
                     dataType: "json"
@@ -981,7 +1110,14 @@ function extractFromJson(jsonObj, table, td)
     var keys = Object.keys(jsonObj);
     for(var k=0;k<keys.length;k++)
     {
+        var value = jsonObj[keys[k]];
+
+        if(value == undefined || value == null || value == "")
+        {
+            continue;
+        }
         table.append("<tr>" + td + " <td>" +  keys[k] + ":</td></tr>");
+
 
         if($.isPlainObject(jsonObj[keys[k]]))
         {
@@ -1064,6 +1200,7 @@ function addParameterSet( parameterSet)
         var pSetId = editButton.data("pSetId");
 
         var pSetTable = $("#"+pSetId);
+        pSetTable.addClass("highlightPSetEdit");
         pSetTable.find("tr").each(function()
         {
             var parameterName = $(this).find("td:first").text();
@@ -1180,6 +1317,7 @@ function addParameterSet( parameterSet)
         //remove parameter set from listing
         var parentDiv = $(this).parents(".pSetDiv");
         var pSetTable = parentDiv.find(".pSetTable");
+        pSetTable.removeClass("highlightPSetEdit");
         var pSetId = deleteButton.data("pSetId");
 
         var parameterSet = getParameterSet(pSetId);
@@ -1205,6 +1343,7 @@ function addParameterSet( parameterSet)
         var pSetId = cancelButton.data("pSetId");
 
         var pSetTable = $("#"+pSetId);
+        pSetTable.removeClass("highlightPSetEdit");
         pSetTable.find("tr").each(function()
         {
             var paramSet = getParameterSet(pSetId);
@@ -1293,12 +1432,16 @@ function addParameterSet( parameterSet)
     cancelDescriptionButton.button().click(function()
     {
         $(this).parents(".pSetDescriptionEditDiv").hide();
-        $(this).parents(".pSetDiv").find(".pSetDescriptionFinalDiv").show();
+
+        if(parameterSet["description"].length > 0) {
+            $(this).parents(".pSetDiv").find(".pSetDescriptionFinalDiv").show();
+        }
     });
     pSetDescriptionEditDiv.append(cancelDescriptionButton);
 
     var descriptionButton = $("<button class='descriptionButton'>Add Description</button>");
-    if(parameterSet["description"] != undefined && parameterSet["description"] != null && parameterSet["description"] != "")
+    if(parameterSet["description"] != undefined && parameterSet["description"] != null
+        && parameterSet["description"] != "" && parameterSet["description"].length > 0)
     {
         descriptionButton = $("<button class='descriptionButton'>Edit Description</button>");
         pSetDiv.find(".pSetDescriptionFinal").append(parameterSet["description"]);
@@ -1310,6 +1453,8 @@ function addParameterSet( parameterSet)
         $(this).parents(".pSetDiv").first().find(".pSetDescriptionEdit").val(
             $(this).parents(".pSetDiv").first().find(".pSetDescriptionFinal").text());
         $(this).parents(".pSetDiv").first().find(".pSetDescriptionEditDiv").show();
+
+        $(this).addClass("hightlightButton");
     });
 
     pSetActionDiv.append(descriptionButton);
@@ -1371,8 +1516,8 @@ function addParameterSet( parameterSet)
         editTestDialog.dialog({
             title: 'Edit Tests/Assertions',
             autoOpen: true,
-            height: 360,
-            width: 480,
+            height: 400,
+            width: 550,
             create: function()
             {
                 var addTest = $("<button>Add Test</button>");
@@ -1556,7 +1701,7 @@ function updateParameterSetGroup()
             createErrorMsg("Load Module", "Error status: " + xhr.status);
             if(thrownError != null && thrownError != "")
             {
-                createErrorMsg("Load Module", thrownError);
+                createErrorMsg("Load Module", htmlEncode(thrownError));
             }
         },
         dataType: "json"
@@ -1919,131 +2064,122 @@ function handleParameterSetGroupUpdate(module)
         }
     }
 
-    updateDiv.dialog(
-    {
-        modal: true,
-        title: "Update ParameterSets",
-        minWidth: 600,
-        buttons: {
-            Cancel: function()
+    if(paramsToUpdateNameKeys.length > 0) {
+        updateDiv.dialog(
             {
-                $( this ).dialog( "close" );
-            },
-            "Update": function() {
+                modal: true,
+                title: "Update ParameterSets",
+                minWidth: 600,
+                buttons: {
+                    Cancel: function () {
+                        $(this).dialog("close");
+                    },
+                    "Update": function () {
 
-                $("#paramsForm").validate();
+                        $("#paramsForm").validate();
 
-                //copy the old parameter sets group obj
-                var groupInfo = parameterSets["group_info"];
+                        //copy the old parameter sets group obj
+                        var groupInfo = parameterSets["group_info"];
 
-                //update the module lsid and name
-                groupInfo["lsid"] = module["lsid"];
-                groupInfo["module"] = module["name"];
+                        //update the module lsid and name
+                        groupInfo["lsid"] = module["lsid"];
+                        groupInfo["module"] = module["name"];
 
-                //update the parameter sets
-                for(var i=0;i<parameterSets["param_sets"].length;i++)
-                {
-                    var numParamsRemoved = 0;
-                    var numNewParameters = 0;
-                    var newParamsList = [];
-                    var newParamNamesList = [];
-                    var parameterSet = parameterSets["param_sets"][i];
-                    var parameters = parameterSet["params"];
-                    for(var k=0;k<parameters.length;k++)
-                    {
-                        var pName = parameters[k].name;
-                        var value = parameters[k].value;
+                        //update the parameter sets
+                        for (var i = 0; i < parameterSets["param_sets"].length; i++) {
+                            var numParamsRemoved = 0;
+                            var numNewParameters = 0;
+                            var newParamsList = [];
+                            var newParamNamesList = [];
+                            var parameterSet = parameterSets["param_sets"][i];
+                            var parameters = parameterSet["params"];
+                            for (var k = 0; k < parameters.length; k++) {
+                                var pName = parameters[k].name;
+                                var value = parameters[k].value;
 
-                        //check if parameter is removed
-                        if(finalParameterUpdates[pName] == undefined
-                            && finalParameterUpdates[pName] == null
-                            && currentParamsObj[pName] == undefined
-                                && currentParamsObj[pName] == null)
-                        {
-                            numParamsRemoved++;
-                            continue;
-                        }
+                                //check if parameter is removed
+                                if (finalParameterUpdates[pName] == undefined
+                                    && finalParameterUpdates[pName] == null
+                                    && currentParamsObj[pName] == undefined
+                                    && currentParamsObj[pName] == null) {
+                                    numParamsRemoved++;
+                                    continue;
+                                }
 
-                        //check if parameter needs to be updated
-                        if(finalParameterUpdates[pName] != undefined
-                            && finalParameterUpdates[pName] != null)
-                        {
-                            if(finalParameterUpdates[pName].newValueMap[parameters[k].value] != undefined
-                                && finalParameterUpdates[pName].newValueMap[parameters[k].value] != null)
-                            {
-                                parameters[k].value = finalParameterUpdates[pName].newValueMap[parameters[k].value];
+                                //check if parameter needs to be updated
+                                if (finalParameterUpdates[pName] != undefined
+                                    && finalParameterUpdates[pName] != null) {
+                                    if (finalParameterUpdates[pName].newValueMap[parameters[k].value] != undefined
+                                        && finalParameterUpdates[pName].newValueMap[parameters[k].value] != null) {
+                                        parameters[k].value = finalParameterUpdates[pName].newValueMap[parameters[k].value];
+                                    }
+
+                                    if (finalParameterUpdates[pName].newName != undefined
+                                        && finalParameterUpdates[pName].newName != null) {
+                                        parameters[k].name = finalParameterUpdates[pName].newName;
+                                    }
+                                }
+
+                                //keep track of just the names to use for checking for
+                                //any new parameters
+                                newParamNamesList.push(parameters[k].name);
+                                newParamsList.push(parameters[k]);
                             }
 
-                            if(finalParameterUpdates[pName].newName != undefined
-                                && finalParameterUpdates[pName].newName != null)
-                            {
-                                parameters[k].name = finalParameterUpdates[pName].newName;
+                            //add any new parameters
+                            var curParamNames = Object.keys(currentParamsObj);
+                            for (var c = 0; c < curParamNames.length; c++) {
+                                if ($.inArray(curParamNames[c], newParamNamesList) == -1) {
+                                    numNewParameters++;
+                                    var newPObj = {};
+                                    newPObj.name = curParamNames[c];
+                                    newPObj.value = "";
+                                    if (currentParamsObj[curParamNames[c]].defaultValue != undefined
+                                        && currentParamsObj[curParamNames[c]].defaultValue != null) {
+                                        newPObj.value = currentParamsObj[curParamNames[c]].defaultValue;
+                                    }
+
+                                    newParamsList.push(newPObj);
+                                }
+                                //if this is a choice list then add the list of choices to group info
+                                if (currentParamsObj[curParamNames[c]].choiceMap != undefined
+                                    && currentParamsObj[curParamNames[c]].choiceMap != null) {
+                                    if (groupInfo["choices"] == undefined
+                                        || groupInfo["choices"] == null) {
+                                        groupInfo["choices"] = {};
+                                    }
+                                    groupInfo["choices"][curParamNames[c]] = currentParamsObj[curParamNames[c]].choiceMap;
+                                }
+
+                                //check if this parameter is optional
+                                if (currentParamsObj[curParamNames[c]].optional) {
+                                    if ($.inArray(curParamNames[c], groupInfo["optional"]) == -1) {
+                                        groupInfo["optional"].push(curParamNames[c]);
+                                    }
+                                }
+
+                                //save the default values
+                                if (currentParamsObj[curParamNames[c]].defaultValue != undefined
+                                    && currentParamsObj[curParamNames[c]].defaultValue != null) {
+                                    groupInfo["defaults"][curParamNames[c]] = currentParamsObj[curParamNames[c]].defaultValue;
+                                }
                             }
+
+                            parameterSet["params"] = newParamsList;
                         }
 
-                        //keep track of just the names to use for checking for
-                        //any new parameters
-                        newParamNamesList.push(parameters[k].name);
-                        newParamsList.push(parameters[k]);
+                        viewParameterSets(parameterSets, false);
+                        createInfoMsg("Update Parameter Set", "Update complete: " + "\n" + numParamsRemoved + " parameters removed"
+                            + "\n" + numNewParameters + " parameters added");
+                        $(this).dialog("close");
                     }
-
-                    //add any new parameters
-                    var curParamNames = Object.keys(currentParamsObj);
-                    for(var c =0;c<curParamNames.length;c++)
-                    {
-                        if($.inArray(curParamNames[c], newParamNamesList) == -1)
-                        {
-                            numNewParameters++;
-                            var newPObj = {};
-                            newPObj.name = curParamNames[c];
-                            newPObj.value = "";
-                            if(currentParamsObj[curParamNames[c]].defaultValue != undefined
-                                && currentParamsObj[curParamNames[c]].defaultValue != null)
-                            {
-                                newPObj.value = currentParamsObj[curParamNames[c]].defaultValue;
-                            }
-
-                            newParamsList.push(newPObj);
-                        }
-                        //if this is a choice list then add the list of choices to group info
-                        if(currentParamsObj[curParamNames[c]].choiceMap != undefined
-                            && currentParamsObj[curParamNames[c]].choiceMap != null)
-                        {
-                            if(groupInfo["choices"] == undefined
-                                || groupInfo["choices"] == null)
-                            {
-                                groupInfo["choices"] = {};
-                            }
-                            groupInfo["choices"][curParamNames[c]] = currentParamsObj[curParamNames[c]].choiceMap;
-                        }
-
-                        //check if this parameter is optional
-                        if(currentParamsObj[curParamNames[c]].optional)
-                        {
-                            if($.inArray(curParamNames[c], groupInfo["optional"]) == -1)
-                            {
-                                groupInfo["optional"].push(curParamNames[c]);
-                            }
-                        }
-
-                        //save the default values
-                        if(currentParamsObj[curParamNames[c]].defaultValue != undefined
-                            && currentParamsObj[curParamNames[c]].defaultValue != null)
-                        {
-                                groupInfo["defaults"][curParamNames[c]] = currentParamsObj[curParamNames[c]].defaultValue;
-                        }
-                    }
-
-                    parameterSet["params"] = newParamsList;
                 }
-
-                viewParameterSets(parameterSets, false);
-                createInfoMsg("Update Parameter Set", "Update complete: "  + "\n" + numParamsRemoved + " parameters removed"
-                  + "\n" + numNewParameters + " parameters added");
-                $( this ).dialog( "close" );
-            }
-        }
-    });
+            });
+    }
+    else
+    {
+        createInfoMsg("Update Parameter Set", "No Parameters to update");
+    }
 }
 
 function viewParameterSets(pGroupObj, enableRun)
@@ -2066,6 +2202,33 @@ function viewParameterSets(pGroupObj, enableRun)
     updateButton.attr("disabled", "disabled");
 
     actionBarDiv.append(updateButton);
+
+    var togglePSetButton = $("<button id='updateBtn' type='button'>Collapse All</button>");
+    togglePSetButton.button().click(function()
+    {
+        var toggleMode =  $(this).text().trim();
+
+        if(toggleMode === "Collapse All")
+        {
+            $(".pSetCollapseDiv").each(function()
+            {
+                $(this).accordion( "option", "active", false);
+            });
+
+            $("span", this).text("Expand All");
+        }
+        else
+        {
+            $(".pSetCollapseDiv").each(function()
+            {
+                $(this).accordion( "option", "active", 0);
+            });
+
+            $("span", this).text("Collapse All");
+        }
+    });
+    actionBarDiv.append(togglePSetButton);
+
     $(".middle-center").append(actionBarDiv);
     
     var paramGroupSetDiv = $("<div id='groupSetDiv'/>");
@@ -2149,6 +2312,7 @@ function viewParameterSets(pGroupObj, enableRun)
         addParameterSet(parameterSet);
     }
 
+    $(".middle-south").append("<span class='floatLeft'><b>Total tests: " + pSetArray.length + "</b></span>");
     //add button to save test
     var saveButton = $("<button>Save Tests</button>");
 
@@ -2171,7 +2335,17 @@ function viewParameterSets(pGroupObj, enableRun)
     var runButton = $("<button id='Run'>Run Tests</button>");
     runButton.button().click(function ()
     {
-        configureAndRunTests();
+        //check if there are parameters sets currently in edit mode
+        if($(".highlightPSetEdit").length == 0)
+        {
+            configureAndRunTests();
+        }
+        else
+        {
+            createErrorMsg("Run Tests", "There are edits " +
+                "to parameter sets that have not been saved");
+        }
+
     });
 
     runButton.attr("disabled", "disabled");
@@ -2210,11 +2384,11 @@ function saveTests()
             var error = response["ERROR"];
             if (error !== undefined && error !== null)
             {
-                createErrorMsg("Save Parameter Sets", error);
+                createErrorMsg("Save Parameter Sets", htmlEncode(error));
                 return;
             }
             if (message !== undefined && message !== null) {
-                createInfoMsg("Save Parameter Sets", message);
+                createInfoMsg("Save Parameter Sets", htmlEncode(message));
             }
 
             loadAllParamSetGroups();
@@ -2227,7 +2401,7 @@ function saveTests()
             createErrorMsg("Save Parameter Sets", "Error status: " + xhr.status);
             if(thrownError != null && thrownError != "")
             {
-                createErrorMsg("Save Parameter Sets", thrownError);
+                createErrorMsg("Save Parameter Sets", htmlEncode(thrownError));
             }
         },
         dataType: "json"
@@ -2467,13 +2641,6 @@ $(document).ready(function()
         }
     });
 
-    /*$("input[name='gpUnitClient']").change(function()
-    {
-        if($(this).val() != null && $(this).val() != undefined && $(this).val() != "")
-        {
-            test_editor.gpUnitClient = $(this).val();
-        }
-    });*/
 
     $("select[name='gpUnitClient']").multiselect(
         {
@@ -2489,6 +2656,8 @@ $(document).ready(function()
             test_editor.gpUnitClient = $(this).val();
         }
     });
+
+    test_editor.gpUnitClient =  $("select[name='gpUnitClient']").val();
 
     var refreshParamSetsBtn = $("<button>Refresh</button>");
     refreshParamSetsBtn.button().click(function()
@@ -2638,8 +2807,9 @@ $(document).ready(function()
             var validValues = paramConfig["valid"];
             var isFixed = paramConfig["isFixed"];
             var isFile = paramConfig["isFile"];
+            var isChoice = paramConfig["type"] == "choice";
 
-            if((isFixed != undefined && isFixed) || (isFile != undefined && isFile) ||
+            if((isFixed != undefined && isFixed) || (isFile != undefined && isFile && !isChoice) ||
                     validValues == null || validValues == undefined)
             {
                 continue;
@@ -2867,68 +3037,24 @@ $(document).ready(function()
         addPropertyToParamConfig(pName, "valid", []);
         addPropertyToParamConfig(pName, "invalid", []);
 
-        if(value == "LOCAL_FILE")
+        if(value == "SERVER_FILE")
         {
-            var fileInput = $("<input class='fileInput' type='file'/>");
-            fileInput.data("pName", pName);
-            fileInput.change(function()
+            if($(this).parents("tr:first").next().next(".serverFile").length > 0)
             {
-                var pName = $(this).data("pName");
-                var fileName = this.files[0].name;
+                $(this).parents("tr:first").next().next(".serverFile").show();
 
-                var fileList = [];
-                fileList.push(fileName);
-                addPropertyToParamConfig(pName, "valid", fileList);
-                addPropertyToParamConfig(pName, "isFile", true);
-            });
-
-            var td = $("<td/>");
-            td.append(fileInput);
-
-            var fileSelectRow = $("<tr/>");
-            fileSelectRow.append("<td/>");
-            fileSelectRow.append(td);
-
-            //remove previous file select option
-            if($(this).parents("tr:first").next().find(".fileInput").length > 0)
-            {
-                $(this).parents("tr:first").next().remove();
+                $(this).parents("tr:first").next(".choiceFile").hide();
             }
-            $(this).parents("tr:first").after(fileSelectRow);
-            //$(this).parents("tr:first").after(fileInput);
+            else
+            {
+                $(this).parents("tr:first").next(".serverFile").show();
+            }
         }
-        else if(value == "SERVER_FILE")
+        else if(value == "SELECT_FILE")
         {
-            var serverFileInput = $("<input class='fileInput' type='text'/>");
-            serverFileInput.data("pName", pName);
-            serverFileInput.change(function()
-            {
-                var pName = $(this).data("pName");
-                var fileValue = $(this).val();
+            $(this).parents("tr:first").next(".choiceFile").show();
 
-                var fileList = [];
-                fileList.push(fileValue);
-
-                addPropertyToParamConfig(pName, "valid", fileList);
-                addPropertyToParamConfig(pName, "isFile", true);
-            });
-
-            var serverFileTd = $("<td/>");
-            serverFileTd.append(serverFileInput);
-
-            var serverFileSelectRow = $("<tr/>");
-            serverFileSelectRow.append("<td/>");
-
-            serverFileSelectRow.append(serverFileTd);
-
-            //$(this).parents("tr:first").after().find("input[type='file']").remove();
-            if($(this).parents("tr:first").next().find(".fileInput").length > 0)
-            {
-                $(this).parents("tr:first").next().remove();
-            }
-            $(this).parents("tr:first").after(serverFileSelectRow);
-            //$(this).parents("tr:first").after(serverFileInput);
-
+            $(this).parents("tr:first").next().next(".serverFile").hide();
         }
         else if(value == "integer" || value == "float")
         {
@@ -3446,11 +3572,11 @@ $(document).ready(function()
 
                 if (error !== undefined && error !== null)
                 {
-                    createErrorMsg("Module Versions", error);
+                    createErrorMsg("Module Versions", htmlEncode(error));
                     return;
                 }
                 if (message !== undefined && message !== null) {
-                    createInfoMsg("Module Versions", message);
+                    createInfoMsg("Module Versions", htmlEncode(message));
                     return;
                 }
 
@@ -3462,7 +3588,7 @@ $(document).ready(function()
 
                 if(thrownError != null && thrownError != undefined &&thrownError != "")
                 {
-                    createErrorMsg("Module Versions", thrownError);
+                    createErrorMsg("Module Versions", htmlEncode(thrownError));
                 }
             },
             dataType: "json"

@@ -226,14 +226,19 @@ public class AutomatedTestServlet extends HttpServlet
                 JsonObject paramsObj = new JsonObject();
 
                 JsonObject diffObj = new JsonObject();
-                diffObj.addProperty("diff", entry.getValue().getDiff());
+                if(entry.getValue() != null)
+                {
+                    diffObj.addProperty("diff", entry.getValue().getDiff());
 
-                Gson gson = new Gson();
-                JsonElement diffCmd = gson.toJsonTree(entry.getValue().getDiffCmd());
+                    Gson gson = new Gson();
+                    if (entry.getValue().getDiffCmd() != null) {
+                        JsonElement diffCmd = gson.toJsonTree(entry.getValue().getDiffCmd());
 
-                diffObj.add("diffCmd", diffCmd);
+                        diffObj.add("diffCmd", diffCmd);
+                    }
 
-                paramsObj.add(entry.getKey(), diffObj);
+                    paramsObj.add(entry.getKey(), diffObj);
+                }
 
                 files.add(paramsObj);
             }
@@ -620,12 +625,15 @@ public class AutomatedTestServlet extends HttpServlet
             server = server.substring(0, colonIndex);
         }
 
-        String timeStamp = String.valueOf(System.currentTimeMillis());
+        SimpleDateFormat format = new SimpleDateFormat("MMM_d_yyyy_hh:mm_a");
+        format.format(new Date(System.currentTimeMillis()));
+
+        String timeStamp = format.format(new Date(System.currentTimeMillis()));
         File testResultsDir =  new File(paramSetDir, TEST_RESULTS_DIR);
         testResultsDir.mkdir();
         File outputDir = new File(testResultsDir, timeStamp);
         outputDir.mkdir();
-        
+
         log.error("output dir is: " + outputDir);
 
         String reportDir = (new File(outputDir, "reports")).getAbsolutePath();
