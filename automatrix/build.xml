@@ -36,7 +36,6 @@
     <target name="packageJarAndCopyGpUnit" depends="clean, compile">
         <copy todir="${website}/WEB-INF/lib">
             <fileset dir="../lib"/>
-            <fileset dir="../dist"/>
         </copy>
     </target>
 
