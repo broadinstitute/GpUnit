@@ -239,6 +239,12 @@ public class AutomatedTestServlet extends HttpServlet
 
                     paramsObj.add(entry.getKey(), diffObj);
                 }
+                else
+                {
+                    //if it is null then assume this is !!null
+                    // which just checks for existence of the fill
+                    paramsObj.add(entry.getKey(), new JsonPrimitive("!!null"));
+                }
 
                 files.add(paramsObj);
             }
