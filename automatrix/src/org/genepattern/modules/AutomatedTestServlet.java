@@ -631,7 +631,7 @@ public class AutomatedTestServlet extends HttpServlet
             server = server.substring(0, colonIndex);
         }
 
-        SimpleDateFormat format = new SimpleDateFormat("MMM_d_yyyy_hh:mm_a");
+        SimpleDateFormat format = new SimpleDateFormat("MMM_d_yyyy_hh_mm_a");
         format.format(new Date(System.currentTimeMillis()));
 
         String timeStamp = format.format(new Date(System.currentTimeMillis()));
@@ -640,7 +640,7 @@ public class AutomatedTestServlet extends HttpServlet
         File outputDir = new File(testResultsDir, timeStamp);
         outputDir.mkdir();
 
-        log.error("output dir is: " + outputDir);
+        log.info("output dir is: " + outputDir);
 
         String reportDir = (new File(outputDir, "reports")).getAbsolutePath();
         //replace \ with / in file path so that it does not need to be escaped when running on Windows
@@ -799,26 +799,26 @@ public class AutomatedTestServlet extends HttpServlet
             ServletContext context = this.getServletContext();
             String gpUnitBuildFilePath = context.getRealPath("/WEB-INF/gpunit/build.xml");
 
-            log.error("gpunit build file url: " + gpUnitBuildFilePath);
+            log.info("gpunit build file url: " + gpUnitBuildFilePath);
 
             ProcessBuilder pb = null;
 
             if (OS.indexOf("win") != -1)
             {
-                log.error("Windows style command line: " + "cmd.exe /C ant -f " + gpUnitBuildFilePath + " gpunit " +
+                log.info("Windows style command line: " + "cmd.exe /C ant -f " + gpUnitBuildFilePath + " gpunit " +
                         "-Dgpunit.properties="+ gpUnitPropertiesfile.getAbsolutePath());
                 pb = new ProcessBuilder("cmd.exe", "/C", "ant -f " + gpUnitBuildFilePath + " gpunit " +
                         "-Dgpunit.properties="+ gpUnitPropertiesfile.getAbsolutePath());
             }
             else
             {
-                log.error("Unix style command line: " + "ant -f " + gpUnitBuildFilePath + " gpunit " +
+                log.info("Unix style command line: " + "ant -f " + gpUnitBuildFilePath + " gpunit " +
                         "-Dgpunit.properties="+ gpUnitPropertiesfile.getAbsolutePath());
 
                 System.out.println("Unix style command line: " + "ant -f " + gpUnitBuildFilePath + " gpunit " +
                         "-Dgpunit.properties=" + gpUnitPropertiesfile.getAbsolutePath());
 
-                log.error("PATH env: " + System.getenv("PATH"));
+                log.info("PATH env: " + System.getenv("PATH"));
 
                 System.out.println("PATH env: " + System.getenv("PATH"));
                 pb = new ProcessBuilder("ant", "-f", gpUnitBuildFilePath, "gpunit",
@@ -930,7 +930,7 @@ public class AutomatedTestServlet extends HttpServlet
     {
         try
         {
-            log.error("getting test results");
+            log.info("getting test results");
             JsonObject testResultsByParamSet = new JsonObject();
 
             //Look in param sets directory for finished tests
@@ -954,7 +954,7 @@ public class AutomatedTestServlet extends HttpServlet
                 throw new Exception("No parameter sets found: " + allParamSetDirs);
             }
 
-            log.error("found test results: " + paramSetDir.getAbsolutePath());
+            log.info("found test results: " + paramSetDir.getAbsolutePath());
 
             for(int t=0; t <allParamSetDirs.length; t++)
             {
@@ -981,17 +981,23 @@ public class AutomatedTestServlet extends HttpServlet
                 File[] testResultDir = testResultsDir[0].listFiles();
                 for(int r =0;r<testResultDir.length;r++)
                 {
-                    log.error("test result dir: " + testResultDir[r]);
+                    log.info("test result dir: " + testResultDir[r]);
                     if(testResultDir[r].isDirectory())
                     {
-                        Calendar cal = Calendar.getInstance();
-                        cal.setTimeInMillis(Long.parseLong(testResultDir[r].getName()));
-
-                        DateFormat df = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
-
                         JsonObject testResultDetails = new JsonObject();
-                        testResultDetails.addProperty("name", df.format(cal.getTime()));
 
+                        try {
+                            Calendar cal = Calendar.getInstance();
+                            cal.setTimeInMillis(Long.parseLong(testResultDir[r].getName()));
+                            DateFormat df = new SimpleDateFormat("EEE, MMM_d_yyyy_hh_mm_a");
+                            testResultDetails.addProperty("name", df.format(cal.getTime()));
+                        }catch(NumberFormatException ne)
+                        {
+                            log.error(ne);
+                            //otherwise this is new format for file name
+                            //so no need to format
+                            testResultDetails.addProperty("name", testResultDir[r].getName());
+                        }
                         //check if there is a report html file
                         String reportPath = "/reports";
                         File reportMainDir = new File(testResultDir[r].getAbsolutePath(), reportPath);
@@ -1008,7 +1014,7 @@ public class AutomatedTestServlet extends HttpServlet
                         }
                         reportPath += "/html/index.html";
                         File reportHtml = new File(testResultDir[r].getAbsolutePath(), reportPath);
-                        log.error("report html: " + reportHtml.getAbsolutePath());
+                        log.info("report html: " + reportHtml.getAbsolutePath());
                         if(reportHtml.exists())
                         {
                             String reportLink = PARAM_SETS_DIR + "/" + allParamSetDirs[t].getName() + "/"

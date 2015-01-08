@@ -24,8 +24,8 @@
         <link  type="text/css" rel="stylesheet" media="screen" href="styles/jquery.multiselect.css" />
         <link  type="text/css" rel="stylesheet" media="screen" href="styles/automatedtesting.css" />
 
-        <script type="text/javascript" src="js/jquery-1.11.1.js"></script>
-        <script type="text/javascript" src="js/jquery-ui-1.11.2.js"></script>
+        <script type="text/javascript" src="js/jquery-1.9.1.js"></script>
+        <script type="text/javascript" src="js/jquery-ui-1.9.2.js"></script>
         <script type="text/javascript" src="js/jquery.layout_1.3.0_rc30.79.js"></script>
         <script type="text/javascript" src="js/jquery.multiselect_1.13.js"></script>
         <script type="text/javascript" src="js/jquery.validate.js"></script>
@@ -90,8 +90,8 @@
                                     <option value="http://gpdev.broadinstitute.org/gp">http://gpdev.broadinstitute.org/gp</option>
                                     <option value="http://genepatternbeta.broadinstitute.org/gp">http://genepatternbeta.broadinstitute.org/gp</option>
                                     <option value="http://genepattern.broadinstitute.org/gp">http://genepattern.broadinstitute.org/gp</option>
-                                    <option value="http://localhost:8080/gp">http://localhost:8080/gp</option>
-                                    <option value="http://localhost:7070/gp">http://localhost:7070/gp</option>
+                                    <option value="http://127.0.0.1:8080/gp">http://localhost:8080/gp</option>
+                                    <option value="http://127.0.0.1:7070/gp">http://localhost:7070/gp</option>
                                 </select>
                             </td>
                         </tr>
@@ -155,10 +155,10 @@
                         <tr>
                             <td class="testOption">gp-unit client</td>
                             <td>
-                                <select name="gpUnitClient">
-                                    <option value="REST">REST</option>
-                                    <option value="SOAP">SOAP</option>
-                                </select>
+                                <div id="gpUnitClient">
+                                    <input type="radio" id="radio1" name="gpUnitClient" value="REST"/><label for="radio1" checked="checked">REST</label>
+                                    <input type="radio" id="radio2" name="gpUnitClient" value="SOAP"/><label for="radio2">SOAP</label>
+                                </div>
                             </td>
                         </tr>
                      </table>

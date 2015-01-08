@@ -92,24 +92,26 @@ function loadAllTasks()
         url: test_editor.server + ALL_TASKS_REST + includeHidden,
         type: 'GET',
         dataType: 'json',
+        crossDomain: true,
         xhrFields: {
             withCredentials: true
-        },
-        success: function(response)
-        {
-            var modules = response['all_modules'];
-
-            loadAllTasksInfo(modules);
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-            createErrorMsg("Get Module List", "Error status: " + xhr.status);
-            if(thrownError != null && thrownError != "")
-            {
-                createErrorMsg("Get Module List", htmlEncode(thrownError));
-            }
         }
-    })
+    }).fail(function( jqXHR, textStatus, errorThrown )
+    {
+        var Error = "Error status: " + jqXHR.status;
+        if(errorThrown != null && errorThrown != "")
+        {
+            Error += "\nMessage: " + htmlEncode(errorThrown);
+        }
 
+        createErrorMsg("Get Module List", "Error retrieving module list. \n" + Error);
+
+    }).done(function(data, textStatus, jqXHR )
+    {
+        var modules = data['all_modules'];
+
+        loadAllTasksInfo(modules);
+    });
 }
 
 function loadAllTasksInfo(modules)
@@ -406,7 +408,7 @@ function loadParameterInfo(parametersArray)
 
                 var choiceInfo = parameter.choiceInfo;
                 var isChoiceInfo = choiceInfo != undefined && choiceInfo != null && choiceInfo != "";
-                if(pType == "java.io.File")
+                if(pType == "java.io.File" || (parameter.attributes.TYPE.toLowerCase() == "file" && parameter.attributes.MODE.toLowerCase() == "in"))
                 {
                     pTypeSelector.append("<option value='SERVER_FILE'>Enter server file path</option>");
                     multiSelect = false;
@@ -1740,6 +1742,7 @@ function handleParameterSetGroupUpdate(module)
             var firstChoiceValue = null;
             var choiceMap = {};
             //get display value if this is a choice list
+            //the test of displaying values of 
             if(choiceInfo != undefined && choiceInfo != null && choiceInfo != "")
             {
                 var result = choiceInfo.choices;
@@ -2641,15 +2644,9 @@ $(document).ready(function()
         }
     });
 
-
-    $("select[name='gpUnitClient']").multiselect(
-        {
-            multiple: false,
-            selectedList: 1
-        }
-    );
-
-    $("select[name='gpUnitClient']").change(function(event)
+    $("input[name='gpUnitClient'][value='REST']").attr('checked', 'checked');
+    $("#gpUnitClient").buttonset();
+    $("input[name='gpUnitClient']").change(function(event)
     {
         if($(this).val() != null && $(this).val() != undefined && $(this).val() != "")
         {
@@ -2657,7 +2654,7 @@ $(document).ready(function()
         }
     });
 
-    test_editor.gpUnitClient =  $("select[name='gpUnitClient']").val();
+    test_editor.gpUnitClient =  $("input[name='gpUnitClient']").val();
 
     var refreshParamSetsBtn = $("<button>Refresh</button>");
     refreshParamSetsBtn.button().click(function()
