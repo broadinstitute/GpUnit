@@ -408,7 +408,8 @@ function loadParameterInfo(parametersArray)
 
                 var choiceInfo = parameter.choiceInfo;
                 var isChoiceInfo = choiceInfo != undefined && choiceInfo != null && choiceInfo != "";
-                if(pType == "java.io.File" || (parameter.attributes.TYPE.toLowerCase() == "file" && parameter.attributes.MODE.toLowerCase() == "in"))
+                if(pType == "java.io.File" || (parameter.attributes.TYPE != undefined &&  parameter.attributes.MODE != undefined
+                        && parameter.attributes.TYPE.toLowerCase() == "file" && parameter.attributes.MODE.toLowerCase() == "in"))
                 {
                     pTypeSelector.append("<option value='SERVER_FILE'>Enter server file path</option>");
                     multiSelect = false;
