@@ -188,7 +188,7 @@ report.dir: ${report.dir}
         <run-tests 
             testcases="${all-protocols.testcases}" 
             numThreads="5" 
-            shutdownTimeout="300"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
         />
     </target>
 
