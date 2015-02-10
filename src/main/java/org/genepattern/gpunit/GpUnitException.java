@@ -17,6 +17,6 @@ public class GpUnitException extends Exception {
         super(t);
     }
     public GpUnitException(String message, Throwable t) {
-        super(message, t);
+      super(message + " (" + t.getLocalizedMessage() + ")", t);
     }
 }

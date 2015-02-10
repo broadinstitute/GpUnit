@@ -197,6 +197,20 @@ public class BatchProperties {
         }
         return defaultValue;
     }
+
+    /**
+     * Helper for retrieving substitution values for property references in yaml files.
+     * @param propName
+     * @return
+     */
+    public  String getSubstitutionProperty(final String propName) throws GpUnitException {
+        if (System.getProperties().containsKey(propName)) {
+            return System.getProperty(propName).trim();
+        }
+        else {
+            throw new GpUnitException("Reference to indefined property: " + propName);
+        }
+    }
     
     /**
      * Helper method for initializing 'shutdownTimeout' from System properties.

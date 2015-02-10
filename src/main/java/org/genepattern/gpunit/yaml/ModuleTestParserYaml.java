@@ -59,7 +59,7 @@ public class ModuleTestParserYaml {
             throw new GpUnitException("Error parsing test yaml file: "+e.toString());
         }
         catch (Throwable t) {
-            throw new GpUnitException("Error parsing test yaml file: "+t.getLocalizedMessage(), t);
+            throw new GpUnitException("Error parsing test yaml file: ", t);
         }
     }
 }

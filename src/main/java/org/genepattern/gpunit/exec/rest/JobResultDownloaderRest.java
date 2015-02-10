@@ -45,8 +45,7 @@ public class JobResultDownloaderRest extends JobResultDownloaderGeneric {
             return toFile;
         }
         catch (Exception e) {
-            throw new GpUnitException("Failed to download file from url="+url+": "
-                    +e.getLocalizedMessage());
+            throw new GpUnitException("Failed to download file from url="+url, e);
         }
      }
 

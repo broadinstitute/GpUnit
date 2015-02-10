@@ -223,4 +223,27 @@ report.dir: ${report.dir}
         />
     </target>
 
+    <target name="compile-automatrix" depends="package">
+        <!-- For the interim, just copy the locally built gp-unit.jar over the archived one in the automatrix -->
+        <!-- lib dir, and then try to compile automatrix. -->
+        <copy file="${gpunit.dir}/dist/gp-unit.jar" todir="./automatrix/website/WEB-INF/lib" />
+        <ant antfile="automatrix/build.xml" target="createWar" useNativeBasedir="true" />
+    </target>
+
+    <target name="gpunit-tests" depends="compile">
+        <junit showoutput="true" printsummary="true" >
+            <classpath>
+                <pathelement location="${gpunit.dir}/classes"/>
+                <fileset dir="${gpunit.dir}/src/test/lib" >
+                    <include name="**/*.jar"/>
+                </fileset>
+                <fileset dir="./lib">
+                    <include name="**/*.jar"/>
+                </fileset>
+                <pathelement location="${client.lib.dir}/GenePattern.jar" />
+            </classpath>
+            <test name="org.genepattern.gpunit.yaml.PropertyExpansionTests" outfile="TEST-all" todir="./junit" />
+        </junit>
+    </target>
+
 </project>

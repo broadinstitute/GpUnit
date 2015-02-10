@@ -161,7 +161,7 @@ public class JobRunnerRest {
             yamlList = (List<Object>) yamlValue;
         }
         catch (Throwable t) {
-            throw new GpUnitException("yaml format error, expecting List<Object> "+t.getLocalizedMessage());
+            throw new GpUnitException("yaml format error, expecting List<Object>", t);
         }
         ParamEntry paramEntry=new ParamEntry(pname);
         for(final Object yamlEntry : yamlList) {
@@ -178,7 +178,7 @@ public class JobRunnerRest {
             yamlValueMap = (Map<String,List<Object>>) yamlValue;
         }
         catch (Throwable t) {
-            throw new GpUnitException("yaml format error, expecting Map<String,Object> "+t.getLocalizedMessage());
+            throw new GpUnitException("yaml format error, expecting Map<String,Object>", t);
         }
         List<ParamEntry> groups=new ArrayList<ParamEntry>();
         for(final Entry<String,List<Object>> entry : yamlValueMap.entrySet()) {
@@ -208,7 +208,7 @@ public class JobRunnerRest {
             updatedValue=InputFileUtil.getParamValueForInputFile(batchProps, test, yamlEntry);
         }
         catch (Throwable t) {
-            throw new GpUnitException("Error initializing input file value from yamlEntry="+yamlEntry+": "+t.getLocalizedMessage());
+            throw new GpUnitException("Error initializing input file value from yamlEntry="+yamlEntry, t);
         }
         URL url=uploadFileIfNecessary(updatedValue);
         if (url != null) {
@@ -452,7 +452,7 @@ public class JobRunnerRest {
             return jobUri;
         }
         catch (URISyntaxException e) {
-            final String message="POST "+addJobUrl.toExternalForm()+" failed! "+e.getLocalizedMessage();
+            final String message="POST "+addJobUrl.toExternalForm()+" failed!";
             throw new GpUnitException(message, e);
         }
     }

@@ -133,7 +133,7 @@ public class InputFileUtil {
             }
             catch (Throwable t) {
                 String pName = paramEntry.getKey();
-                throw new GpUnitException("Error setting value for "+pName+"='"+pValue+"': "+t.getLocalizedMessage());
+                throw new GpUnitException("Error setting value for "+pName+"='"+pValue, t);
             }
         }
 

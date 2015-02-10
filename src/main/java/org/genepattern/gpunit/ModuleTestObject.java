@@ -4,6 +4,10 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.genepattern.gpunit.test.BatchProperties;
+import org.genepattern.gpunit.PropertyExpansion;
+import org.yaml.snakeyaml.parser.ParserException;
+
 
 public class ModuleTestObject {
     /** the name of the test */
@@ -18,7 +22,22 @@ public class ModuleTestObject {
     /** the input parameter values to use at module run time. */
     private Map<String,Object> params = new HashMap<String,Object>();
     /** the list of assertions */
-    private GpAssertions assertions = new GpAssertions(); 
+    private GpAssertions assertions = new GpAssertions();
+
+    private BatchProperties bp = null;
+
+    private BatchProperties getBatchProperties() {
+        if (null == bp) {
+            try {
+                bp = BatchProperties.Factory.initFromProps();
+            }
+            catch (GpUnitException gpe) {
+                throw new ParserException("Error properties during yaml parsing", null, "error intializing properties", null);
+            }
+        }
+        return bp;
+    }
+
     /**
      * The root input directory for uploaded input files with a relative path.
      * @return
@@ -52,8 +71,30 @@ public class ModuleTestObject {
     public Map<String,Object> getParams() {
         return params;
     }
+    /*
+     * Process all test params and substitute any property references with property values.
+     */
     public void setParams(Map<String,Object> inputParams) {
-        this.params = inputParams;
+        Map<String, Object> expandedParams = new HashMap<String, Object>();
+        PropertyExpansion pe = new PropertyExpansion();
+
+        for (String k : inputParams.keySet())
+        {
+            Object v = inputParams.get(k);
+            if (v instanceof String)
+            {
+                try {
+                    expandedParams.put(k, pe.expandProperties(getBatchProperties(), (String) v));
+                }
+                catch (GpUnitException gpe) {
+                    throw new ParserException("Error expanding properties during yaml parsing", null, gpe.getLocalizedMessage(), null);
+	            }
+            }
+            else {
+                expandedParams.put(k, v);
+            }
+        }
+        this.params = expandedParams;
     }
     public GpAssertions getAssertions() {
         return assertions;
