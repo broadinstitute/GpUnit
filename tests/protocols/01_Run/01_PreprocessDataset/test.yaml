@@ -3,9 +3,8 @@
 # Module: PreprocessDataset urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00020:4
 # Parameters: 
 module: PreprocessDataset
-#input.filename: "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct"
 params:
-    input.filename: "<gpunit.rootdir>/all_aml/all_aml_test.gct"
+    input.filename: "<gpunit.testDataRoot>/all_aml/all_aml_test.gct"
     threshold.and.filter: "1"
     floor: "20"
     ceiling: "20000"
