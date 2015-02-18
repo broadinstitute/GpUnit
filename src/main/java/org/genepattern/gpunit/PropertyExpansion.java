@@ -28,7 +28,7 @@ public class PropertyExpansion {
 	private Pattern getCompiledPattern() throws GpUnitException {
 		// Note: we match an entire property reference with an optional leading backslash.
 		// The parens in the regexp are purely for the capture group that represents the actual property.
-		String regExp = "\\\\*<([a-zA-Z0-9._]+)>";
+		String regExp = "\\\\*<\\%([a-zA-Z0-9._]+)\\%>";
 		if (null == pattern) {
 			try {
 				pattern = Pattern.compile(regExp);

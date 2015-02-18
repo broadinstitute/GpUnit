@@ -22,7 +22,7 @@ public class PropertyExpansionTests {
 	@Before
 	public void setUp() throws GpUnitException {
 		batchProperties = mock(BatchProperties.class);
-		when(batchProperties.getSubstitutionProperty("gpunit.rootDir"))
+		when(batchProperties.getSubstitutionProperty("gpunit.testDataRoot"))
 				.thenReturn("http://rooturl:8080");
 		when(batchProperties.getSubstitutionProperty("gpunit.otherDir"))
 				.thenReturn("http://otherurl:8080");
@@ -53,7 +53,7 @@ public class PropertyExpansionTests {
 		String exp = null;
 		try {
 			exp = pe.expandProperties(batchProperties,
-					"prefix <gpunit.rootDir> suffix");
+					"prefix <%gpunit.testDataRoot%> suffix");
 		} catch (GpUnitException gpe) {
 			Assert.fail();
 		}
@@ -70,7 +70,7 @@ public class PropertyExpansionTests {
 		String exp = null;
 		try {
 			exp = pe.expandProperties(batchProperties,
-					"prefix <gpunit.rootDir> infix <gpunit.otherDir> suffix");
+					"prefix <%gpunit.testDataRoot%> infix <%gpunit.otherDir%> suffix");
 		} catch (GpUnitException gpe) {
 			Assert.fail();
 		}
@@ -88,7 +88,7 @@ public class PropertyExpansionTests {
 		String exp = null;
 		try {
 			exp = pe.expandProperties(batchProperties,
-					"<gpunit.rootDir> suffix");
+					"<%gpunit.testDataRoot%> suffix");
 		} catch (GpUnitException gpe) {
 			Assert.fail();
 		}
@@ -105,7 +105,7 @@ public class PropertyExpansionTests {
 		String exp = null;
 		try {
 			exp = pe.expandProperties(batchProperties,
-					"prefix <gpunit.rootDir>");
+					"prefix <%gpunit.testDataRoot%>");
 		} catch (GpUnitException gpe) {
 			Assert.fail();
 		}
@@ -123,11 +123,11 @@ public class PropertyExpansionTests {
 		String exp = null;
 		try {
 			exp = pe.expandProperties(batchProperties,
-					"\\<gpunit.rootDir> suffix");
+					"\\<%gpunit.testDataRoot%> suffix");
 		} catch (GpUnitException gpe) {
 			Assert.fail();
 		}
-		Assert.assertTrue(exp.equals("\\<gpunit.rootDir> suffix"));
+		Assert.assertTrue(exp.equals("\\<%gpunit.testDataRoot%> suffix"));
 	}
 
 	/*
@@ -140,11 +140,11 @@ public class PropertyExpansionTests {
 		String exp = null;
 		try {
 			exp = pe.expandProperties(batchProperties,
-					"prefix \\<gpunit.rootDir> suffix");
+					"prefix \\<%gpunit.testDataRoot%> suffix");
 		} catch (GpUnitException gpe) {
 			Assert.fail();
 		}
-		Assert.assertTrue(exp.equals("prefix \\<gpunit.rootDir> suffix"));
+		Assert.assertTrue(exp.equals("prefix \\<%gpunit.testDataRoot%> suffix"));
 	}
 
 	/*
@@ -157,11 +157,11 @@ public class PropertyExpansionTests {
 		String exp = null;
 		try {
 			exp = pe.expandProperties(batchProperties,
-					"prefix \\<gpunit.rootDir>");
+					"prefix \\<%gpunit.testDataRoot%>");
 		} catch (GpUnitException gpe) {
 			Assert.fail();
 		}
-		Assert.assertTrue(exp.equals("prefix \\<gpunit.rootDir>"));
+		Assert.assertTrue(exp.equals("prefix \\<%gpunit.testDataRoot%>"));
 	}
 
 }
