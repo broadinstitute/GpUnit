@@ -23,9 +23,9 @@ public class PropertyExpansionTests {
 	public void setUp() throws GpUnitException {
 		batchProperties = mock(BatchProperties.class);
 		when(batchProperties.getSubstitutionProperty("gpunit.testDataRoot"))
-				.thenReturn("http://rooturl:8080");
-		when(batchProperties.getSubstitutionProperty("gpunit.otherDir"))
-				.thenReturn("http://otherurl:8080");
+				.thenReturn("http://rooturl");
+		when(batchProperties.getSubstitutionProperty("gpunit.protocolsDir"))
+				.thenReturn("protocols");
 	}
 
 	/*
@@ -57,7 +57,7 @@ public class PropertyExpansionTests {
 		} catch (GpUnitException gpe) {
 			Assert.fail();
 		}
-		Assert.assertTrue(exp.equals("prefix http://rooturl:8080 suffix"));
+		Assert.assertTrue(exp.equals("prefix http://rooturl suffix"));
 	}
 
 	/*
@@ -70,12 +70,12 @@ public class PropertyExpansionTests {
 		String exp = null;
 		try {
 			exp = pe.expandProperties(batchProperties,
-					"prefix <%gpunit.testDataRoot%> infix <%gpunit.otherDir%> suffix");
+					"prefix <%gpunit.testDataRoot%>/<%gpunit.protocolsDir%> suffix");
 		} catch (GpUnitException gpe) {
 			Assert.fail();
 		}
 		Assert.assertTrue(exp
-				.equals("prefix http://rooturl:8080 infix http://otherurl:8080 suffix"));
+				.equals("prefix http://rooturl/protocols suffix"));
 	}
 
 	/*
@@ -92,7 +92,7 @@ public class PropertyExpansionTests {
 		} catch (GpUnitException gpe) {
 			Assert.fail();
 		}
-		Assert.assertTrue(exp.equals("http://rooturl:8080 suffix"));
+		Assert.assertTrue(exp.equals("http://rooturl suffix"));
 	}
 
 	/*
@@ -110,7 +110,7 @@ public class PropertyExpansionTests {
 			Assert.fail();
 		}
 		assert (false);
-		Assert.assertTrue(exp.equals("prefix http://rooturl:8080"));
+		Assert.assertTrue(exp.equals("prefix http://rooturl"));
 	}
 
 	/*

@@ -3,6 +3,7 @@ package org.genepattern.gpunit.yaml;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.lang.reflect.InvocationTargetException;
 import java.io.InputStream;
 
 import org.genepattern.gpunit.GpUnitException;
@@ -59,6 +60,20 @@ public class ModuleTestParserYaml {
             throw new GpUnitException("Error parsing test yaml file: "+e.toString());
         }
         catch (Throwable t) {
+            // Try to get the originating exception for detailed error message; this is dependent
+            // on snakeyaml's exception propagation implementation
+            Throwable cause1 = t.getCause();
+            if (cause1 != null) {
+                Throwable cause2 = cause1.getCause();
+                if (cause2 != null && (cause2 instanceof InvocationTargetException)) {
+                    InvocationTargetException target = (InvocationTargetException) cause2;
+                    Throwable ie = target.getTargetException();
+                    if (ie != null) {
+                        String s = ie.getLocalizedMessage();
+                        throw new GpUnitException(s);
+                    }
+                }
+            }
             throw new GpUnitException("Error parsing test yaml file: ", t);
         }
     }

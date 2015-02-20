@@ -57,8 +57,6 @@ public class PropertyExpansion {
 					String propName = match.group(1);
 					String newValue = bp.getSubstitutionProperty(propName);
 					match.appendReplacement(sb, newValue);
-					//System.out.println("Substituting: " + propName + " for: "
-					//		+ newValue);
 				}
 			}
 		} catch (Exception pe) {

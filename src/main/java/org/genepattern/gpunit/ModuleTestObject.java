@@ -87,7 +87,7 @@ public class ModuleTestObject {
                     expandedParams.put(k, pe.expandProperties(getBatchProperties(), (String) v));
                 }
                 catch (GpUnitException gpe) {
-                    throw new ParserException("Error expanding properties during yaml parsing", null, gpe.getLocalizedMessage(), null);
+                    throw new IllegalArgumentException(gpe.getLocalizedMessage());
 	            }
             }
             else {
