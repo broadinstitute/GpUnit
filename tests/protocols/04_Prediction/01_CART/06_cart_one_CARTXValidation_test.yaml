@@ -1,6 +1,6 @@
 #04_Prediction_cart_one.html
 module: CARTXValidation
 params:
-    data.filename: ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct
-    cls.filename: ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.cls
+    data.filename: <%gpunit.testDataRoot%>/protocols/all_aml_test.preprocessed.gct
+    cls.filename: <%gpunit.testDataRoot%>/all_aml/all_aml_test.cls
 

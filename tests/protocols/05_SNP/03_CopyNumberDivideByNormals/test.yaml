@@ -1,5 +1,5 @@
 module: CopyNumberDivideByNormals
 params:
-    snp.file: ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/GISTIC_Hind_subset.xcorrected.snp
-    sample.info.file: ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/sample_info_subset.txt
+    snp.file: <%gpunit.testDataRoot%>/protocols/GISTIC_Hind_subset.xcorrected.snp
+    sample.info.file: <%gpunit.testDataRoot%>/gistic/sample_info_subset.txt
     include.genotype.calls: xcn

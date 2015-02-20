@@ -2,7 +2,7 @@
 module: "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00086:1"
 params:
     chip.type: Mapping50K_Hind240.cdf
-    zip.filename: ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/GISTIC_Hind_subset.zip
+    zip.filename: <%gpunit.testDataRoot%>/gistic/GISTIC_Hind_subset.zip
     output.file: GISTIC_Hind_subset.snp 
 
 # for compatibility with 3.10, use these parameters

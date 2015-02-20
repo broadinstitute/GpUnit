@@ -1,6 +1,6 @@
 #04_Prediction_knn_two.html
 module: KNNXValidation
 params:
-    data.filename: ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.gct
-    class.filename: ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.cls
+    data.filename: <%gpunit.testDataRoot%>/protocols/all_aml_train.preprocessed.gct
+    class.filename: <%gpunit.testDataRoot%>/datasets/all_aml/all_aml_train.cls
 
