@@ -2,5 +2,5 @@
 module: KNNXValidation
 params:
     data.filename: <%gpunit.testDataRoot%>/protocols/all_aml_train.preprocessed.gct
-    class.filename: <%gpunit.testDataRoot%>/datasets/all_aml/all_aml_train.cls
+    class.filename: <%gpunit.testDataRoot%>/all_aml/all_aml_train.cls
 
