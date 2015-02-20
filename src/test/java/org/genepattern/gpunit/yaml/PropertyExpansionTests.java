@@ -127,7 +127,7 @@ public class PropertyExpansionTests {
 		} catch (GpUnitException gpe) {
 			Assert.fail();
 		}
-		Assert.assertTrue(exp.equals("\\<%gpunit.testDataRoot%> suffix"));
+		Assert.assertTrue(exp.equals("<%gpunit.testDataRoot%> suffix"));
 	}
 
 	/*
@@ -144,7 +144,7 @@ public class PropertyExpansionTests {
 		} catch (GpUnitException gpe) {
 			Assert.fail();
 		}
-		Assert.assertTrue(exp.equals("prefix \\<%gpunit.testDataRoot%> suffix"));
+		Assert.assertTrue(exp.equals("prefix <%gpunit.testDataRoot%> suffix"));
 	}
 
 	/*
@@ -161,7 +161,7 @@ public class PropertyExpansionTests {
 		} catch (GpUnitException gpe) {
 			Assert.fail();
 		}
-		Assert.assertTrue(exp.equals("prefix \\<%gpunit.testDataRoot%>"));
+		Assert.assertTrue(exp.equals("prefix <%gpunit.testDataRoot%>"));
 	}
 
 }

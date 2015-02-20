@@ -70,6 +70,15 @@ There are several ways to declare your test case:
 1) hand edit a yaml file
 2) export a completed job, including the gp_execution_log.txt, from a server
 3) use Automatrix to generate the yaml file
+Any input parameters specified in the yaml file can reference named properties
+by using "<%prop_name%> delimiters. The property name must consist of alphabetic
+or numeric characters, plus "." and "_"). The value of the property (which must
+be defined in a properties file or on the Ant command line) will be expanded
+by GpUnit before processing the test. In order to prevent GpUnit from treating
+a name enclosed in "<%...%>" as a property to be expanded, you can use the escape
+character "\" before the opening "<". Using an escape is not necessary if you simply
+want to use a "<" or "<%" sequence in the yaml file, since GpUnit only does
+the property expansion if the full pattern "<%prop.name%>" is matched.
 
 Step 2: Declare your test suite
 A test suite is literally an ant FileSet. The easiest way to declare your test suite

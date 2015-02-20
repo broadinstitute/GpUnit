@@ -58,6 +58,10 @@ public class PropertyExpansion {
 					String newValue = bp.getSubstitutionProperty(propName);
 					match.appendReplacement(sb, newValue);
 				}
+				else {
+					String stripEscape = fullMatch.substring(1, fullMatch.length());
+					match.appendReplacement(sb, stripEscape);
+				}
 			}
 		} catch (Exception pe) {
 			throw new GpUnitException(
