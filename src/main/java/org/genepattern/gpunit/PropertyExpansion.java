@@ -56,7 +56,9 @@ public class PropertyExpansion {
 				if (!fullMatch.startsWith("\\")) {
 					String propName = match.group(1);
 					String newValue = bp.getSubstitutionProperty(propName);
-					match.appendReplacement(sb, newValue);
+					//System.out.println("Substituting: " + propName + " : " + newValue);
+					String quoted = match.quoteReplacement(newValue);
+					match.appendReplacement(sb, quoted);
 				}
 				else {
 					String stripEscape = fullMatch.substring(1, fullMatch.length());

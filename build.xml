@@ -166,6 +166,7 @@ report.dir: ${report.dir}
                 <sysproperty key="gpunit.shutdownTimeout" value="@{shutdownTimeout}" />
                 <sysproperty key="gpunit.testTimeout" value="${gpunit.testTimeout}" />
                 <sysproperty key="gpunit.jobCompletionTimeout" value="${gpunit.jobCompletionTimeout}" />
+                <sysproperty key="gpunit.testDataRoot" value="${gpunit.testDataRoot}" />
                 <syspropertyset>
                     <propertyref builtin="commandline"/>
                 </syspropertyset>
