@@ -167,6 +167,9 @@ report.dir: ${report.dir}
                 <sysproperty key="gpunit.testTimeout" value="${gpunit.testTimeout}" />
                 <sysproperty key="gpunit.jobCompletionTimeout" value="${gpunit.jobCompletionTimeout}" />
                 <sysproperty key="gpunit.testDataRoot" value="${gpunit.testDataRoot}" />
+                <sysproperty key="gpunit.properties" value="${gpunit.properties}" />
+                <!-- GpUnit uses project.basedir to find gpunit.default.properties -->
+                <sysproperty key="project.basedir" value="${project.basedir}" />
                 <syspropertyset>
                     <propertyref builtin="commandline"/>
                 </syspropertyset>
@@ -234,7 +237,7 @@ report.dir: ${report.dir}
         <ant antfile="automatrix/build.xml" target="createWar" useNativeBasedir="true" />
     </target>
 
-    <target name="gpunit-tests" depends="compile">
+    <target name="gpunit-junit-tests" depends="compile">
         <junit showoutput="true" printsummary="true" >
             <classpath>
                 <pathelement location="${gpunit.dir}/classes"/>

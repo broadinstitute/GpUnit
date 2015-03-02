@@ -208,7 +208,7 @@ public class BatchProperties {
             return System.getProperty(propName).trim();
         }
         else {
-            throw new GpUnitException("Reference to indefined property: " + propName);
+            throw new GpUnitException("Reference to undefined property: " + propName);
         }
     }
     
