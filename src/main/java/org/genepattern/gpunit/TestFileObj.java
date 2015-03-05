@@ -3,6 +3,9 @@ package org.genepattern.gpunit;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.genepattern.gpunit.test.BatchProperties;
+import org.yaml.snakeyaml.parser.ParserException;
+
 public class TestFileObj {
     private int numRows = -1;
     private int numCols = -1;
@@ -10,6 +13,19 @@ public class TestFileObj {
     //private String diffCmd = null;
     private Object diffCmd; //the value as provided in the yaml file (can be a String or a List<String>)
     private List<String> diffCmdArgs; //the value to use when validating the results (can be null)
+    private BatchProperties bp = null;
+
+    private BatchProperties getBatchProperties() {
+        if (null == bp) {
+            try {
+                bp = BatchProperties.Factory.initFromProps();
+            }
+            catch (GpUnitException gpe) {
+                throw new ParserException("Error properties during yaml parsing", null, "error intializing properties", null);
+            }
+        }
+        return bp;
+    }
 
     public int getNumRows() {
         return numRows;
@@ -26,13 +42,14 @@ public class TestFileObj {
     public String getDiff() {
         return diff;
     }
-    public void setDiff(String diff) {
-        this.diff = diff;
+    public void setDiff(String diff) throws GpUnitException {
+        PropertyExpansion pe = new PropertyExpansion();
+        this.diff = pe.expandProperties(getBatchProperties(), diff);
     }
     public Object getDiffCmd() {
         return diffCmd;
     }
-    public void setDiffCmd(Object o) {
+    public void setDiffCmd(Object o) throws GpUnitException {
         this.diffCmd = o;
         if (o instanceof List<?>) {
             //diffCmd = o;
@@ -40,7 +57,8 @@ public class TestFileObj {
         }
         else if (o instanceof String) {
             //diffCmd = o;
-            setDiffCmdFromString( (String) o);
+            PropertyExpansion pe = new PropertyExpansion();
+            setDiffCmdFromString(pe.expandProperties(getBatchProperties(), (String) o));
         }
         else {
             throw new IllegalArgumentException("diffCmd must be a String or a List<?>");
@@ -59,14 +77,15 @@ public class TestFileObj {
         }
     }
 
-    private void setDiffCmdFromList(List<?> args) {
+    private void setDiffCmdFromList(List<?> args) throws GpUnitException {
         this.diffCmdArgs = new ArrayList<String>();
+        PropertyExpansion pe = new PropertyExpansion();
         for(Object arg : args) {
             if (arg instanceof String) {
-                diffCmdArgs.add((String)arg);
+                diffCmdArgs.add(pe.expandProperties(getBatchProperties(),(String)arg));
             }
             else {
-                diffCmdArgs.add( arg.toString() );
+                diffCmdArgs.add( pe.expandProperties(getBatchProperties(), arg.toString()) );
             }
         }
     }
