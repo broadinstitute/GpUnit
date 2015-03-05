@@ -57,9 +57,9 @@ public class BatchModuleTest {
      */
     @Parameters(name="{1}")
     public static Collection<Object[]> data() throws GpUnitException {
-        if (!loadGpunitDefaultProperties())
-           loadGpunitProperties();
         
+        initProperties();
+
         Collection<Object[]> testCases;
 
         String gpunitTestcaseDirsProp = System.getProperty(BatchProperties.PROP_TESTCASE_DIRS);
@@ -76,8 +76,7 @@ public class BatchModuleTest {
             final String path="./tests/protocols"; 
             testCases=BatchModuleUtil.data(new File(path));
         }
-        
-        
+
         //validate the testCases, make sure we have a unique download dir for each test
         Set<String> testNames=new HashSet<String>();
         for(Object[] row : testCases) {
@@ -92,77 +91,77 @@ public class BatchModuleTest {
         return testCases;
     }
 
-    private static boolean loadGpunitDefaultProperties() {
-        File gpunitDefaultPropsFile=new File("gpunit.default.properties");
-        if (!gpunitDefaultPropsFile.canRead()) {
-            // ignore, only load the properties if they are in the working directory
+    /**
+     * Initialize System Properties
+     * 
+     * In order to ensure that we ALWAYS propagate any properties that:
+     *
+     *  - are not known to BatchProperties at compile time
+     *  - and are not specified on the ant *command line*
+     *  - and are not listed in gpunit.default.properties
+     *
+     * (i.e., dynamic substitution properties used in yaml that are initialized in
+     * gpunit.properties), we need to enumerate all properties specified in gpunit.properties
+     * and/or gpunit.default.properties and add them to the System properties (if they're not
+     * already there - we don't want to clobber any that were overridden on the command line
+     * or in a custom properties file). This ensures that that they'll be picked up when queried
+     * through BatchProperties.
+    */
+    private static void initProperties() throws GpUnitException {
+        String defPropFileName = null;
+        // Match what the ant script does and try to load gpunit.default.properties from the
+        // directory containing the gp-unit project (project.basedir)
+        String propBaseDirName = System.getProperty("project.basedir");
+        if (propBaseDirName == null) {
+            // "project.basedir" must be defined in the gpunit build.xml ant script
+            defPropFileName = "gpunit.default.properties";
+        }
+        else {
+            defPropFileName = propBaseDirName + File.separator + "gpunit.default.properties";
+        }
+        loadGpunitProperties(defPropFileName);
+
+        // Now load any properties from the user-defined properties file that we haven't already seen
+        String propFileName = System.getProperty("gpunit.properties");
+        if (propFileName == null) {
+            // must be defined in the gpunit build.xml ant script
+            propFileName = "gpunit.properties";
+        }
+        loadGpunitProperties(propFileName);
+    }
+
+
+    private static boolean loadGpunitProperties(String fileName) {
+        File gpunitPropsFile=new File(fileName);
+        if (!gpunitPropsFile.canRead()) {
             return false;
         }
 
         //load props from the properties file
         try {
             Properties props=new Properties();
-            props.load(new FileInputStream(gpunitDefaultPropsFile));
+            props.load(new FileInputStream(gpunitPropsFile));
             for(final Entry<Object, Object> entry : props.entrySet()) {
                 String key=(String)entry.getKey();
-                String value=(String)entry.getValue();
-                System.setProperty(key, value);
-                // workaround for the way test cases are declared, one way in the properties file and another from ant
+                String value = null;
+                if (!System.getProperties().containsKey(key)) {
+                    // add the new value
+                    value = (String)entry.getValue();
+                    System.setProperty(key, value);
+                }
+                else { // don't clobber existing values as they may contain property references that have been expanded by ant
+                    value = System.getProperty(key);
+                } 
                 if ("gpunit.testfolder".equals(key)) {
+                    // workaround for the way test cases are declared, one way in the properties file and another from ant
                     System.setProperty(BatchProperties.PROP_TESTCASE_DIRS, value);
                 }
             }
         }
         catch (Exception e) {
-            Assert.fail("Error loading properties from "+gpunitDefaultPropsFile+": "+e.getLocalizedMessage());
+            Assert.fail("Error loading properties from "+gpunitPropsFile+": "+e.getLocalizedMessage());
         }
         return true;
-    }
-
-    /**
-     * In order to ensure that we ALWAYS propagate any properties that:
-     *
-     * 	- are not known to BatchProperties at compile time
-     *  - and are not specified on the ant *command line*
-     *  - and are not listed in gpunit.default.properties
-     *
-     * (i.e., dynamic substitution properties used in yaml that are initialized in
-     * gpunit.properties), we need to enumerate all properties specified in gpunit.properties
-     * and add them to the System properties (if they're not already there - we don't want to
-     * clobber any that were overridden on the commmand line or in a custom properties file).
-     * This ensures that that they'll be picked up when queried through BatchProperties.
-     *
-     * NOTE: this also fixes a bug whereby gpunit.testfolder is ignored if it is set in
-     * gpunit.properties the tests are not run through ant (i.e., from Eclipse).
-    */
-    private static void loadGpunitProperties() {
-        File gpunitDefaultPropsFile=new File("gpunit.properties");
-        if (!gpunitDefaultPropsFile.canRead()) {
-            // ignore, only load the properties if they are in the working directory
-            return;
-        }
-
-        //load props from the properties file
-        try {
-            Properties props=new Properties();
-            props.load(new FileInputStream(gpunitDefaultPropsFile));
-            for(final Entry<Object, Object> entry : props.entrySet()) {
-                String key=(String)entry.getKey();
-                String value=(String)entry.getValue();
-                if (!System.getProperties().containsKey(key)) {
-                    // don't clobber existing values; only add new properties
-                    if ("gpunit.testfolder".equals(key)) {
-                        // workaround for the way test cases are declared, one way in the properties file and another from ant
-                        System.setProperty(BatchProperties.PROP_TESTCASE_DIRS, value);
-                    } else {
-                         System.setProperty(key, value);
-                    }
-                }
-            }
-        }
-        catch (Exception e) {
-            Assert.fail("Error loading properties from "+gpunitDefaultPropsFile+": "+e.getLocalizedMessage());
-        }
     }
 
     protected int getTestTimeout() {

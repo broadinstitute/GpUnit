@@ -1,7 +1,9 @@
 package org.genepattern.gpunit;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.genepattern.gpunit.test.BatchProperties;
@@ -78,21 +80,32 @@ public class ModuleTestObject {
         Map<String, Object> expandedParams = new HashMap<String, Object>();
         PropertyExpansion pe = new PropertyExpansion();
 
-        for (String k : inputParams.keySet())
-        {
-            Object v = inputParams.get(k);
-            if (v instanceof String)
-            {
-                try {
+        try {
+            for (String k : inputParams.keySet()) {
+                Object v = inputParams.get(k);
+                if (v instanceof String) {
                     expandedParams.put(k, pe.expandProperties(getBatchProperties(), (String) v));
                 }
-                catch (GpUnitException gpe) {
-                    throw new IllegalArgumentException(gpe.getLocalizedMessage());
-	            }
+                else if (v instanceof List<?>) {
+                    List<Object> newList = new ArrayList<Object>();
+                    List<?> oldList = (List<?>) v;
+                    for(Object val : oldList) {
+                        if (val instanceof String) {
+                            newList.add(pe.expandProperties(getBatchProperties(), (String) val));
+                        }
+                        else {
+                            newList.add(val);
+                        }
+                    }
+                    expandedParams.put(k,  newList);
+                }
+                else {
+                    expandedParams.put(k, v);
+                }
             }
-            else {
-                expandedParams.put(k, v);
-            }
+        }
+        catch (GpUnitException gpe) {
+            throw new IllegalArgumentException(gpe.getLocalizedMessage());
         }
         this.params = expandedParams;
     }
