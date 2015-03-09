@@ -237,7 +237,7 @@ report.dir: ${report.dir}
         <ant antfile="automatrix/build.xml" target="createWar" useNativeBasedir="true" />
     </target>
 
-    <target name="gpunit-junit-tests" depends="compile">
+    <target name="gpunit-junit-tests" depends="package">
         <junit showoutput="true" printsummary="true" >
             <classpath>
                 <pathelement location="${gpunit.dir}/classes"/>
