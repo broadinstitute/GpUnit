@@ -15,6 +15,7 @@ import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.exec.rest.RestClientUtil;
 import org.genepattern.gpunit.exec.soap.SoapClientUtil;
 import org.genepattern.util.junit.Parallelized;
+import org.genepattern.gpunit.ModuleTestObject;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -61,12 +62,12 @@ public class BatchModuleTest {
         initProperties();
 
         Collection<Object[]> testCases;
-
         String gpunitTestcaseDirsProp = System.getProperty(BatchProperties.PROP_TESTCASE_DIRS);
         if (gpunitTestcaseDirsProp != null) { 
             //parse the list of one or more test cases
             List<File> fileset = new ArrayList<File>();
             String[] testCaseDirs = gpunitTestcaseDirsProp.split(Pattern.quote(File.pathSeparator));
+
             for(String testCaseDir : testCaseDirs) {
                 fileset.add(new File(testCaseDir));
             }
@@ -77,18 +78,40 @@ public class BatchModuleTest {
             testCases=BatchModuleUtil.data(new File(path));
         }
 
+        uniqueifyTestCaseNames(testCases);
+
+        return testCases;
+    }
+
+    /**
+     * Since we use the testcase names as the names of the folder for jobResults, we need to
+     * ensure that all the names are unique. When running against large test sets, we hit cases
+     * where we have tests with identical names in parallel folders so we uniqueify the names
+     * to avoid name collision.
+     */
+    private static void uniqueifyTestCaseNames(Collection<Object[]> testCases) throws GpUnitException {
         //validate the testCases, make sure we have a unique download dir for each test
         Set<String> testNames=new HashSet<String>();
         for(Object[] row : testCases) {
             final BatchModuleTestObject batchTestObj=(BatchModuleTestObject) row[1];
             final String testName=batchTestObj.getTestName();
-            boolean added=testNames.add(testName);
-            if (!added) {
-                //error, duplicate testName
-                throw new GpUnitException("Error duplicate testName, testName="+testName+", testFile="+batchTestObj.getTestFile().getAbsolutePath());
+            String uniqueName = testName;
+            for (int count = 2; !testNames.add(uniqueName); count++) {
+                uniqueName = testName + "_" + Integer.toString(count);
             }
+            if (!testName.equals(uniqueName)) {  // update the testcase name with the new unique name
+               ModuleTestObject testCase = batchTestObj.getTestCase();
+               if (null != testCase) {
+                   testCase.setName(uniqueName);
+               }
+               else if (null == batchTestObj.getInitException()) {
+                   // error, there is no valid testcase, but no Exception was generated during initialization
+                   throw new GpUnitException("Error processing test names for file: testName="+testName+", testFile="+batchTestObj.getTestFile().getAbsolutePath());
+               }
+               // otherwise since this testcase already has an init exception (i.e., it might be a .yaml file that isn't a test),
+               // the test representing it will fail and not execute anyway
+           }
         }
-        return testCases;
     }
 
     /**
@@ -137,24 +160,35 @@ public class BatchModuleTest {
             return false;
         }
 
-        //load props from the properties file
+        // load props from the properties file
         try {
             Properties props=new Properties();
             props.load(new FileInputStream(gpunitPropsFile));
             for(final Entry<Object, Object> entry : props.entrySet()) {
                 String key=(String)entry.getKey();
-                String value = null;
-                if (!System.getProperties().containsKey(key)) {
-                    // add the new value
-                    value = (String)entry.getValue();
-                    System.setProperty(key, value);
-                }
-                else { // don't clobber existing values as they may contain property references that have been expanded by ant
-                    value = System.getProperty(key);
-                } 
+                String value = (String)entry.getValue();
+
+                // special handling to account for the way test cases are declared, one way in the properties file and
+                // another from ant...if the antfile has specified gpunit.testcase.dirs, that takes precedence over
+                // gpunit.testfolder, so don't overwrite it
                 if ("gpunit.testfolder".equals(key)) {
-                    // workaround for the way test cases are declared, one way in the properties file and another from ant
-                    System.setProperty(BatchProperties.PROP_TESTCASE_DIRS, value);
+                    String testDirs = System.getProperty(BatchProperties.PROP_TESTCASE_DIRS);
+                    String testFolder = System.getProperty("gpunit.testfolder");
+                    if (null == testDirs) {
+                        // this path will normally only be taken when the tests are not being run
+                        // through the run-tests macro in build.xml, since it sets the gpunit.testdirs
+                        // property
+                        if (null == testFolder) {  // propagate the new value from the properties file
+                            System.setProperty(BatchProperties.PROP_TESTCASE_DIRS, value);
+                            System.setProperty("gpunit.testfolder", value);
+                        }
+                        else {  // take the existing testFolder value found in the environment
+                            System.setProperty(BatchProperties.PROP_TESTCASE_DIRS, testFolder);
+                        }
+                    }
+                }
+                else if (!System.getProperties().containsKey(key)) {
+                    System.setProperty(key, value);
                 }
             }
         }

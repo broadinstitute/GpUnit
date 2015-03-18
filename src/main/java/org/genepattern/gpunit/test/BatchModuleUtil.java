@@ -89,30 +89,6 @@ public class BatchModuleUtil {
     }
 
     /**
-     * This filter matches all files which end in 'test.yml' or 'test.yaml' as well as
-     * all 'gp_execution_log.txt' files.
-     *
-     */
-    final static public FileFilter testcaseFileFilter0 = new FileFilter() {
-        public boolean accept(File arg0) {
-            if (arg0.isDirectory()) {
-                return true;
-            }
-            String filenameKey = arg0.getName().toLowerCase();
-            if (filenameKey.endsWith("test.yml")) {
-                return true;
-            }
-            if (filenameKey.endsWith("test.yaml")) {
-                return true;
-            }
-            if (filenameKey.equals("gp_execution_log.txt")) {
-                return true;
-            }
-            return false;
-        }
-    };
-
-    /**
      * This filter matches all '*.yml' and '*.yaml' files as well as
      * all 'gp_execution_log.txt' files.
      */
