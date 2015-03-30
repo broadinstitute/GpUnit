@@ -102,10 +102,10 @@ public class CmdLineDiff extends AbstractDiffTest {
 
     @Override
     public void diff() {
-        boolean hasDiff = true;
+        int exitCode = 2;
         boolean interrupted = false;
         try {
-            hasDiff = hasDiff(expected,actual);
+            exitCode = hasDiff(expected,actual);
         }
         catch (InterruptedException e) {
             interrupted = true;
@@ -113,25 +113,20 @@ public class CmdLineDiff extends AbstractDiffTest {
         }
         catch (IOException e) {
             e.printStackTrace();
-            Assert.fail("job #"+jobId+", Error in diff( '"+expected.getPath()+"', '"+actual.getPath()+"' ): " +e.getLocalizedMessage());
+            Assert.fail("job #"+jobId+", Error executing diff( '"+expected.getPath()+"', '"+actual.getPath()+"' ): " +e.getLocalizedMessage());
         }
         if (interrupted) {
             Assert.fail("job #"+jobId+", diff command was interrupted.");
         }
-        if (hasDiff) {
-            Assert.fail("job #"+jobId+", Files differ, '"+expected.getPath()+"', '"+actual.getPath()+"'");
-        } 
+        else if (exitCode != 0) {
+            Assert.fail("job #"+jobId+", Error executing diff (return code: " + Integer.toString(exitCode) + "), '"+expected.getPath()+"', '"+actual.getPath()+"'");
+        }
     }
     
-    private boolean hasDiff(File expected, File actual) throws InterruptedException, IOException {
+    private int hasDiff(File expected, File actual) throws InterruptedException, IOException {
         String[] cmd = getCmdLine();
         Runtime runtime = Runtime.getRuntime();
         Process process = runtime.exec(cmd);
-        int exitCode = process.waitFor();
-        if (exitCode == 0) {
-            return false;
-        }
-        return true;
+        return process.waitFor();
     }
-
 }
