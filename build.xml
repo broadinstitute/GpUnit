@@ -294,7 +294,10 @@ report.dir: ${report.dir}
               <include name="${module.tests.dir}/HierarchicalClustering/v6/gpunit/row_oriented/valid_pset_7_test.yml" />
               <include name="${module.tests.dir}/HierarchicalClustering/v6/gpunit/row_oriented/valid_pset_8_test.yml" />
         </fileset>
-        <property name="short.nightly.tests" refid="short.tests" />
+        <!-- We shouldn't have to use pathconvert here, but if we don't, the fileset will contain a ";" as a pathseparator -->
+        <!-- on both windows and Linunx, so GpUnit will fail to parse these properly on Linux since it uses the JVM -->
+        <!-- File.pathSeparator static as the delimter. -->
+	    <pathconvert property="short.nightly.tests" refid="short.tests" />
         <echo>Running Short Nightly Tests: ${short.nightly.tests}</echo>
         <run-tests
             testcases="${short.nightly.tests}"
