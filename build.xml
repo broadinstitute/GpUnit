@@ -253,28 +253,55 @@ report.dir: ${report.dir}
         </junit>
     </target>
 
-    <!-- Test category "Short Running Modules Tests" -->
-	<!-- Once the protocol for how we organize these is established, these targets will be moved into separate build file -->
+    <!-- We want to clone repositories for newly added modules and checkout/fetch any existing ones" -->
     <property name="module.tests.dir" value="ModuleTests" />
+	<macrodef name="fetch-test">
+        <attribute name="git.organization.url" default="https://github.com/genepattern" />
+		<attribute name="git.repo.name" />
+		<attribute name="git.branch.name" default="master" />
+        <sequential>
+            <echo>Fetching tests from remote repository: '@{git.organization.url}/@{git.repo.name}' (branch '@{git.branch.name}')</echo>
+            <exec executable="git" dir="${module.tests.dir}" failonerror="false" >
+                <arg line="clone" />
+                <arg line="-b @{git.branch.name}" />
+               <arg line="@{git.organization.url}/@{git.repo.name}.git"/>
+                <arg line="@{git.repo.name}" />
+             </exec>
+            <exec executable="git" dir="${module.tests.dir}/@{git.repo.name}">
+                <arg line="fetch" />
+            </exec>
+        </sequential>
+    </macrodef>
+
+    <!-- Test category "Short Running Modules Tests" -->
+	<!-- Once the protocol for how we organize these is established, these targets will be moved into a separate build file -->
     <target name="checkout-short-nightly-tests" depends="package">
-       <mkdir dir="${module.tests.dir}" />
-        <exec executable="git">
-            <arg line="clone" />
-            <arg line="https://github.com/genepattern/ComparativeMarkerSelection.git"/>
-            <arg line="${module.tests.dir}/ComparativeMarkerSelection" />
-        </exec>
-        <exec executable="git">
-            <arg line="clone" />
-            <arg line="https://github.com/genepattern/HierarchicalClustering.git"/>
-            <arg line="${module.tests.dir}/HierarchicalClustering" />
-        </exec>
-    </target>
+        <mkdir dir="${module.tests.dir}" />
+        <fetch-test git.repo.name="ComparativeMarkerSelection" />
+        <fetch-test git.repo.name="ExpressionFileCreator" />
+        <fetch-test git.repo.name="HierarchicalClustering" />
+     </target>
 
     <!-- Should depend on checkout-short-nightly-tests, but we need a target that doesn't assume connectivity to git -->
 	<target name="run-short-nightly-tests" depends="package">
         <fileset id="short.tests" dir="${gpunit.dir}">
             <!-- ComparativeMarkerSelection v10 -->
               <include name="${module.tests.dir}/ComparativeMarkerSelection/v10/gpunit/DefaultSmokeTest_Protocol/valid_pset_1_test.yml" />
+            <!-- ExpressionFileCreator - v13 -->
+              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/invalid_AP_noMM_test" />
+              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/invalid_GCRMA_and_CDF_test" />
+              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/RT150777_regression_test" />
+              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/valid_pset_1_test.yml" />
+              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/valid_pset_2_test.yml" />
+              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/valid_pset_4_test.yml" />
+              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/valid_pset_5_test.yml" />
+              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/valid_pset_6_test.yml" />
+              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/valid_pset_9_test.yml" />
+              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/valid_pset_10_test.yml" />
+              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/valid_pset_11_test.yml" />
+              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/valid_pset_12_test.yml" />
+              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/valid_pset_13_test.yml" />
+              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/valid_pset_14_test.yml" />
             <!-- HierarchicalClustering - v6 ColOriented -->
               <include name="${module.tests.dir}/HierarchicalClustering/v6/gpunit/col_oriented/valid_pset_1_test.yml" />
               <include name="${module.tests.dir}/HierarchicalClustering/v6/gpunit/col_oriented/valid_pset_2_test.yml" />
