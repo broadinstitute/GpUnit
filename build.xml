@@ -280,6 +280,7 @@ report.dir: ${report.dir}
         <pull-test git.repo.name="ComparativeMarkerSelection" />
         <pull-test git.repo.name="ExpressionFileCreator" />
         <pull-test git.repo.name="HierarchicalClustering" />
+        <pull-test git.repo.name="TopHat" />
      </target>
 
     <!-- Should depend on checkout-short-nightly-tests, but we need a target that doesn't assume connectivity to git -->
@@ -287,7 +288,8 @@ report.dir: ${report.dir}
         <fileset id="short.tests" dir="${gpunit.dir}">
             <!-- ComparativeMarkerSelection v10 -->
               <include name="${module.tests.dir}/ComparativeMarkerSelection/v10/gpunit/DefaultSmokeTest_Protocol/valid_pset_1_test.yml" />
-            <!-- ExpressionFileCreator - v13 -->
+        	<!-- ExpressionFileCreator - v13 -->
+            <!--
               <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/invalid_AP_noMM_test" />
               <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/invalid_GCRMA_and_CDF_test" />
               <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/RT150777_regression_test" />
@@ -302,6 +304,7 @@ report.dir: ${report.dir}
               <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/valid_pset_12_test.yml" />
               <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/valid_pset_13_test.yml" />
               <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/valid_pset_14_test.yml" />
+            -->
             <!-- HierarchicalClustering - v6 ColOriented -->
               <include name="${module.tests.dir}/HierarchicalClustering/v6/gpunit/col_oriented/valid_pset_1_test.yml" />
               <include name="${module.tests.dir}/HierarchicalClustering/v6/gpunit/col_oriented/valid_pset_2_test.yml" />
@@ -320,6 +323,24 @@ report.dir: ${report.dir}
               <include name="${module.tests.dir}/HierarchicalClustering/v6/gpunit/row_oriented/valid_pset_6_test.yml" />
               <include name="${module.tests.dir}/HierarchicalClustering/v6/gpunit/row_oriented/valid_pset_7_test.yml" />
               <include name="${module.tests.dir}/HierarchicalClustering/v6/gpunit/row_oriented/valid_pset_8_test.yml" />
+            <!-- TopHat v9 -->
+            <!--
+              <include name="${module.tests.dir}/TopHat/v9/gpunit/valid_pset_1_test.yml" />
+              <include name="${module.tests.dir}/TopHat/v9/gpunit/valid_pset_2_test.yml" />
+              <include name="${module.tests.dir}/TopHat/v9/gpunit/valid_pset_3_test.yml" />
+              <include name="${module.tests.dir}/TopHat/v9/gpunit/valid_pset_4_test.yml" />
+              <include name="${module.tests.dir}/TopHat/v9/gpunit/valid_pset_5_test.yml" />
+              <include name="${module.tests.dir}/TopHat/v9/gpunit/valid_pset_6_test.yml" />
+              <include name="${module.tests.dir}/TopHat/v9/gpunit/valid_pset_7_test.yml" />
+              <include name="${module.tests.dir}/TopHat/v9/gpunit/valid_pset_8_test.yml" />
+              <include name="${module.tests.dir}/TopHat/v9/gpunit/valid_pset_9_test.yml" />
+              <include name="${module.tests.dir}/TopHat/v9/gpunit/valid_pset_10_test.yml" />
+              <include name="${module.tests.dir}/TopHat/v9/gpunit/valid_pset_11_test.yml" />
+              <include name="${module.tests.dir}/TopHat/v9/gpunit/valid_pset_12_test.yml" />
+              <include name="${module.tests.dir}/TopHat/v9/gpunit/valid_pset_13_test.yml" />
+              <include name="${module.tests.dir}/TopHat/v9/gpunit/valid_pset_14_test.yml" />
+              <include name="${module.tests.dir}/TopHat/v9/gpunit/valid_pset_15_test.yml" />
+            -->
         </fileset>
         <!-- We shouldn't have to use pathconvert here, but if we don't, the fileset will contain a ";" as a pathseparator -->
         <!-- on both windows and Linunx, so GpUnit will fail to parse these properly on Linux since it uses the JVM -->
