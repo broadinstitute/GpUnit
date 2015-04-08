@@ -253,14 +253,14 @@ report.dir: ${report.dir}
         </junit>
     </target>
 
-    <!-- We want to clone repositories for newly added modules and checkout/fetch any existing ones" -->
+    <!-- We want to clone repositories for newly added modules and checkout/pull any existing ones" -->
     <property name="module.tests.dir" value="ModuleTests" />
-	<macrodef name="fetch-test">
+	<macrodef name="pull-test">
         <attribute name="git.organization.url" default="https://github.com/genepattern" />
 		<attribute name="git.repo.name" />
 		<attribute name="git.branch.name" default="master" />
         <sequential>
-            <echo>Fetching tests from remote repository: '@{git.organization.url}/@{git.repo.name}' (branch '@{git.branch.name}')</echo>
+            <echo>Pulling tests from remote repository: '@{git.organization.url}/@{git.repo.name}' (branch '@{git.branch.name}')</echo>
             <exec executable="git" dir="${module.tests.dir}" failonerror="false" >
                 <arg line="clone" />
                 <arg line="-b @{git.branch.name}" />
@@ -268,7 +268,7 @@ report.dir: ${report.dir}
                 <arg line="@{git.repo.name}" />
              </exec>
             <exec executable="git" dir="${module.tests.dir}/@{git.repo.name}">
-                <arg line="fetch" />
+                <arg line="pull" />
             </exec>
         </sequential>
     </macrodef>
@@ -277,13 +277,13 @@ report.dir: ${report.dir}
 	<!-- Once the protocol for how we organize these is established, these targets will be moved into a separate build file -->
     <target name="checkout-short-nightly-tests" depends="package">
         <mkdir dir="${module.tests.dir}" />
-        <fetch-test git.repo.name="ComparativeMarkerSelection" />
-        <fetch-test git.repo.name="ExpressionFileCreator" />
-        <fetch-test git.repo.name="HierarchicalClustering" />
+        <pull-test git.repo.name="ComparativeMarkerSelection" />
+        <pull-test git.repo.name="ExpressionFileCreator" />
+        <pull-test git.repo.name="HierarchicalClustering" />
      </target>
 
     <!-- Should depend on checkout-short-nightly-tests, but we need a target that doesn't assume connectivity to git -->
-	<target name="run-short-nightly-tests" depends="package">
+    <target name="run-short-nightly-tests" depends="package">
         <fileset id="short.tests" dir="${gpunit.dir}">
             <!-- ComparativeMarkerSelection v10 -->
               <include name="${module.tests.dir}/ComparativeMarkerSelection/v10/gpunit/DefaultSmokeTest_Protocol/valid_pset_1_test.yml" />
