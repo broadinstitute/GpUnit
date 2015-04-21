@@ -1,7 +1,7 @@
 #04_Prediction_wv_evaluate.html
 module: WeightedVoting
 params:
-    saved.model.filename: <%gpunit.testDataRoot%>/protocols/all_aml_train.preprocessed.wv.model.odf
-    test.filename: <%gpunit.testDataRoot%>/all_aml/all_aml_test.gct
-    test.class.filename: <%gpunit.testDataRoot%>/all_aml/all_aml_test.cls         
+    saved.model.filename: <%gpunit.gpData%>/protocols/all_aml_train.preprocessed.wv.model.odf
+    test.filename: <%gpunit.gpData%>/all_aml/all_aml_test.gct
+    test.class.filename: <%gpunit.gpData%>/all_aml/all_aml_test.cls         
 

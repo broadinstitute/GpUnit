@@ -1,5 +1,5 @@
 #04_Prediction_cart_one.html
 module: PreprocessDataset
 params:
-    input.filename: <%gpunit.testDataRoot%>/all_aml/all_aml_test.gct
+    input.filename: <%gpunit.gpData%>/all_aml/all_aml_test.gct
 

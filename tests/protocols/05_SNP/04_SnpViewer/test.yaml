@@ -1,5 +1,5 @@
 module: SnpViewer
 params:
-    dataset.filename: <%gpunit.testDataRoot%>/protocols/GISTIC_Hind_subset.xcorrected.xcn
-    sample.info.filename: <%gpunit.testDataRoot%>/gistic/sample_info_subset.txt
-    sample.list.filename: <%gpunit.testDataRoot%>/gistic/sample_list_subset.txt
+    dataset.filename: <%gpunit.gpData%>/protocols/GISTIC_Hind_subset.xcorrected.xcn
+    sample.info.filename: <%gpunit.gpData%>/gistic/sample_info_subset.txt
+    sample.list.filename: <%gpunit.gpData%>/gistic/sample_list_subset.txt

@@ -1,6 +1,6 @@
 #04_Prediction_cart_one.html
 module: CARTXValidation
 params:
-    data.filename: <%gpunit.testDataRoot%>/protocols/all_aml_test.preprocessed.gct
-    cls.filename: <%gpunit.testDataRoot%>/all_aml/all_aml_test.cls
+    data.filename: <%gpunit.gpData%>/protocols/all_aml_test.preprocessed.gct
+    cls.filename: <%gpunit.gpData%>/all_aml/all_aml_test.cls
 

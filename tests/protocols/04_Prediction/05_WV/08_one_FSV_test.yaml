@@ -1,5 +1,5 @@
 #04_Prediction_wv_one.html
 module: FeatureSummaryViewer
 params:
-    feature.filename: <%gpunit.testDataRoot%>/protocols/all_aml_train.preprocessed.wvx.feat.odf
+    feature.filename: <%gpunit.gpData%>/protocols/all_aml_train.preprocessed.wvx.feat.odf
 

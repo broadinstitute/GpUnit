@@ -1,6 +1,6 @@
 #04_Prediction_wv_two.html
 module: WeightedVotingXValidation
 params:
-    data.filename: <%gpunit.testDataRoot%>/protocols/all_aml_train.preprocessed.gct
-    class.filename: <%gpunit.testDataRoot%>/all_aml/all_aml_train.cls
+    data.filename: <%gpunit.gpData%>/protocols/all_aml_train.preprocessed.gct
+    class.filename: <%gpunit.gpData%>/all_aml/all_aml_train.cls
 

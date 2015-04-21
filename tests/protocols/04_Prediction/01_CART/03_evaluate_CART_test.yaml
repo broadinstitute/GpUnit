@@ -1,7 +1,7 @@
 #04_Prediction_cart_evaluate.html:
 module: CART
 params:
-    saved.model.filename: <%gpunit.testDataRoot%>/protocols/all_aml_train.cart.model
-    test.data.filename: <%gpunit.testDataRoot%>/all_aml/all_aml_test.gct
-    test.cls.filename: <%gpunit.testDataRoot%>/all_aml/all_aml_test.cls         
+    saved.model.filename: <%gpunit.gpData%>/protocols/all_aml_train.cart.model
+    test.data.filename: <%gpunit.gpData%>/all_aml/all_aml_test.gct
+    test.cls.filename: <%gpunit.gpData%>/all_aml/all_aml_test.cls         
 

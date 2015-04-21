@@ -1,4 +1,4 @@
 module: XChromosomeCorrect
 params:
-    snp.filename: <%gpunit.testDataRoot%>/protocols/GISTIC_Hind_subset.snp
-    sample.info.filename: <%gpunit.testDataRoot%>/gistic/sample_info_subset.txt
+    snp.filename: <%gpunit.gpData%>/protocols/GISTIC_Hind_subset.snp
+    sample.info.filename: <%gpunit.gpData%>/gistic/sample_info_subset.txt

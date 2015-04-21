@@ -2,7 +2,7 @@
 # Job: 16232    server:  http://gpdev.broadinstitute.org/gp/
 module: ConsensusClustering
 params: 
-    input.filename: <%gpunit.testDataRoot%>/protocols/all_aml_test.preprocessed.gct
+    input.filename: <%gpunit.gpData%>/protocols/all_aml_test.preprocessed.gct
     kmax: 5
     resampling.iterations: 20
     seed.value: 12345
