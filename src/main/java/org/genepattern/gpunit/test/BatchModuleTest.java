@@ -66,6 +66,10 @@ public class BatchModuleTest {
         if (gpunitTestcaseDirsProp != null) { 
             //parse the list of one or more test cases
             List<File> fileset = new ArrayList<File>();
+            // File.pathSeparator returns ";" on Windows and ":" on Linux, but ant filesets have ";"
+            // as the separator on both platforms unless you use the pathconvert task.  That causes ant
+            // to transform the separator to match the value returned by this call. So in order for
+            // this to work the fileset must have been transformed by pathconvert.
             String[] testCaseDirs = gpunitTestcaseDirsProp.split(Pattern.quote(File.pathSeparator));
 
             for(String testCaseDir : testCaseDirs) {

@@ -119,7 +119,8 @@ public class CmdLineDiff extends AbstractDiffTest {
             Assert.fail("job #"+jobId+", diff command was interrupted.");
         }
         else if (exitCode != 0) {
-            Assert.fail("job #"+jobId+", Error executing diff (return code: " + Integer.toString(exitCode) + "), '"+expected.getPath()+"', '"+actual.getPath()+"'");
+            String[] cmd = getCmdLine();
+            Assert.fail("job #"+jobId+", Error executing diff ((cmd.toString()) return code: " + Integer.toString(exitCode) + "), '"+expected.getPath()+"', '"+actual.getPath()+"'");
         }
     }
     

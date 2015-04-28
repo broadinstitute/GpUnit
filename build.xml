@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="gp-unit" default="package">
-    <!-- Always load the 'gpunit.default.properties' file first -->
     <dirname property="project.basedir" file="${ant.file.gp-unit}"/>
     <property file="${project.basedir}/gpunit.default.properties" />
-    <!-- 
-      - Then load the gpunit.properties file, which can be optionally be
-      - replaced with a different file, e.g.
-      -  '-Dgpunit.properties=my.gpunit.properties' 
-     -->
     <property name="gpunit.dir" location="./" />
+    <!-- 
+      - Always load the 'gpunit.default.properties' file first, then
+      - load the gpunit.properties file, which can be optionally be
+      - replaced with a different file, e.g.
+      -      '-Dgpunit.properties=my.gpunit.properties'
+      - NOTE: The GpUnit code in BatchProperties.java implements this
+      - same behavior (loading gpunit.default.properties followed by
+      - whatever other file is specified). Any change to the sequence
+      - made here should be reflected there as well.
+     -->
     <property name="gpunit.properties" value="gpunit.properties" />
     <property file="${gpunit.properties}" />
 
@@ -40,10 +44,9 @@
     </path>
 
     <target name="init">
-<echo>initializing directories ...
-local.dir: ${local.dir}
-report.dir: ${report.dir} 
-</echo>
+        <echo>initializing directories ... </echo>
+        <echo>local.dir: ${local.dir} </echo>
+        <echo>report.dir: ${report.dir} </echo>
 
         <tstamp />
         <mkdir dir="${gpunit.dir}/classes" />
@@ -147,7 +150,6 @@ report.dir: ${report.dir}
                 <test name="org.genepattern.gpunit.test.BatchModuleTest" outfile="TEST-all" todir="${report.run.dir}"/>
                 <classpath refid="gpunit.classpath" />
                 <sysproperty key="gpunit.testcase.dirs" value="@{testcases}" />
-                
 
                 <sysproperty key="genePatternUrl" value="${gp.url}" />
                 <sysproperty key="username" value="${gp.user}" />
@@ -166,7 +168,6 @@ report.dir: ${report.dir}
                 <sysproperty key="gpunit.shutdownTimeout" value="@{shutdownTimeout}" />
                 <sysproperty key="gpunit.testTimeout" value="${gpunit.testTimeout}" />
                 <sysproperty key="gpunit.jobCompletionTimeout" value="${gpunit.jobCompletionTimeout}" />
-                <sysproperty key="gpunit.testDataRoot" value="${gpunit.testDataRoot}" />
                 <sysproperty key="gpunit.properties" value="${gpunit.properties}" />
                 <!-- GpUnit uses project.basedir to find gpunit.default.properties -->
                 <sysproperty key="project.basedir" value="${project.basedir}" />
@@ -282,29 +283,26 @@ report.dir: ${report.dir}
         <pull-test git.repo.name="HierarchicalClustering" />
         <pull-test git.repo.name="TopHat" />
      </target>
-
     <!-- Should depend on checkout-short-nightly-tests, but we need a target that doesn't assume connectivity to git -->
     <target name="run-short-nightly-tests" depends="package">
         <fileset id="short.tests" dir="${gpunit.dir}">
             <!-- ComparativeMarkerSelection v10 -->
               <include name="${module.tests.dir}/ComparativeMarkerSelection/v10/gpunit/DefaultSmokeTest_Protocol/valid_pset_1_test.yml" />
-        	<!-- ExpressionFileCreator - v13 -->
-            <!--
-              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/invalid_AP_noMM_test" />
-              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/invalid_GCRMA_and_CDF_test" />
-              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/RT150777_regression_test" />
-              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/valid_pset_1_test.yml" />
-              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/valid_pset_2_test.yml" />
-              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/valid_pset_4_test.yml" />
-              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/valid_pset_5_test.yml" />
-              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/valid_pset_6_test.yml" />
-              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/valid_pset_9_test.yml" />
-              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/valid_pset_10_test.yml" />
-              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/valid_pset_11_test.yml" />
-              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/valid_pset_12_test.yml" />
-              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/valid_pset_13_test.yml" />
-              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/valid_pset_14_test.yml" />
-            -->
+            <!-- ExpressionFileCreator - v13 smoke tests only -->
+              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/smoke_invalid_AP_noMM_test.yml" />
+              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/smoke_invalid_GCRMA_and_CDF_test.yml" />
+              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/smoke_RT150777_regression_test.yml" />
+              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/smoke_valid_pset_1_test.yml" />
+              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/smoke_valid_pset_2_test.yml" />
+              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/smoke_valid_pset_4_test.yml" />
+              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/smoke_valid_pset_5_test.yml" />
+              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/smoke_valid_pset_6_test.yml" />
+              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/smoke_valid_pset_9_test.yml" />
+              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/smoke_valid_pset_10_test.yml" />
+              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/smoke_valid_pset_11_test.yml" />
+              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/smoke_valid_pset_12_test.yml" />
+              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/smoke_valid_pset_13_test.yml" />
+              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/smoke_valid_pset_14_test.yml" />
             <!-- HierarchicalClustering - v6 ColOriented -->
               <include name="${module.tests.dir}/HierarchicalClustering/v6/gpunit/col_oriented/valid_pset_1_test.yml" />
               <include name="${module.tests.dir}/HierarchicalClustering/v6/gpunit/col_oriented/valid_pset_2_test.yml" />
@@ -324,27 +322,26 @@ report.dir: ${report.dir}
               <include name="${module.tests.dir}/HierarchicalClustering/v6/gpunit/row_oriented/valid_pset_7_test.yml" />
               <include name="${module.tests.dir}/HierarchicalClustering/v6/gpunit/row_oriented/valid_pset_8_test.yml" />
             <!-- TopHat v9 -->
-            <!--
-              <include name="${module.tests.dir}/TopHat/v9/gpunit/valid_pset_1_test.yml" />
-              <include name="${module.tests.dir}/TopHat/v9/gpunit/valid_pset_2_test.yml" />
-              <include name="${module.tests.dir}/TopHat/v9/gpunit/valid_pset_3_test.yml" />
-              <include name="${module.tests.dir}/TopHat/v9/gpunit/valid_pset_4_test.yml" />
-              <include name="${module.tests.dir}/TopHat/v9/gpunit/valid_pset_5_test.yml" />
-              <include name="${module.tests.dir}/TopHat/v9/gpunit/valid_pset_6_test.yml" />
-              <include name="${module.tests.dir}/TopHat/v9/gpunit/valid_pset_7_test.yml" />
-              <include name="${module.tests.dir}/TopHat/v9/gpunit/valid_pset_8_test.yml" />
-              <include name="${module.tests.dir}/TopHat/v9/gpunit/valid_pset_9_test.yml" />
-              <include name="${module.tests.dir}/TopHat/v9/gpunit/valid_pset_10_test.yml" />
-              <include name="${module.tests.dir}/TopHat/v9/gpunit/valid_pset_11_test.yml" />
-              <include name="${module.tests.dir}/TopHat/v9/gpunit/valid_pset_12_test.yml" />
-              <include name="${module.tests.dir}/TopHat/v9/gpunit/valid_pset_13_test.yml" />
-              <include name="${module.tests.dir}/TopHat/v9/gpunit/valid_pset_14_test.yml" />
-              <include name="${module.tests.dir}/TopHat/v9/gpunit/valid_pset_15_test.yml" />
-            -->
+              <include name="${module.tests.dir}/TopHat/v9/gpunit/smoke_valid_pset_1_test.yml" />
+              <include name="${module.tests.dir}/TopHat/v9/gpunit/smoke_valid_pset_2_test.yml" />
+              <include name="${module.tests.dir}/TopHat/v9/gpunit/smoke_valid_pset_3_test.yml" />
+              <include name="${module.tests.dir}/TopHat/v9/gpunit/smoke_valid_pset_4_test.yml" />
+              <include name="${module.tests.dir}/TopHat/v9/gpunit/smoke_valid_pset_5_test.yml" />
+              <include name="${module.tests.dir}/TopHat/v9/gpunit/smoke_valid_pset_6_test.yml" />
+              <include name="${module.tests.dir}/TopHat/v9/gpunit/smoke_valid_pset_7_test.yml" />
+              <include name="${module.tests.dir}/TopHat/v9/gpunit/smoke_valid_pset_8_test.yml" />
+              <include name="${module.tests.dir}/TopHat/v9/gpunit/smoke_valid_pset_9_test.yml" />
+              <include name="${module.tests.dir}/TopHat/v9/gpunit/smoke_valid_pset_10_test.yml" />
+              <include name="${module.tests.dir}/TopHat/v9/gpunit/smoke_valid_pset_11_test.yml" />
+              <include name="${module.tests.dir}/TopHat/v9/gpunit/smoke_valid_pset_12_test.yml" />
+              <include name="${module.tests.dir}/TopHat/v9/gpunit/smoke_valid_pset_13_test.yml" />
+              <include name="${module.tests.dir}/TopHat/v9/gpunit/smoke_valid_pset_14_test.yml" />
+              <include name="${module.tests.dir}/TopHat/v9/gpunit/smoke_valid_pset_15_test.yml" />
         </fileset>
-        <!-- We shouldn't have to use pathconvert here, but if we don't, the fileset will contain a ";" as a pathseparator -->
-        <!-- on both windows and Linunx, so GpUnit will fail to parse these properly on Linux since it uses the JVM -->
-        <!-- File.pathSeparator static as the delimter. -->
+        <!-- GpUnit assumes the fileset is delimited by the platform-dependent value returned -->
+        <!-- by a call to File.pathSeparator, which returns ";" on Windows and ":" on Linux. -->
+        <!-- However, ant creates the fileset with ";" as the separator on both platforms. -->
+        <!-- Using the pathconvert task causes the delimiter to properly match the platform. -->
 	    <pathconvert property="short.nightly.tests" refid="short.tests" />
         <echo>Running Short Nightly Tests: ${short.nightly.tests}</echo>
         <run-tests
