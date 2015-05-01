@@ -24,8 +24,25 @@ abstract public class JobResultDownloaderGeneric implements JobResultDownloader 
         public URL serverUrl;
         public File localFile;
         
-        public File initLocalFileFromPath(final File toDir) {
-            File toFile = new File(toDir, path);
+        public File initLocalFileFromPath(final File toDir) throws GpUnitException {
+            File toFile = null;
+            try {
+                // Some modules return files located in subfolders, so we need to recreate the
+                // folder hierarchy in the download directory in order to ensure we don't clobber
+                // anything. Note that the folder names need to be included in the files assertions
+                // references in order for diffs to locate them.
+                toFile = new File(toDir, path);
+                String parentPath = toFile.getParent();
+                File toPath = new File(parentPath);
+                if (!toPath.exists()) {
+                    if (!toPath.mkdirs()) {
+                        throw new IllegalStateException();
+                    }
+                }
+            }
+            catch (Exception ex) {
+                throw new GpUnitException("Failed to create intermediate target directories for result file: " + toDir.getAbsolutePath());
+            }
             return toFile;
         }
         
