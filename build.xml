@@ -254,6 +254,7 @@
         </junit>
     </target>
 
+	<!-- Nightly module test targets -->
     <!-- We want to clone repositories for newly added modules and checkout/pull any existing ones" -->
     <property name="module.tests.dir" value="ModuleTests" />
 	<macrodef name="pull-test">
@@ -265,9 +266,9 @@
             <exec executable="git" dir="${module.tests.dir}" failonerror="false" >
                 <arg line="clone" />
                 <arg line="-b @{git.branch.name}" />
-               <arg line="@{git.organization.url}/@{git.repo.name}.git"/>
+                <arg line="@{git.organization.url}/@{git.repo.name}.git"/>
                 <arg line="@{git.repo.name}" />
-             </exec>
+            </exec>
             <exec executable="git" dir="${module.tests.dir}/@{git.repo.name}">
                 <arg line="pull" />
             </exec>
@@ -276,74 +277,126 @@
 
     <!-- Test category "Short Running Modules Tests" -->
 	<!-- Once the protocol for how we organize these is established, these targets will be moved into a separate build file -->
-    <target name="checkout-short-nightly-tests" depends="package">
+    <target name="checkout-short-nightly-tests" unless="nocheckouttests" depends="package">
         <mkdir dir="${module.tests.dir}" />
         <pull-test git.repo.name="ComparativeMarkerSelection" />
         <pull-test git.repo.name="ExpressionFileCreator" />
         <pull-test git.repo.name="HierarchicalClustering" />
         <pull-test git.repo.name="TopHat" />
-     </target>
-    <!-- Should depend on checkout-short-nightly-tests, but we need a target that doesn't assume connectivity to git -->
-    <target name="run-short-nightly-tests" depends="package">
-        <fileset id="short.tests" dir="${gpunit.dir}">
-            <!-- ComparativeMarkerSelection v10 -->
-              <include name="${module.tests.dir}/ComparativeMarkerSelection/v10/gpunit/DefaultSmokeTest_Protocol/valid_pset_1_test.yml" />
-            <!-- ExpressionFileCreator - v13 smoke tests only -->
-              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/smoke_invalid_AP_noMM_test.yml" />
-              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/smoke_invalid_GCRMA_and_CDF_test.yml" />
-              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/smoke_RT150777_regression_test.yml" />
-              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/smoke_valid_pset_1_test.yml" />
-              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/smoke_valid_pset_2_test.yml" />
-              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/smoke_valid_pset_4_test.yml" />
-              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/smoke_valid_pset_5_test.yml" />
-              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/smoke_valid_pset_6_test.yml" />
-              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/smoke_valid_pset_9_test.yml" />
-              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/smoke_valid_pset_10_test.yml" />
-              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/smoke_valid_pset_11_test.yml" />
-              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/smoke_valid_pset_12_test.yml" />
-              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/smoke_valid_pset_13_test.yml" />
-              <include name="${module.tests.dir}/ExpressionFileCreator/v13/gpunit/smoke_valid_pset_14_test.yml" />
-            <!-- HierarchicalClustering - v6 ColOriented -->
-              <include name="${module.tests.dir}/HierarchicalClustering/v6/gpunit/col_oriented/valid_pset_1_test.yml" />
-              <include name="${module.tests.dir}/HierarchicalClustering/v6/gpunit/col_oriented/valid_pset_2_test.yml" />
-              <include name="${module.tests.dir}/HierarchicalClustering/v6/gpunit/col_oriented/valid_pset_3_test.yml" />
-              <include name="${module.tests.dir}/HierarchicalClustering/v6/gpunit/col_oriented/valid_pset_4_test.yml" />
-              <include name="${module.tests.dir}/HierarchicalClustering/v6/gpunit/col_oriented/valid_pset_5_test.yml" />
-              <include name="${module.tests.dir}/HierarchicalClustering/v6/gpunit/col_oriented/valid_pset_6_test.yml" />
-              <include name="${module.tests.dir}/HierarchicalClustering/v6/gpunit/col_oriented/valid_pset_7_test.yml" />
-              <include name="${module.tests.dir}/HierarchicalClustering/v6/gpunit/col_oriented/valid_pset_8_test.yml" />
-            <!-- HierarchicalClustering v6 - RowOriented -->
-              <include name="${module.tests.dir}/HierarchicalClustering/v6/gpunit/row_oriented/valid_pset_1_test.yml" />
-              <include name="${module.tests.dir}/HierarchicalClustering/v6/gpunit/row_oriented/valid_pset_2_test.yml" />
-              <include name="${module.tests.dir}/HierarchicalClustering/v6/gpunit/row_oriented/valid_pset_3_test.yml" />
-              <include name="${module.tests.dir}/HierarchicalClustering/v6/gpunit/row_oriented/valid_pset_4_test.yml" />
-              <include name="${module.tests.dir}/HierarchicalClustering/v6/gpunit/row_oriented/valid_pset_5_test.yml" />
-              <include name="${module.tests.dir}/HierarchicalClustering/v6/gpunit/row_oriented/valid_pset_6_test.yml" />
-              <include name="${module.tests.dir}/HierarchicalClustering/v6/gpunit/row_oriented/valid_pset_7_test.yml" />
-              <include name="${module.tests.dir}/HierarchicalClustering/v6/gpunit/row_oriented/valid_pset_8_test.yml" />
-            <!-- TopHat v9 -->
-              <include name="${module.tests.dir}/TopHat/v9/gpunit/smoke_valid_pset_1_test.yml" />
-              <include name="${module.tests.dir}/TopHat/v9/gpunit/smoke_valid_pset_2_test.yml" />
-              <include name="${module.tests.dir}/TopHat/v9/gpunit/smoke_valid_pset_3_test.yml" />
-              <include name="${module.tests.dir}/TopHat/v9/gpunit/smoke_valid_pset_4_test.yml" />
-              <include name="${module.tests.dir}/TopHat/v9/gpunit/smoke_valid_pset_5_test.yml" />
-              <include name="${module.tests.dir}/TopHat/v9/gpunit/smoke_valid_pset_6_test.yml" />
-              <include name="${module.tests.dir}/TopHat/v9/gpunit/smoke_valid_pset_7_test.yml" />
-              <include name="${module.tests.dir}/TopHat/v9/gpunit/smoke_valid_pset_8_test.yml" />
-              <include name="${module.tests.dir}/TopHat/v9/gpunit/smoke_valid_pset_9_test.yml" />
-              <include name="${module.tests.dir}/TopHat/v9/gpunit/smoke_valid_pset_10_test.yml" />
-              <include name="${module.tests.dir}/TopHat/v9/gpunit/smoke_valid_pset_11_test.yml" />
-              <include name="${module.tests.dir}/TopHat/v9/gpunit/smoke_valid_pset_12_test.yml" />
-              <include name="${module.tests.dir}/TopHat/v9/gpunit/smoke_valid_pset_13_test.yml" />
-              <include name="${module.tests.dir}/TopHat/v9/gpunit/smoke_valid_pset_14_test.yml" />
-              <include name="${module.tests.dir}/TopHat/v9/gpunit/smoke_valid_pset_15_test.yml" />
-        </fileset>
+    </target>
+
+	<fileset id="ShortComparativeMarkerSelectionTests" dir="${gpunit.dir}/${module.tests.dir}/ComparativeMarkerSelection/v10/gpunit" >
+        <!-- ComparativeMarkerSelection v10 -->
+        <include name="DefaultSmokeTest_Protocol/valid_pset_1_test.yml" />
+    </fileset>
+
+    <target name="run-short-cms-tests" depends="package, checkout-short-nightly-tests">
+        <pathconvert property="short.nightly.tests" refid="ShortComparativeMarkerSelectionTests" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
+	<fileset id="ShortExpressionFileCreatorTests" dir="${gpunit.dir}/${module.tests.dir}/ExpressionFileCreator/v13/gpunit" >
+        <!-- ExpressionFileCreator - v13 smoke tests only -->
+        <include name="smoke_invalid_AP_noMM_test.yml" />
+        <include name="smoke_invalid_GCRMA_and_CDF_test.yml" />
+        <include name="smoke_RT150777_regression_test.yml" />
+        <include name="smoke_valid_pset_1_test.yml" />
+        <include name="smoke_valid_pset_2_test.yml" />
+        <include name="smoke_valid_pset_4_test.yml" />
+        <include name="smoke_valid_pset_5_test.yml" />
+        <include name="smoke_valid_pset_6_test.yml" />
+        <include name="smoke_valid_pset_9_test.yml" />
+        <include name="smoke_valid_pset_10_test.yml" />
+        <include name="smoke_valid_pset_11_test.yml" />
+        <include name="smoke_valid_pset_12_test.yml" />
+        <include name="smoke_valid_pset_13_test.yml" />
+        <include name="smoke_valid_pset_14_test.yml" />
+	</fileset>
+
+    <target name="run-short-efc-tests" depends="package, checkout-short-nightly-tests">
+        <pathconvert property="short.nightly.tests" refid="ShortExpressionFileCreatorTests" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
+    <fileset id="ShortHierarchicalClusteringTests" dir="${gpunit.dir}/${module.tests.dir}/HierarchicalClustering/v6/gpunit" >
+        <!-- HierarchicalClustering - v6 ColOriented -->
+        <include name="col_oriented/valid_pset_1_test.yml" />
+        <include name="col_oriented/valid_pset_2_test.yml" />
+        <include name="col_oriented/valid_pset_3_test.yml" />
+        <include name="col_oriented/valid_pset_4_test.yml" />
+        <include name="col_oriented/valid_pset_5_test.yml" />
+        <include name="col_oriented/valid_pset_6_test.yml" />
+        <include name="col_oriented/valid_pset_7_test.yml" />
+        <include name="col_oriented/valid_pset_8_test.yml" />
+        <!-- HierarchicalClustering v6 - RowOriented -->
+        <include name="row_oriented/valid_pset_1_test.yml" />
+        <include name="row_oriented/valid_pset_2_test.yml" />
+        <include name="row_oriented/valid_pset_3_test.yml" />
+        <include name="row_oriented/valid_pset_4_test.yml" />
+        <include name="row_oriented/valid_pset_5_test.yml" />
+        <include name="row_oriented/valid_pset_6_test.yml" />
+        <include name="row_oriented/valid_pset_7_test.yml" />
+        <include name="row_oriented/valid_pset_8_test.yml" />
+    </fileset>
+
+    <target name="run-short-hc-tests" depends="package, checkout-short-nightly-tests">
+        <pathconvert property="short.nightly.tests" refid="ShortHierarchicalClusteringTests" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
+    <fileset id="ShortTopHatTests" dir="${gpunit.dir}/${module.tests.dir}/TopHat/v9/gpunit/" >
+        <!-- TopHat v9 -->
+        <include name="smoke_valid_pset_1_test.yml" />
+        <include name="smoke_valid_pset_2_test.yml" />
+        <include name="smoke_valid_pset_3_test.yml" />
+        <include name="smoke_valid_pset_4_test.yml" />
+        <include name="smoke_valid_pset_5_test.yml" />
+        <include name="smoke_valid_pset_6_test.yml" />
+        <include name="smoke_valid_pset_7_test.yml" />
+        <include name="smoke_valid_pset_8_test.yml" />
+        <include name="smoke_valid_pset_9_test.yml" />
+        <include name="smoke_valid_pset_10_test.yml" />
+        <include name="smoke_valid_pset_11_test.yml" />
+        <include name="smoke_valid_pset_12_test.yml" />
+        <include name="smoke_valid_pset_13_test.yml" />
+        <include name="smoke_valid_pset_14_test.yml" />
+        <include name="smoke_valid_pset_15_test.yml" />
+    </fileset>
+
+    <target name="run-short-tophat-tests" depends="package, checkout-short-nightly-tests">
+        <pathconvert property="short.nightly.tests" refid="ShortTopHatTests" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
+	<target name="run-short-nightly-tests" depends="package">
+        <!-- The union task creates a fileset when given fileset resource references -->
+        <union id="short.tests">
+            <resources refid="ShortComparativeMarkerSelectionTests" />
+            <resources refid="ShortExpressionFileCreatorTests" />
+            <resources refid="ShortHierarchicalClusteringTests" />
+            <resources refid="ShortTopHatTests" />
+        </union>
         <!-- GpUnit assumes the fileset is delimited by the platform-dependent value returned -->
         <!-- by a call to File.pathSeparator, which returns ";" on Windows and ":" on Linux. -->
         <!-- However, ant creates the fileset with ";" as the separator on both platforms. -->
         <!-- Using the pathconvert task causes the delimiter to properly match the platform. -->
 	    <pathconvert property="short.nightly.tests" refid="short.tests" />
-        <echo>Running Short Nightly Tests: ${short.nightly.tests}</echo>
         <run-tests
             testcases="${short.nightly.tests}"
             numThreads="5"
