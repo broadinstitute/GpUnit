@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project>
 
     <!--******************************************************************************************-->
@@ -11,8 +12,8 @@
     <property name="module.tests.dir" value="ModuleTests" />
 
     <!-- We need to do a clone first for the case where we're starting clean (this will fail if -->
-	<!-- the local repo already exists), and then pull to update for the case where the local -->
-	<!-- module repositories already exist -->
+    <!-- the local repo already exists), and then pull to update for the case where the local -->
+    <!-- module repositories already exist -->
     <macrodef name="clone-repo">
         <attribute name="git.organization.url" default="https://github.com/genepattern" />
         <attribute name="git.repo.name" />
@@ -148,7 +149,7 @@
 
     <!--******************************************************************************************-->
     <!-- Aggregate test suite target definitions. Set "noclonetests" to skip the git phase. -->
-	<!--******************************************************************************************-->
+    <!--******************************************************************************************-->
 
     <target name="short-nightly-tests" depends="package, clone-test-repos">
         <union id="short.tests">
