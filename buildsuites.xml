@@ -52,7 +52,7 @@
         <include name="DefaultSmokeTest_Protocol/valid_pset_1_test.yml" />
     </fileset>
 
-    <target name="run-short-cms-tests" depends="package, clone-test-repos">
+    <target name="short-cms-tests" depends="package, clone-test-repos">
         <pathconvert property="short.nightly.tests" refid="ShortComparativeMarkerSelectionTests" />
         <run-tests
             testcases="${short.nightly.tests}"
@@ -79,7 +79,7 @@
         <include name="smoke_valid_pset_14_test.yml" />
     </fileset>
 
-    <target name="run-short-efc-tests" depends="package, clone-test-repos">
+    <target name="short-efc-tests" depends="package, clone-test-repos">
         <pathconvert property="short.nightly.tests" refid="ShortExpressionFileCreatorTests" />
         <run-tests
             testcases="${short.nightly.tests}"
@@ -109,7 +109,7 @@
         <include name="row_oriented/valid_pset_8_test.yml" />
     </fileset>
 
-    <target name="run-short-hc-tests" depends="package, clone-test-repos">
+    <target name="short-hc-tests" depends="package, clone-test-repos">
         <pathconvert property="short.nightly.tests" refid="ShortHierarchicalClusteringTests" />
         <run-tests
             testcases="${short.nightly.tests}"
@@ -137,7 +137,7 @@
         <include name="smoke_valid_pset_15_test.yml" />
     </fileset>
 
-    <target name="run-short-tophat-tests" depends="package, clone-test-repos">
+    <target name="short-tophat-tests" depends="package, clone-test-repos">
         <pathconvert property="short.nightly.tests" refid="ShortTopHatTests" />
         <run-tests
             testcases="${short.nightly.tests}"
@@ -150,7 +150,7 @@
     <!-- Aggregate test suite target definitions. Set "noclonetests" to skip the git phase. -->
 	<!--******************************************************************************************-->
 
-    <target name="run-short-nightly-tests" depends="package">
+    <target name="short-nightly-tests" depends="package, clone-test-repos">
         <union id="short.tests">
             <resources refid="ShortComparativeMarkerSelectionTests" />
             <resources refid="ShortExpressionFileCreatorTests" />
@@ -169,5 +169,4 @@
         />
     </target>
 
-    <target name="short-nightly-tests" depends="clone-test-repos, run-short-nightly-tests" />
 </project>
