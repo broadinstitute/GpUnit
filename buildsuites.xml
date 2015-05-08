@@ -1,0 +1,173 @@
+<project>
+
+    <!--******************************************************************************************-->
+    <!-- Module test targets -->
+    <!--******************************************************************************************-->
+
+    <!--******************************************************************************************-->
+    <!-- Test repository management -->
+    <!--******************************************************************************************-->
+
+    <property name="module.tests.dir" value="ModuleTests" />
+
+    <!-- We need to do a clone first for the case where we're starting clean (this will fail if -->
+	<!-- the local repo already exists), and then pull to update for the case where the local -->
+	<!-- module repositories already exist -->
+    <macrodef name="clone-repo">
+        <attribute name="git.organization.url" default="https://github.com/genepattern" />
+        <attribute name="git.repo.name" />
+        <attribute name="git.branch.name" default="master" />
+        <sequential>
+            <echo>Pulling tests from remote repository: '@{git.organization.url}/@{git.repo.name}' (branch '@{git.branch.name}')</echo>
+            <exec executable="git" dir="${module.tests.dir}" failonerror="false" >
+                <arg line="clone" />
+                <arg line="-b @{git.branch.name}" />
+                <arg line="@{git.organization.url}/@{git.repo.name}.git"/>
+                <arg line="@{git.repo.name}" />
+            </exec>
+            <exec executable="git" dir="${module.tests.dir}/@{git.repo.name}">
+                <arg line="pull" />
+            </exec>
+        </sequential>
+    </macrodef>
+
+    <target name="clone-test-repos" unless="noclonetests" depends="package">
+        <mkdir dir="${module.tests.dir}" />
+        <clone-repo git.repo.name="ComparativeMarkerSelection" />
+        <clone-repo git.repo.name="ExpressionFileCreator" />
+        <clone-repo git.repo.name="HierarchicalClustering" />
+        <clone-repo git.repo.name="TopHat" />
+    </target>
+
+    <target name="clean-test-repos">
+        <delete dir="${module.tests.dir}" />
+    </target>
+
+    <!--******************************************************************************************-->
+    <!-- Test targets for individual modules. Each module has a fileset definition and a run target -->
+    <!--******************************************************************************************-->
+
+    <fileset id="ShortComparativeMarkerSelectionTests" dir="${gpunit.dir}/${module.tests.dir}/ComparativeMarkerSelection/v10/gpunit" >
+        <!-- ComparativeMarkerSelection v10 -->
+        <include name="DefaultSmokeTest_Protocol/valid_pset_1_test.yml" />
+    </fileset>
+
+    <target name="run-short-cms-tests" depends="package, clone-test-repos">
+        <pathconvert property="short.nightly.tests" refid="ShortComparativeMarkerSelectionTests" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
+    <fileset id="ShortExpressionFileCreatorTests" dir="${gpunit.dir}/${module.tests.dir}/ExpressionFileCreator/v13/gpunit" >
+        <!-- ExpressionFileCreator - v13 smoke tests only -->
+        <include name="smoke_invalid_AP_noMM_test.yml" />
+        <include name="smoke_invalid_GCRMA_and_CDF_test.yml" />
+        <include name="smoke_RT150777_regression_test.yml" />
+        <include name="smoke_valid_pset_1_test.yml" />
+        <include name="smoke_valid_pset_2_test.yml" />
+        <include name="smoke_valid_pset_4_test.yml" />
+        <include name="smoke_valid_pset_5_test.yml" />
+        <include name="smoke_valid_pset_6_test.yml" />
+        <include name="smoke_valid_pset_9_test.yml" />
+        <include name="smoke_valid_pset_10_test.yml" />
+        <include name="smoke_valid_pset_11_test.yml" />
+        <include name="smoke_valid_pset_12_test.yml" />
+        <include name="smoke_valid_pset_13_test.yml" />
+        <include name="smoke_valid_pset_14_test.yml" />
+    </fileset>
+
+    <target name="run-short-efc-tests" depends="package, clone-test-repos">
+        <pathconvert property="short.nightly.tests" refid="ShortExpressionFileCreatorTests" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
+    <fileset id="ShortHierarchicalClusteringTests" dir="${gpunit.dir}/${module.tests.dir}/HierarchicalClustering/v6/gpunit" >
+        <!-- HierarchicalClustering - v6 ColOriented -->
+        <include name="col_oriented/valid_pset_1_test.yml" />
+        <include name="col_oriented/valid_pset_2_test.yml" />
+        <include name="col_oriented/valid_pset_3_test.yml" />
+        <include name="col_oriented/valid_pset_4_test.yml" />
+        <include name="col_oriented/valid_pset_5_test.yml" />
+        <include name="col_oriented/valid_pset_6_test.yml" />
+        <include name="col_oriented/valid_pset_7_test.yml" />
+        <include name="col_oriented/valid_pset_8_test.yml" />
+        <!-- HierarchicalClustering v6 - RowOriented -->
+        <include name="row_oriented/valid_pset_1_test.yml" />
+        <include name="row_oriented/valid_pset_2_test.yml" />
+        <include name="row_oriented/valid_pset_3_test.yml" />
+        <include name="row_oriented/valid_pset_4_test.yml" />
+        <include name="row_oriented/valid_pset_5_test.yml" />
+        <include name="row_oriented/valid_pset_6_test.yml" />
+        <include name="row_oriented/valid_pset_7_test.yml" />
+        <include name="row_oriented/valid_pset_8_test.yml" />
+    </fileset>
+
+    <target name="run-short-hc-tests" depends="package, clone-test-repos">
+        <pathconvert property="short.nightly.tests" refid="ShortHierarchicalClusteringTests" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
+    <fileset id="ShortTopHatTests" dir="${gpunit.dir}/${module.tests.dir}/TopHat/v9/gpunit/" >
+        <!-- TopHat v9 -->
+        <include name="smoke_valid_pset_1_test.yml" />
+        <include name="smoke_valid_pset_2_test.yml" />
+        <include name="smoke_valid_pset_3_test.yml" />
+        <include name="smoke_valid_pset_4_test.yml" />
+        <include name="smoke_valid_pset_5_test.yml" />
+        <include name="smoke_valid_pset_6_test.yml" />
+        <include name="smoke_valid_pset_7_test.yml" />
+        <include name="smoke_valid_pset_8_test.yml" />
+        <include name="smoke_valid_pset_9_test.yml" />
+        <include name="smoke_valid_pset_10_test.yml" />
+        <include name="smoke_valid_pset_11_test.yml" />
+        <include name="smoke_valid_pset_12_test.yml" />
+        <include name="smoke_valid_pset_13_test.yml" />
+        <include name="smoke_valid_pset_14_test.yml" />
+        <include name="smoke_valid_pset_15_test.yml" />
+    </fileset>
+
+    <target name="run-short-tophat-tests" depends="package, clone-test-repos">
+        <pathconvert property="short.nightly.tests" refid="ShortTopHatTests" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
+    <!--******************************************************************************************-->
+    <!-- Aggregate test suite target definitions. Set "noclonetests" to skip the git phase. -->
+	<!--******************************************************************************************-->
+
+    <target name="run-short-nightly-tests" depends="package">
+        <union id="short.tests">
+            <resources refid="ShortComparativeMarkerSelectionTests" />
+            <resources refid="ShortExpressionFileCreatorTests" />
+            <resources refid="ShortHierarchicalClusteringTests" />
+            <resources refid="ShortTopHatTests" />
+        </union>
+        <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
+    	<!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
+    	<!-- with ";" as the separator on both platforms (!). The pathconvert task transforms the fileset -->
+    	<!-- to one with a delimiter that properly matches what the code expects. -->
+        <pathconvert property="short.nightly.tests" refid="short.tests" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
+    <target name="short-nightly-tests" depends="clone-test-repos, run-short-nightly-tests" />
+</project>

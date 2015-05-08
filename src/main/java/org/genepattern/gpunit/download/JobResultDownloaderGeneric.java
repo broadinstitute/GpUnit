@@ -36,7 +36,7 @@ abstract public class JobResultDownloaderGeneric implements JobResultDownloader 
                 File toPath = new File(parentPath);
                 if (!toPath.exists()) {
                     if (!toPath.mkdirs()) {
-                        throw new IllegalStateException();
+                        throw new IllegalArgumentException("Failed creating intermediate dirs for: " + toPath);
                     }
                 }
             }
