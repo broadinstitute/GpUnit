@@ -1,3 +1,3 @@
 module: NMFConsensus
 params: 
-    dataset.filename: <%gpunit.testData%>/protocols/all_aml_test.preprocessed.gct
+    dataset.filename: <%gpunit.gpData%>/protocols/all_aml_test.preprocessed.gct
