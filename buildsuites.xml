@@ -134,7 +134,11 @@
         <include name="smoke_valid_pset_11_test.yml" />
         <include name="smoke_valid_pset_12_test.yml" />
         <include name="smoke_valid_pset_13_test.yml" />
-        <include name="smoke_valid_pset_14_test.yml" />
+        <!-- Removed until we fix the TopHat module perl wrapper script to be able to handle -->
+        <!-- a transcriptome_index passed by URL (as opposed to a server-local file reference). -->
+        <!--
+            <include name="smoke_valid_pset_14_test.yml" />
+        -->
         <include name="smoke_valid_pset_15_test.yml" />
     </fileset>
 
