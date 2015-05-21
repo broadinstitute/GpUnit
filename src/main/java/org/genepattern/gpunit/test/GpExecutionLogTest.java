@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Collection;
 
 import org.junit.runners.Parameterized.Parameters;
+import org.genepattern.gpunit.BatchModuleTestObject;
 
 
 /**

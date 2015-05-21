@@ -101,7 +101,7 @@ public class CmdLineDiff extends AbstractDiffTest {
     }
 
     @Override
-    public void diff() {
+    public void diff(String serverURL) {
         int exitCode = 2;
         boolean interrupted = false;
         try {
@@ -120,7 +120,12 @@ public class CmdLineDiff extends AbstractDiffTest {
         }
         else if (exitCode != 0) {
             String[] cmd = getCmdLine();
-            Assert.fail("job #"+jobId+", Error executing diff command (\"" + cmd.toString() + "\") return code: " + Integer.toString(exitCode) + "), '"+expected.getPath()+"', '"+actual.getPath()+"'");
+            StringBuilder sb = new StringBuilder();
+            for (String s: cmd) {
+                sb.append(s);
+                sb.append(" ");
+            }
+            Assert.fail("job #"+jobId+", Error executing diff command (\"" + sb.toString() + "\") return code: " + Integer.toString(exitCode) + "), '"+expected.getPath()+"', '"+actual.getPath()+"'");
         }
     }
     

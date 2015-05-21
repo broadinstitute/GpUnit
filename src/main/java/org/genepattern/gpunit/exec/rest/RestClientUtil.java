@@ -5,12 +5,12 @@ import java.net.URI;
 
 import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.exec.rest.json.JobResultObj;
-import org.genepattern.gpunit.test.BatchModuleTestObject;
-import org.genepattern.gpunit.test.BatchProperties;
+import org.genepattern.gpunit.BatchModuleTestObject;
+import org.genepattern.gpunit.BatchProperties;
 import org.junit.Assert;
 
 public class RestClientUtil {
-    public static void runTest(BatchProperties batchProps, BatchModuleTestObject testObject) throws GpUnitException 
+    public static void runTest(BatchProperties batchProps, BatchModuleTestObject testObject, boolean isDiff) throws GpUnitException 
     {
         JobRunnerRest runner;
         try {
@@ -38,13 +38,18 @@ public class RestClientUtil {
         //3) validate job results  
         String jobId=jobResult.getJobId();
         Assert.assertNotNull("jobId==null", jobId);
-        File jobResultDir=batchProps.getJobResultDir(testObject, jobId);
+        File jobResultDir=testObject.getJobResultDir(batchProps.getBatchOutputDir(), jobId);
         
         JobResultValidatorRest validator=new JobResultValidatorRest(batchProps, testObject, jobResultDir);
         validator.setRestClient(runner);
         validator.setJobStatus(jobResult);
         try {
-            validator.validate();
+            if (isDiff) {
+                validator.validateServerDiff();
+            }
+            else {
+                validator.validate();
+            }
         }
         finally {
             if (jobResult != null) {

@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.genepattern.gpunit.ModuleTestObject;
+import org.genepattern.gpunit.BatchModuleTestObject;
 import org.genepattern.gpunit.yaml.GpUnitFileParser;
 
 

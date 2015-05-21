@@ -10,4 +10,5 @@ public interface JobResultDownloader {
     File getResultFile(String filename) throws GpUnitException;
     void downloadResultFiles() throws GpUnitException;
     void cleanDownloadedFiles() throws GpUnitException;
+    String getServerURLForFile(String fileName);
 }

@@ -12,7 +12,8 @@ import java.util.Map.Entry;
 import org.genepattern.client.GPClient;
 import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.ModuleTestObject;
-import org.genepattern.gpunit.test.BatchProperties;
+import org.genepattern.gpunit.BatchProperties;
+
 import org.genepattern.webservice.Parameter;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;

@@ -15,7 +15,7 @@ public class UnzipAndDiffFile extends AbstractDiffTest
 {
 
     @Override
-    public void diff()
+    public void diff(String serverURL)
     {
         System.out.println("This is my unzip and diff test class");
 

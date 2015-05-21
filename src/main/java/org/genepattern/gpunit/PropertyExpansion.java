@@ -5,7 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.PatternSyntaxException;
 
 import org.genepattern.gpunit.GpUnitException;
-import org.genepattern.gpunit.test.BatchProperties;
+import org.genepattern.gpunit.BatchProperties;
 
 /**
  * Match and resolve property references embedded in yaml of the form:
@@ -56,8 +56,7 @@ public class PropertyExpansion {
 				if (!fullMatch.startsWith("\\")) {
 					String propName = match.group(1);
 					String newValue = bp.getSubstitutionProperty(propName);
-					//System.out.println("Substituting: " + propName + " : " + newValue);
-					String quoted = match.quoteReplacement(newValue);
+					String quoted = Matcher.quoteReplacement(newValue);
 					match.appendReplacement(sb, quoted);
 				}
 				else {

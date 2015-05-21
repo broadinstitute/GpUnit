@@ -1,6 +1,6 @@
 package org.genepattern.util.junit;
 
-import org.genepattern.gpunit.test.BatchProperties;
+import org.genepattern.gpunit.BatchProperties;
 import org.junit.runners.Parameterized;
 
 

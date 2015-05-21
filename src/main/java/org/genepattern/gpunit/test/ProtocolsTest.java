@@ -5,6 +5,7 @@ import java.util.Collection;
 
 import org.junit.runners.Parameterized.Parameters;
 
+import org.genepattern.gpunit.BatchModuleTestObject;
 
 /**
  * Run a batch of jobs, one for each protocol.

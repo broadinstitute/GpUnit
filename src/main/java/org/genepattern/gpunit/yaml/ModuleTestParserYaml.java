@@ -50,7 +50,7 @@ public class ModuleTestParserYaml {
         return test;
     }
 
-    static private ModuleTestObject parse(InputStream is) throws GpUnitException {
+    static public ModuleTestObject parse(InputStream is) throws GpUnitException {
         try {
             Yaml yaml = new Yaml();
             ModuleTestObject obj = yaml.loadAs(is, ModuleTestObject.class);

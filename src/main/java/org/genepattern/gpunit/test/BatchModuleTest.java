@@ -11,11 +11,13 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.genepattern.gpunit.BatchModuleTestObject;
+import org.genepattern.gpunit.BatchProperties;
 import org.genepattern.gpunit.GpUnitException;
+import org.genepattern.gpunit.ModuleTestObject;
 import org.genepattern.gpunit.exec.rest.RestClientUtil;
 import org.genepattern.gpunit.exec.soap.SoapClientUtil;
 import org.genepattern.util.junit.Parallelized;
-import org.genepattern.gpunit.ModuleTestObject;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -70,10 +72,11 @@ public class BatchModuleTest {
             // as the separator on both platforms unless you use the pathconvert task.  That causes ant
             // to transform the separator to match the value returned by this call. So in order for
             // this to work the fileset must have been transformed by pathconvert.
-            String[] testCaseDirs = gpunitTestcaseDirsProp.split(Pattern.quote(File.pathSeparator));
+            String[] testCaseEntries = gpunitTestcaseDirsProp.split(Pattern.quote(File.pathSeparator));
 
-            for(String testCaseDir : testCaseDirs) {
-                fileset.add(new File(testCaseDir));
+            // NOTE: these entries may be directories or individual files
+            for(String testCaseEntry : testCaseEntries) {
+                fileset.add(new File(testCaseEntry));
             }
             testCases=BatchModuleUtil.data(fileset);
         }
@@ -82,38 +85,38 @@ public class BatchModuleTest {
             testCases=BatchModuleUtil.data(new File(path));
         }
 
+        //validate the testCases, make sure we have a unique download dir for each test
         uniqueifyTestCaseNames(testCases);
 
         return testCases;
     }
 
     /**
-     * Since we use the testcase names as the names of the folder for jobResults, we need to
+     * Since we use the testcase name as the name of the folder for jobResults, we need to
      * ensure that all the names are unique. When running against large test sets, we hit cases
-     * where we have tests with identical names in parallel folders so we uniqueify the names
+     * where we have tests with identical names in parallel folders so we "uniqueify" the names
      * to avoid name collision.
      */
     private static void uniqueifyTestCaseNames(Collection<Object[]> testCases) throws GpUnitException {
-        //validate the testCases, make sure we have a unique download dir for each test
         Set<String> testNames=new HashSet<String>();
         for(Object[] row : testCases) {
             final BatchModuleTestObject batchTestObj=(BatchModuleTestObject) row[1];
-            final String testName=batchTestObj.getTestName();
-            String uniqueName = testName;
+            final String originalName=batchTestObj.getTestName();
+            String uniqueName = originalName;
             for (int count = 2; !testNames.add(uniqueName); count++) {
-                uniqueName = testName + "_" + Integer.toString(count);
+                uniqueName = originalName + "_" + Integer.toString(count);
             }
-            if (!testName.equals(uniqueName)) {  // update the testcase name with the new unique name
+            if (!originalName.equals(uniqueName)) {  // update the testcase name with the new unique name
                ModuleTestObject testCase = batchTestObj.getTestCase();
                if (null != testCase) {
                    testCase.setName(uniqueName);
                }
                else if (null == batchTestObj.getInitException()) {
-                   // error, there is no valid testcase, but no Exception was generated during initialization
-                   throw new GpUnitException("Error processing test names for file: testName="+testName+", testFile="+batchTestObj.getTestFile().getAbsolutePath());
+                   // There is no valid testcase, but no Exception was generated during initialization
+                   throw new GpUnitException("Error processing test names for file: testName="+originalName+", testFile="+batchTestObj.getTestFile().getAbsolutePath());
                }
-               // otherwise since this testcase already has an init exception (i.e., it might be a .yaml file that isn't a test),
-               // the test representing it will fail and not execute anyway
+               // Otherwise, this testcase already has an init exception (i.e., it might be a .yaml file that isn't a test),
+               // so the test representing will "fail" anyway since it won't even execute.
            }
         }
     }
@@ -123,7 +126,7 @@ public class BatchModuleTest {
      * 
      * In order to ensure that we ALWAYS propagate any properties that:
      *
-     *  - are not known to BatchProperties at compile time
+     *  - are not known at compile time
      *  - and are not specified on the ant *command line*
      *  - and are not listed in gpunit.default.properties
      *
@@ -248,7 +251,7 @@ public class BatchModuleTest {
         try {
             //submit a job via new REST API
             if (batchProps.getClient().equals(BatchProperties.GpUnitClient.REST)) {
-                RestClientUtil.runTest(batchProps, testObj);
+                RestClientUtil.runTest(batchProps, testObj, false);
                 return;
             }
 

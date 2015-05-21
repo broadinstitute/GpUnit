@@ -36,7 +36,7 @@ import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.ModuleTestObject;
 import org.genepattern.gpunit.exec.rest.json.JobResultObj;
 import org.genepattern.gpunit.exec.rest.json.TaskObj;
-import org.genepattern.gpunit.test.BatchProperties;
+import org.genepattern.gpunit.BatchProperties;
 import org.genepattern.gpunit.yaml.InputFileUtil;
 
 import com.google.gson.Gson;

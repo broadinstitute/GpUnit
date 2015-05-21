@@ -6,7 +6,7 @@ import org.junit.Assert;
 import static org.mockito.Mockito.*;
 
 import org.genepattern.gpunit.GpUnitException;
-import org.genepattern.gpunit.test.BatchProperties;
+import org.genepattern.gpunit.BatchProperties;
 import org.genepattern.gpunit.PropertyExpansion;
 
 /**

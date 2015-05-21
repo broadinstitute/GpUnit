@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.download.JobResultDownloader;
-import org.genepattern.gpunit.test.BatchProperties;
+import org.genepattern.gpunit.BatchProperties;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.JobDownloader;
 import org.genepattern.webservice.JobResult;
@@ -57,6 +57,10 @@ public class JobResultDownloaderSoap implements JobResultDownloader {
     
     public boolean hasResultFile(final String filename) {
         return outputFileNames.contains(filename);
+    }
+
+    public String getServerURLForFile(String fileName) {
+        throw new IllegalStateException("Illegal to retrieve server URL from SOAP Downloader");
     }
 
     private boolean downloadDirInited=false;

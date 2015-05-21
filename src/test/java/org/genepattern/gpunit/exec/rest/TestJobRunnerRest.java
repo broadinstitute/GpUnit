@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.genepattern.gpunit.ModuleTestObject;
-import org.genepattern.gpunit.test.BatchProperties;
+import org.genepattern.gpunit.BatchProperties;
 import org.genepattern.gpunit.yaml.GpUnitFileParser;
 
 import org.junit.Before;

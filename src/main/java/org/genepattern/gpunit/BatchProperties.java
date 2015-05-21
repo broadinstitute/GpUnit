@@ -1,11 +1,8 @@
-package org.genepattern.gpunit.test;
+package org.genepattern.gpunit;
 
 import java.io.File;
 
 import org.genepattern.gpunit.GpUnitException;
-import org.genepattern.gpunit.ModuleTestObject;
-import org.genepattern.gpunit.yaml.GpUnitFileParser;
-import org.genepattern.webservice.JobResult;
 
 /**
  * Helper class for setting shared properties of a single run of a batch of gp-unit tests.
@@ -65,7 +62,6 @@ public class BatchProperties {
 
     final static public String PROP_UPLOAD_DIR="gpunit.upload.dir";
     final static public String PROP_SERVER_DIR="gpunit.server.dir";
-    final static public String PROP_DIFF_DIR="gpunit.diff.dir";
     
     /**
      * Set the 'gpunit.numThreads' system property to override the default number of junit tests to run in parallel.
@@ -359,75 +355,6 @@ public class BatchProperties {
         return batchOutputDir;
     }
     
-    /**
-     * Get a job result directory for the given testCase and jobResult.
-     * You download job result files from the server and into this directory.
-     * 
-     * Rule for creating the download directory for a test-case.
-     *     if (batch.name is set) {
-     *         <gpunit.outputdir>/<gpunit.batch.name>/<testfile.parentdir.name>/<testfile.basename>
-     *     }
-     *     else {
-     *         <gpunit.outputdir>/<testfile.parentdir.name>/<testfile.basename>
-     *     }
-     *     
-     * @return a directory into which to download job results for the given completed test
-     */
-    public File getJobResultDir(final BatchModuleTestObject batchTestCase, final JobResult jobResult) throws GpUnitException {
-        String jobId=null;
-        if (jobResult != null && jobResult.getJobNumber()>=0) {
-            jobId=""+jobResult.getJobNumber();
-        }
-        return getJobResultDir(batchTestCase, jobId);
-    }
-
-    /**
-     * Get a job result directory for the given testCase and jobId.
-     * You download job result files from the server and into this directory.
-     * 
-     * Rule for creating the download directory for a test-case.
-     *     if (batch.name is set) {
-     *         <gpunit.outputdir>/<gpunit.batch.name>/<testfile.parentdir.name>/<testfile.basename>
-     *     }
-     *     else {
-     *         <gpunit.outputdir>/<testfile.parentdir.name>/<testfile.basename>
-     *     }
-     *     
-     * @return a directory into which to download job results for the given completed test
-     */
-    public File getJobResultDir(final BatchModuleTestObject batchTestCase, final String jobId) throws GpUnitException {
-        File testCaseFile=null;
-        String testName=null;
-        if (batchTestCase != null) {
-            testCaseFile=batchTestCase.getTestFile();
-            ModuleTestObject testCase=batchTestCase.getTestCase();
-            if (testCase != null) {
-                testName=testCase.getName();
-                if (testName != null && testName.length()==0) {
-                    testName=null;
-                }
-            }
-        }
-        
-        String dirname=null;
-        if (testCaseFile != null) {
-            dirname=GpUnitFileParser.getTestNameFromFile(testCaseFile);
-        }
-        else if (testName != null) {
-            //otherwise, use the testname
-            dirname = testName;
-        }
-        else if (jobId != null) {
-            //otherwise, use the job id
-            dirname = jobId;
-        }
-        else {
-            throw new IllegalArgumentException("Can't create job result directory, testCase and jobId are not set!");
-        }
-        File jobResultDir=new File(batchOutputDir, dirname);
-        return jobResultDir;
-    }
-
     /**
      * @see #PROP_JOB_COMPLETION_TIMEOUT
      */

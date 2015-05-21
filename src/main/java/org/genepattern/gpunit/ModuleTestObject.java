@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.genepattern.gpunit.test.BatchProperties;
 import org.genepattern.gpunit.PropertyExpansion;
 import org.yaml.snakeyaml.parser.ParserException;
 
@@ -133,5 +132,53 @@ public class ModuleTestObject {
         }
         return file;
     }
+
+    /**
+     * Get the basename of the testcase file, only if the extension is 3 or 4 characters.
+     *
+     * @param file
+     * @return
+     */
+    private static final String dropExtension(File file) {
+        if (file==null || file.getName()==null) {
+            throw new IllegalArgumentException("file==null");
+        }
+
+        String name=file.getName();
+        int idx=name.lastIndexOf('.');
+        if (idx<0) {
+            return name;
+        }
+        int l=name.length();
+        int extension_length=(l-idx)-1;
+        if (extension_length>4) {
+            return name;
+        }
+        return name.substring(0, idx);
+    }
     
+    // package-private
+    final String getTestNameFromFile(final File testCaseFile) {
+        if (testCaseFile==null) {
+            throw new IllegalArgumentException("testCaseFile==null");
+        }
+        String dirname;
+        //by default save output files into a directory based on the test case file
+        String basename=dropExtension(testCaseFile);
+        if (testCaseFile.getParentFile() != null) {
+            dirname = testCaseFile.getParentFile().getName() + "_" + basename;
+        }
+        else {
+            dirname = basename;
+        }
+        return dirname;
+    }
+
+    //optionally set the test name based on the fromFile path
+    public void setNameFromFile(final File fromFile) {
+        if (getName() == null) {
+            setName(getTestNameFromFile(fromFile));
+        }
+    }
+
 }

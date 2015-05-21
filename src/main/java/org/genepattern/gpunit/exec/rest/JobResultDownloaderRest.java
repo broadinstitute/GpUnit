@@ -8,7 +8,7 @@ import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.download.JobResultDownloaderGeneric;
 import org.genepattern.gpunit.exec.rest.json.JobResultObj;
 import org.genepattern.gpunit.exec.rest.json.JobResultObj.OutputFile;
-import org.genepattern.gpunit.test.BatchProperties;
+import org.genepattern.gpunit.BatchProperties;
 
 public class JobResultDownloaderRest extends JobResultDownloaderGeneric {
     public JobResultDownloaderRest(final File downloadDir, final BatchProperties props) {

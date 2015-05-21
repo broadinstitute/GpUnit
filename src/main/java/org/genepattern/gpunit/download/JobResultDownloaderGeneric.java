@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.genepattern.gpunit.GpUnitException;
-import org.genepattern.gpunit.test.BatchProperties;
+import org.genepattern.gpunit.BatchProperties;
 
 /**
  * Updated job result downloader, with bug fix for special characters in job result filenames.
@@ -90,6 +90,15 @@ abstract public class JobResultDownloaderGeneric implements JobResultDownloader 
     
     public boolean hasResultFile(final String filename) {
         return outputFileMap.containsKey(filename);
+    }
+
+    public String getServerURLForFile(String fileName) {
+        if (outputFileMap.containsKey(fileName)) {
+            return outputFileMap.get(fileName).serverUrl.toString();
+        }
+        else {
+            throw new IllegalStateException("Error retrieveing server URL for: " + fileName + " from REST downloader");
+        }
     }
 
     private boolean downloadDirInited=false;

@@ -80,7 +80,7 @@ public class NumRowsColsDiff extends AbstractDiffTest {
     }
 
     @Override
-    public void diff() {
+    public void diff(String serverURL) {
         initFromArgs();
         if (expectedNumCols >= 0 || expectedNumRows >= 0) {
             Dataset dataset = null;

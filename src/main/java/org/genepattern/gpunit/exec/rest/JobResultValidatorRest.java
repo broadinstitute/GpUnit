@@ -7,8 +7,8 @@ import java.io.File;
 import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.download.JobResultDownloader;
 import org.genepattern.gpunit.exec.rest.json.JobResultObj;
-import org.genepattern.gpunit.test.BatchModuleTestObject;
-import org.genepattern.gpunit.test.BatchProperties;
+import org.genepattern.gpunit.BatchModuleTestObject;
+import org.genepattern.gpunit.BatchProperties;
 import org.genepattern.gpunit.validator.JobResultValidatorGeneric;
 import org.junit.Assert;
 

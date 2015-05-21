@@ -49,5 +49,5 @@ public abstract class AbstractDiffTest {
     /**
      * This method is the junit test case. Use the junit Assert class to indicate a failed test case.
      */
-    abstract public void diff();
+    abstract public void diff(String serverURL);
 }

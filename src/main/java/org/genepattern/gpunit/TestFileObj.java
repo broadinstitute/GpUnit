@@ -3,7 +3,7 @@ package org.genepattern.gpunit;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.genepattern.gpunit.test.BatchProperties;
+import org.genepattern.gpunit.BatchProperties;
 import org.yaml.snakeyaml.parser.ParserException;
 
 public class TestFileObj {

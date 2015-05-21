@@ -23,8 +23,8 @@ import org.genepattern.gpunit.diff.CmdLineDiff;
 import org.genepattern.gpunit.diff.NumRowsColsDiff;
 import org.genepattern.gpunit.diff.UnixCmdLineDiff;
 import org.genepattern.gpunit.download.JobResultDownloader;
-import org.genepattern.gpunit.test.BatchModuleTestObject;
-import org.genepattern.gpunit.test.BatchProperties;
+import org.genepattern.gpunit.BatchModuleTestObject;
+import org.genepattern.gpunit.BatchProperties;
 import org.junit.Assert;
 
 /**
@@ -189,6 +189,17 @@ public abstract class JobResultValidatorGeneric {
         }
     }
     
+    /*
+     * This job was run for a server diff; only check for success and stderr.txt
+     */
+    public void validateServerDiff() {
+        //1) initialization check
+        checkInit();
+
+        //2) job status
+        validateJobStatus();
+    }
+
     public void validate() {
         //1) initialization check
         checkInit();
@@ -225,7 +236,7 @@ public abstract class JobResultValidatorGeneric {
             }
             directoryDiff(expectedOutputDir, downloadDir);
         }
-        
+
         //5) files: ... 
         //   (may or may not have already downloaded result files; assume that we haven't, because it doesn't make sense
         //    to include outputDir and files assertion in the same test)
@@ -251,7 +262,9 @@ public abstract class JobResultValidatorGeneric {
                         diffTest.setInputDir(testCase.getInputdir());
                         diffTest.setExpected(expected);
                         diffTest.setActual(actual);
-                        diffTest.diff();
+                        JobResultDownloader downLoader = getDownloader();
+                        String expectedURL = downLoader.getServerURLForFile(actual.getName());
+                        diffTest.diff(expectedURL);
                     }
                     int numCols = testFileObj.getNumCols();
                     int numRows = testFileObj.getNumRows();
@@ -265,7 +278,7 @@ public abstract class JobResultValidatorGeneric {
                         }
                         nf.setInputDir(testCase.getInputdir());
                         nf.setActual(actual);
-                        nf.diff();
+                        nf.diff(null);
                     }
                 }
             }
@@ -357,7 +370,7 @@ public abstract class JobResultValidatorGeneric {
             diffTest.setInputDir(testCase.getInputdir());
             diffTest.setExpected(expected);
             diffTest.setActual(actual);
-            diffTest.diff();
+            diffTest.diff(null);
         }
         if (resultFilesMap.size() > 0) {
             Assert.fail("job #"+jobId+", More job result files than expected: "+resultFilesMap.size());

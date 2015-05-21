@@ -5,8 +5,8 @@ import java.io.FileNotFoundException;
 
 import org.genepattern.client.GPClient;
 import org.genepattern.gpunit.GpUnitException;
-import org.genepattern.gpunit.test.BatchModuleTestObject;
-import org.genepattern.gpunit.test.BatchProperties;
+import org.genepattern.gpunit.BatchModuleTestObject;
+import org.genepattern.gpunit.BatchProperties;
 import org.genepattern.webservice.JobResult;
 
 
@@ -38,7 +38,7 @@ public class SoapClientUtil {
         runner.runJobAndWait();
         JobResult jobResult = runner.getJobResult();
         
-        File jobResultDir=batchProps.getJobResultDir(testObject, jobResult);
+        File jobResultDir=testObject.getJobResultDir(batchProps.getBatchOutputDir(), jobResult);
         
         JobResultValidatorSoap validator=new JobResultValidatorSoap(batchProps, testObject, jobResultDir);
         validator.setJobResult(jobResult);
