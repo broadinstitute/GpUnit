@@ -62,7 +62,7 @@
         />
     </target>
 
-    <fileset id="ShortExpressionFileCreatorTests" dir="${gpunit.dir}/${module.tests.dir}/ExpressionFileCreator/v13/gpunit" >
+    <fileset id="ShortExpressionFileCreatorTests" dir="${gpunit.dir}/${module.tests.dir}/ExpressionFileCreator/gpunit" >
         <!-- ExpressionFileCreator - v13 smoke tests only -->
         <include name="smoke_invalid_AP_noMM_test.yml" />
         <include name="smoke_invalid_GCRMA_and_CDF_test.yml" />
@@ -89,7 +89,7 @@
         />
     </target>
 
-    <fileset id="ShortHierarchicalClusteringTests" dir="${gpunit.dir}/${module.tests.dir}/HierarchicalClustering/v6/gpunit" >
+    <fileset id="ShortHierarchicalClusteringTests" dir="${gpunit.dir}/${module.tests.dir}/HierarchicalClustering/gpunit" >
         <!-- HierarchicalClustering - v6 ColOriented -->
         <include name="col_oriented/valid_pset_1_test.yml" />
         <include name="col_oriented/valid_pset_2_test.yml" />
@@ -119,7 +119,7 @@
         />
     </target>
 
-    <fileset id="ShortTopHatTests" dir="${gpunit.dir}/${module.tests.dir}/TopHat/v9/gpunit/" >
+    <fileset id="ShortTopHatTests" dir="${gpunit.dir}/${module.tests.dir}/TopHat/gpunit/" >
         <!-- TopHat v9 -->
         <include name="smoke_valid_pset_1_test.yml" />
         <include name="smoke_valid_pset_2_test.yml" />
