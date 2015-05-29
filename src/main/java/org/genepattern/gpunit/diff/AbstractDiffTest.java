@@ -19,18 +19,12 @@ import java.util.List;
  * @author pcarr
  */
 public abstract class AbstractDiffTest {
-    protected File inputDir;
     protected List<String> args;
-    protected File expected;
-    protected File actual;
     //may be helpful for sending an error message
     protected String jobId;
 
     public void setJobId(String jobId) {
         this.jobId = jobId;
-    }
-    public void setInputDir(File f) {
-        this.inputDir = f;
     }
     public void setArgs(final List<String> in) {
         //set by copy
@@ -39,15 +33,4 @@ public abstract class AbstractDiffTest {
             this.args.add(arg);
         }
     }
-    public void setExpected(File expected) {
-        this.expected = expected;
-    }
-    public void setActual(File actual) {
-        this.actual = actual;
-    }
-    
-    /**
-     * This method is the junit test case. Use the junit Assert class to indicate a failed test case.
-     */
-    abstract public void diff(String serverURL);
 }

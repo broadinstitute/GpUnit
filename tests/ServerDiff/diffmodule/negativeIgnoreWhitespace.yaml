@@ -1,0 +1,10 @@
+name: NegativeIgnoreWhiteSpace
+description: Basic test ignoring whitespace differences
+module: FileDiff
+params:
+    cmd: diff
+    input.filename.1: <%gpunit.testData%>/gpunit/FileDifference/input/TextFile.txt
+    input.filename.2: <%gpunit.testData%>/gpunit/FileDifference/input/Whitespace.txt 
+assertions:
+    jobStatus: error
+

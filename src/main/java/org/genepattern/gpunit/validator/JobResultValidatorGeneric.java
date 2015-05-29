@@ -15,10 +15,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.genepattern.gpunit.GpAssertions;
+import org.genepattern.gpunit.RemoteAssertions;
 import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.ModuleTestObject;
 import org.genepattern.gpunit.TestFileObj;
-import org.genepattern.gpunit.diff.AbstractDiffTest;
+import org.genepattern.gpunit.RemoteFileObj;
+import org.genepattern.gpunit.diff.LocalDiffTest;
+import org.genepattern.gpunit.diff.ServerDiff;
 import org.genepattern.gpunit.diff.CmdLineDiff;
 import org.genepattern.gpunit.diff.NumRowsColsDiff;
 import org.genepattern.gpunit.diff.UnixCmdLineDiff;
@@ -189,8 +192,12 @@ public abstract class JobResultValidatorGeneric {
         }
     }
     
-    /*
-     * This job was run for a server diff; only check for success and stderr.txt
+    /**
+     * This job was run for a server diff; so only check for success and stderr.txt
+     * but don't download any result files.
+     * 
+     * @author cnorman
+     * 
      */
     public void validateServerDiff() {
         //1) initialization check
@@ -200,6 +207,10 @@ public abstract class JobResultValidatorGeneric {
         validateJobStatus();
     }
 
+    /**
+     * Validate a normal testcase job result (that is, not the result of running a
+     * server diff). Validate any local or remote assertions.
+     */
     public void validate() {
         //1) initialization check
         checkInit();
@@ -207,23 +218,51 @@ public abstract class JobResultValidatorGeneric {
         //2) job status
         validateJobStatus();
         
-        //if necessary, download result files
-        if (props.getSaveDownloads()) {
-            try {
-                downloadResultFiles(downloadDir);
-            }
-            catch (Exception e) {
-                Assert.fail("job #"+jobId+", Error downloading result files: "+ e.getLocalizedMessage());
-            }
+        //3) Validate assertions. A batch of jobs can intermix local and remote assertions,
+        // but within a single testcase they are mutually exclusive.
+
+        int localFileCount = 0,
+            remoteFileCount = 0;
+        GpAssertions localAssertions = testCase.getAssertions();
+        if (null != localAssertions && null != localAssertions.getFiles()) {
+            
+            localFileCount = localAssertions.getFiles().size();   
+        }
+        RemoteAssertions remoteAssertions = testCase.getRemoteassertions();
+        if (null != remoteAssertions && null != remoteAssertions.getFiles()) {
+            remoteFileCount = remoteAssertions.getFiles().size();   
         }
 
+        if (localFileCount > 0) {
+            Assert.assertEquals("Can't intermix local and remote assertions in a single testcase", remoteFileCount, 0);
+            //if necessary, download result files
+            if (props.getSaveDownloads()) {
+                try {
+                    downloadResultFiles(downloadDir);
+                }
+                catch (Exception e) {
+                    Assert.fail("job #"+jobId+", Error downloading result files: "+ e.getLocalizedMessage());
+                }
+            }
+            validateLocalAssertions(localAssertions);
+        }
+        else if (remoteFileCount > 0) {
+            validateRemoteAssertions(remoteAssertions);
+        }
+    }
+ 
+    /**
+     * Validate any local assertions.
+     * 
+     */
+    private void validateLocalAssertions(GpAssertions assertions) {
+    
         //3) numFiles: ...
-        GpAssertions assertions = testCase.getAssertions();
         if (assertions.getNumFiles() >= 0) {
             //Note: when numFiles < 0, it means don't run this assertion
             Assert.assertEquals("job #"+jobId+", Number of result files", assertions.getNumFiles(), getNumResultFiles());
         }
-
+    
         //4) outputDir: ...
         final File expectedOutputDir=assertions.getOutputDir();
         if (expectedOutputDir != null) {
@@ -236,7 +275,7 @@ public abstract class JobResultValidatorGeneric {
             }
             directoryDiff(expectedOutputDir, downloadDir);
         }
-
+    
         //5) files: ... 
         //   (may or may not have already downloaded result files; assume that we haven't, because it doesn't make sense
         //    to include outputDir and files assertion in the same test)
@@ -257,14 +296,12 @@ public abstract class JobResultValidatorGeneric {
                     String diff = testFileObj.getDiff();
                     if (diff != null) {
                         File expected = testCase.initFileFromPath(diff);
-                        AbstractDiffTest diffTest = getDiff(testFileObj);
+                        LocalDiffTest diffTest = getDiff(testFileObj);
                         diffTest.setJobId(""+jobId);
                         diffTest.setInputDir(testCase.getInputdir());
                         diffTest.setExpected(expected);
                         diffTest.setActual(actual);
-                        JobResultDownloader downLoader = getDownloader();
-                        String expectedURL = downLoader.getServerURLForFile(actual.getName());
-                        diffTest.diff(expectedURL);
+                        diffTest.diff();
                     }
                     int numCols = testFileObj.getNumCols();
                     int numRows = testFileObj.getNumRows();
@@ -278,11 +315,66 @@ public abstract class JobResultValidatorGeneric {
                         }
                         nf.setInputDir(testCase.getInputdir());
                         nf.setActual(actual);
-                        nf.diff(null);
+                        nf.diff();
                     }
                 }
             }
         }
+    }
+
+    /**
+     * Validate any remote assertions.
+     * 
+     */
+    private void validateRemoteAssertions(RemoteAssertions remoteAssertions) {
+
+        // numFiles: ...
+        if (remoteAssertions.getNumFiles() >= 0) {
+            // TODO: implement remote numfiles
+            Assert.fail("Remote numfiles assertion not implemented");
+        }
+    
+        // outputDir: ...
+        // TODO: implement remote directory diff
+        final File expectedOutputDir=remoteAssertions.getOutputDir();
+        if (expectedOutputDir != null) {
+            Assert.fail("remote directory diff not yet implemented");
+            //directoryDiff(expectedOutputDir, downloadDir);
+        }
+    
+        // files: ... 
+        if (remoteAssertions.getFiles() != null) {
+            for(Entry<String,RemoteFileObj> entry : remoteAssertions.getFiles().entrySet()) {
+                String filename = entry.getKey();
+                Assert.assertTrue("job #"+jobId+", Expecting result file named '"+filename+"'", hasResultFile(filename));
+                RemoteFileObj remoteFileObj = entry.getValue();
+                if (remoteFileObj != null) {
+                    String expected = remoteFileObj.getDiff();
+                    if (expected != null) {
+                        ServerDiff serverDiff = new ServerDiff();
+                        serverDiff.setArgs(remoteFileObj.getDiffCmdArgs());
+                        serverDiff.setJobId(""+jobId);
+                        String actualURL = getDownloader().getServerURLForFile(filename);
+                        serverDiff.diff(actualURL, expected);
+                    }
+                    int numCols = remoteFileObj.getNumCols();
+                    int numRows = remoteFileObj.getNumRows();
+                    if (numCols >= 0 || numRows >= 0) {
+                        Assert.fail("Remote num/col assertion not yet implemented");
+                        // NumRowsColsDiff nf = new NumRowsColsDiff();
+                        // if (numCols >= 0) {
+                        //     nf.setExpectedNumCols(numCols);
+                        // }
+                        // if (numRows >= 0) {
+                        //     nf.setExpectedNumRows(numRows);
+                        // }
+                        // nf.setInputDir(testCase.getInputdir());
+                        // nf.setActual(actual);
+                        // nf.diff(null);
+                    }
+                }
+            }
+        }        
     }
 
     public void clean() throws GpUnitException {
@@ -365,19 +457,19 @@ public abstract class JobResultValidatorGeneric {
             }
             File expected = expectedFilesMap.get(filename);
             //diff(expected,actual);
-            AbstractDiffTest diffTest = getDiff( (TestFileObj) null);
+            LocalDiffTest diffTest = getDiff( (TestFileObj) null);
             diffTest.setJobId(""+jobId);
             diffTest.setInputDir(testCase.getInputdir());
             diffTest.setExpected(expected);
             diffTest.setActual(actual);
-            diffTest.diff(null);
+            diffTest.diff();
         }
         if (resultFilesMap.size() > 0) {
             Assert.fail("job #"+jobId+", More job result files than expected: "+resultFilesMap.size());
         }
     }
     
-    private AbstractDiffTest getDiff(TestFileObj resultFileObj) {
+    private LocalDiffTest getDiff(TestFileObj resultFileObj) {
         
         List<String> customDiffCmdArgs = null;
         //for debugging
@@ -396,12 +488,12 @@ public abstract class JobResultValidatorGeneric {
         }
         //else default case
         else {
-            AbstractDiffTest diffTest = new UnixCmdLineDiff();
+            LocalDiffTest diffTest = new UnixCmdLineDiff();
             List<String> args = Collections.emptyList();
             diffTest.setArgs(args);
             return diffTest;
         }
-        AbstractDiffTest customDiff = null;
+        LocalDiffTest customDiff = null;
         try {
             customDiff = initDiffTestFromCmdArgs(customDiffCmdArgs);
         }
@@ -415,7 +507,7 @@ public abstract class JobResultValidatorGeneric {
         return customDiff;
     }
     
-    private AbstractDiffTest initDiffTestFromCmdArgs(List<String> args) throws Exception {
+    private LocalDiffTest initDiffTestFromCmdArgs(List<String> args) throws Exception {
         if (args == null) {
             throw new IllegalArgumentException("diffCmd==null");
         }
@@ -444,11 +536,11 @@ public abstract class JobResultValidatorGeneric {
         catch (ClassNotFoundException e) {
             throw e;
         }
-        if (!AbstractDiffTest.class.isAssignableFrom(diffClass)) {
-            throw new Exception("diffCmd class cannot be cast to AbstractDiffTest, classname="+diffClass);
+        if (!LocalDiffTest.class.isAssignableFrom(diffClass)) {
+            throw new Exception("diffCmd class cannot be cast to LocalDiffTest, classname="+diffClass);
         }
         try {
-            AbstractDiffTest customDiff = (AbstractDiffTest) diffClass.newInstance();
+            LocalDiffTest customDiff = (LocalDiffTest) diffClass.newInstance();
             List<String> extraArgs;
             if (args.size()>1) {
                 extraArgs = args.subList(1, args.size());

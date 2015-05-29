@@ -1,0 +1,11 @@
+name: PositiveCaseInsensitive
+description: Basic case insensitive test to compare two text files
+module: FileDiff
+params:
+    cmd: diff
+    args: -i
+    input.filename.1: <%gpunit.testData%>/gpunit/FileDifference/input/TextFile.txt
+    input.filename.2: <%gpunit.testData%>/gpunit/FileDifference/input/LowerCase.txt 
+assertions:
+    jobStatus: success
+

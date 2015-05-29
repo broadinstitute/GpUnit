@@ -21,7 +21,7 @@ import org.junit.Assert;
  * @author pcarr
  *
  */
-public class NumRowsColsDiff extends AbstractDiffTest {
+public class NumRowsColsDiff extends LocalDiffTest {
     //expected args, --numRows=<numRows> --numCols=<numCols> <expected> <actual>
     
     private int expectedNumRows=-1;
@@ -80,7 +80,7 @@ public class NumRowsColsDiff extends AbstractDiffTest {
     }
 
     @Override
-    public void diff(String serverURL) {
+    public void diff() {
         initFromArgs();
         if (expectedNumCols >= 0 || expectedNumRows >= 0) {
             Dataset dataset = null;

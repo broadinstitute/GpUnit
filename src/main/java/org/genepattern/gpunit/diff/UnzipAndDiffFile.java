@@ -11,11 +11,11 @@ import java.util.Enumeration;
  * This diff command takes a job result that is a zip file and then does a diff against a single file contained in it.
  * Created by nazaire on 3/20/14.
  */
-public class UnzipAndDiffFile extends AbstractDiffTest
+public class UnzipAndDiffFile extends LocalDiffTest
 {
 
     @Override
-    public void diff(String serverURL)
+    public void diff()
     {
         System.out.println("This is my unzip and diff test class");
 

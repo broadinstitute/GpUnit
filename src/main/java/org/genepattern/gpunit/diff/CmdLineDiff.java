@@ -48,7 +48,7 @@ assertions:
  * @author pcarr
  *
  */
-public class CmdLineDiff extends AbstractDiffTest {
+public class CmdLineDiff extends LocalDiffTest {
 
     protected String[] getCmdLine() {
         //must have at least one arg
@@ -101,7 +101,7 @@ public class CmdLineDiff extends AbstractDiffTest {
     }
 
     @Override
-    public void diff(String serverURL) {
+    public void diff() {
         int exitCode = 2;
         boolean interrupted = false;
         try {

@@ -7,15 +7,14 @@ import org.genepattern.gpunit.BatchProperties;
 import org.yaml.snakeyaml.parser.ParserException;
 
 public class TestFileObj {
-    private int numRows = -1;
-    private int numCols = -1;
-    private String diff = null;
-    //private String diffCmd = null;
-    private Object diffCmd; //the value as provided in the yaml file (can be a String or a List<String>)
-    private List<String> diffCmdArgs; //the value to use when validating the results (can be null)
-    private BatchProperties bp = null;
+    protected int numRows = -1;
+    protected int numCols = -1;
+    protected String diff = null;
+    protected Object diffCmd; //the value as provided in the yaml file (can be a String or a List<String>)
+    protected List<String> diffCmdArgs; //the value to use when validating the results (can be null)
+    protected BatchProperties bp = null;
 
-    private BatchProperties getBatchProperties() {
+    protected BatchProperties getBatchProperties() {
         if (null == bp) {
             try {
                 bp = BatchProperties.Factory.initFromProps();
@@ -30,13 +29,13 @@ public class TestFileObj {
     public int getNumRows() {
         return numRows;
     }
-    public void setNumRows(int numRows) {
+    public void setNumRows(int numRows) throws GpUnitException {
         this.numRows = numRows;
     }
     public int getNumCols() {
         return numCols;
     }
-    public void setNumCols(int numCols) {
+    public void setNumCols(int numCols) throws GpUnitException {
         this.numCols = numCols;
     }
     public String getDiff() {

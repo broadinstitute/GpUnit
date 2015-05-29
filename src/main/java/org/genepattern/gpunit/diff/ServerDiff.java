@@ -21,24 +21,24 @@ public class ServerDiff extends AbstractDiffTest {
     private static String serverDiffModuleName = "FileDiff";
 
     /**
-     * Given the serverURL, synthesize a string representing a "test" that will execute
-     * the server diff module on the actual and expected files.
+     * Given the actual and expected remote file URLs, synthesize a string representing a "test" that
+     * will execute the server diff module on the actual and expected files.
      */
-    private String createDiffModuleTestObject(String serverURL) {
+    private String createDiffModuleTestObject(String actualURL, String expectedURL) {
         StringBuilder sb = new StringBuilder();
         sb.append("name: Diff Module\ndescription: Dynamically created test to execute the server diff Module\nmodule: ");
         sb.append (serverDiffModuleName);
-        sb.append("\nparams:\n    args: ");
-        if (args.size() > 0) {
-            for(String arg : args) {
-                sb.append(arg);
-                sb.append(" ");
-            }
+        sb.append("\nparams:\n");
+        sb.append("    cmd: " + args.get(0));
+        sb.append("\n    args: ");
+        for (int i = 1; i < args.size(); i++) {
+            sb.append(args.get(i));
+            sb.append(" ");
         }
-        sb.append("\n    input.filename1: ");
-        sb.append(serverURL);
-        sb.append("\n    input.filename2: ");
-        sb.append(expected.getAbsolutePath());
+        sb.append("\n    input.filename.1: ");
+        sb.append(actualURL);
+        sb.append("\n    input.filename.2: ");
+        sb.append(expectedURL);
         sb.append("\nassertions:\n    jobStatus: success\n"); 
         return sb.toString();
     }
@@ -46,9 +46,8 @@ public class ServerDiff extends AbstractDiffTest {
     /**
      * Execute a server-side diffs to validate a job Result.
      */
-    @Override
-    public void diff(String serverURL) {
-        String diffTask = createDiffModuleTestObject(serverURL);
+    public void diff(String actualURL, String expectedURL) {
+        String diffTask = createDiffModuleTestObject(actualURL, expectedURL);
         InputStream is = new ByteArrayInputStream(diffTask.getBytes());
         try {
             ModuleTestObject testCase = ModuleTestParserYaml.parse(is);
