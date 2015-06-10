@@ -251,7 +251,7 @@ public class BatchModuleTest {
         try {
             //submit a job via new REST API
             if (batchProps.getClient().equals(BatchProperties.GpUnitClient.REST)) {
-                RestClientUtil.runTest(batchProps, testObj, false);
+                RestClientUtil.runTest(batchProps, testObj, null);
                 return;
             }
 

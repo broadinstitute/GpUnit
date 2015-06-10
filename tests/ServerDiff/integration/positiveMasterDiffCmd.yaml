@@ -1,12 +1,12 @@
-name: PositiveServerDiffIntegration
-description: Uses ConvertLineEndings to test remote server diffs
+name: PositiveMasterDiff
+description: Uses ConvertLineEndings to test a single, master diff command for a remote server diff
 module: ConvertLineEndings
 params: 
     input.filename: <%gpunit.testData%>/gpunit/FileDifference/input/TextFile.txt
     output.file: <input.filename_basename>.cvt.<input.filename_extension>
-remoteassertions:
+assertions:
+    diffCmd: diff
     files:
         TextFile.cvt.txt:
-            diffCmd: diff -B
             diff: <%gpunit.testData%>/gpunit/FileDifference/input/TextFileCopy.txt
 

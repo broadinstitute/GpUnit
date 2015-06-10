@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.genepattern.gpunit.BatchProperties;
+import org.junit.Assert;
 import org.yaml.snakeyaml.parser.ParserException;
 
 public class TestFileObj {
@@ -30,12 +31,18 @@ public class TestFileObj {
         return numRows;
     }
     public void setNumRows(int numRows) throws GpUnitException {
+        if (!bp.getRunLocalAssertions()) {
+            Assert.fail("Num rows assertions only implemented for local assertions");
+        }
         this.numRows = numRows;
     }
     public int getNumCols() {
         return numCols;
     }
     public void setNumCols(int numCols) throws GpUnitException {
+        if (!bp.getRunLocalAssertions()) {
+            Assert.fail("Num cols assertions only implemented for local assertions");
+        }
         this.numCols = numCols;
     }
     public String getDiff() {

@@ -10,7 +10,7 @@ import org.genepattern.gpunit.BatchProperties;
 import org.junit.Assert;
 
 public class RestClientUtil {
-    public static void runTest(BatchProperties batchProps, BatchModuleTestObject testObject, boolean isDiff) throws GpUnitException 
+    public static void runTest(BatchProperties batchProps, BatchModuleTestObject testObject, JobResultValidatorRest parentJobValidator) throws GpUnitException 
     {
         JobRunnerRest runner;
         try {
@@ -40,15 +40,18 @@ public class RestClientUtil {
         Assert.assertNotNull("jobId==null", jobId);
         File jobResultDir=testObject.getJobResultDir(batchProps.getBatchOutputDir(), jobId);
         
-        JobResultValidatorRest validator=new JobResultValidatorRest(batchProps, testObject, jobResultDir);
+        JobResultValidatorRest validator=new JobResultValidatorRest(batchProps, testObject, jobResultDir, parentJobValidator);
         validator.setRestClient(runner);
         validator.setJobStatus(jobResult);
         try {
-            if (isDiff) {
-                validator.validateServerDiff();
+            if (parentJobValidator != null) {
+                validator.validateRemoteDiff(); // validate a diff job which was executed on behalf of the job represented by parentJobValidator
+            }
+            else if (batchProps.getRunLocalAssertions()) {
+                validator.validate();  //  validate the old fashioned way, using local assertions/diffs
             }
             else {
-                validator.validate();
+                validator.validateRemote();  // validate using remote diffs
             }
         }
         finally {

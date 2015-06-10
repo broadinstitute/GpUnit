@@ -1,0 +1,9 @@
+name: NegativeFiles
+description: Basic negative test to diff two DIFFERENT text files
+module: Diff
+params:
+    arg0: <%gpunit.testData%>/gpunit/FileDifference/input/TextFile.txt
+    arg1: <%gpunit.testData%>/gpunit/FileDifference/input/NegativeTestText.txt 
+assertions:
+    jobStatus: error
+

@@ -1,0 +1,9 @@
+name: PositiveFiles
+description: Basic positive test to diff two identical text files
+module: Diff
+params:
+    arg0: <%gpunit.testData%>/gpunit/FileDifference/input/TextFile.txt
+    arg1: <%gpunit.testData%>/gpunit/FileDifference/input/TextFileCopy.txt 
+assertions:
+    jobStatus: success
+

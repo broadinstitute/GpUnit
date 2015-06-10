@@ -24,8 +24,6 @@ public class ModuleTestObject {
     private Map<String,Object> params = new HashMap<String,Object>();
     /** the list of assertions */
     private GpAssertions assertions = new GpAssertions();
-    /** remote (server-based) assertions */
-    private RemoteAssertions remoteAssertions = new RemoteAssertions();
 
     private BatchProperties bp = null;
 
@@ -115,12 +113,6 @@ public class ModuleTestObject {
     }
     public void setAssertions(GpAssertions assertions) {
         this.assertions = assertions;
-    }
-    public RemoteAssertions getRemoteassertions() {
-        return remoteAssertions;
-    }
-    public void setRemoteassertions(RemoteAssertions remoteAssertions) {
-        this.remoteAssertions = remoteAssertions;
     }
     public void setInputdir(File dir) {
         this.inputdir = dir;

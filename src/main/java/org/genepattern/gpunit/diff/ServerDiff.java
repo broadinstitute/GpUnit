@@ -12,13 +12,20 @@ import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.exec.rest.RestClientUtil;
 import org.genepattern.gpunit.yaml.ModuleTestParserYaml;
 
+import org.genepattern.gpunit.exec.rest.JobResultValidatorRest;
+
 /**
  * Run the server diff module to verify job results.
  * 
  * @author cnorman
  */
 public class ServerDiff extends AbstractDiffTest {
-    private static String serverDiffModuleName = "FileDiff";
+    private static String serverDiffModuleName = "Diff";
+    private final JobResultValidatorRest parentJobValidator;
+
+    public ServerDiff(JobResultValidatorRest parentJobValidator) {
+        this.parentJobValidator = parentJobValidator;
+    }
 
     /**
      * Given the actual and expected remote file URLs, synthesize a string representing a "test" that
@@ -27,17 +34,27 @@ public class ServerDiff extends AbstractDiffTest {
     private String createDiffModuleTestObject(String actualURL, String expectedURL) {
         StringBuilder sb = new StringBuilder();
         sb.append("name: Diff Module\ndescription: Dynamically created test to execute the server diff Module\nmodule: ");
-        sb.append (serverDiffModuleName);
-        sb.append("\nparams:\n");
-        sb.append("    cmd: " + args.get(0));
-        sb.append("\n    args: ");
-        for (int i = 1; i < args.size(); i++) {
-            sb.append(args.get(i));
-            sb.append(" ");
+        if (null == args) {
+            sb.append (serverDiffModuleName); // default to "Diff Module"
         }
-        sb.append("\n    input.filename.1: ");
+        else {
+            String cmd = args.get(0);
+            if (!cmd.equalsIgnoreCase(serverDiffModuleName)) {
+                Assert.fail("No support for alternative remote diff module: " + cmd);
+            }
+            else {
+                // make sure the case sense is correct (many of the test files have lower case "diff", but the module is named "Diff")
+                sb.append(serverDiffModuleName);
+            }
+            if (args.size() > 1) {
+                // TODO: stderr ??
+                System.out.println("Warning: superfluos args ignored for diff command: " + cmd);
+            }
+        }
+        sb.append("\nparams:");
+        sb.append("\n    arg0: ");
         sb.append(actualURL);
-        sb.append("\n    input.filename.2: ");
+        sb.append("\n    arg1: ");
         sb.append(expectedURL);
         sb.append("\nassertions:\n    jobStatus: success\n"); 
         return sb.toString();
@@ -56,7 +73,7 @@ public class ServerDiff extends AbstractDiffTest {
             BatchProperties bp = BatchProperties.Factory.initFromProps();
             try {
                 if (bp.getClient().equals(BatchProperties.GpUnitClient.REST)) {
-                    RestClientUtil.runTest(bp, batchTestObj, true);
+                    RestClientUtil.runTest(bp, batchTestObj, parentJobValidator);
                 }
                 else {
                     throw new GpUnitException("Invalid SOAP call context; server side diffs are REST only");

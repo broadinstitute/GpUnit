@@ -56,7 +56,7 @@ public class BatchProperties {
      */
     final static public String PROP_SAVE_DOWNLOADS="gpunit.save.downloads";
     /**
-     * When this is set, delete jobs from the server for all succesfully completed test cases.
+     * When this is set, delete jobs from the server for all successfully completed test cases.
      */
     final static public String PROP_DELETE_JOBS="gpunit.delete.jobs";
 
@@ -99,12 +99,16 @@ public class BatchProperties {
      * 
      */
     public static final String PROP_JOB_COMPLETION_TIMEOUT="gpunit.jobCompletionTimeout";
-    
+
+    private static final String PROP_LOCAL_ASSERTIONS = "gpunit.localAssertions"; // set to true to force local diffs for backward compatibility
+
     private String gpUrl = "http://127.0.0.1:8080";
     private String gpUsername =  "test";
     private String gpPassword = "test";
 
+
     private GpUnitClient client=GpUnitClient.SOAP;
+
 
     private String outputDir="./jobResults";
     private String batchName="latest";
@@ -130,6 +134,9 @@ public class BatchProperties {
     // the amount of time, in seconds, to allow each junit test to run
     private final int testTimeout;
     
+    // force GpUnit to use local assertions/diffs instead of server diffs; for backward compatibility
+    private boolean localAssertions = false;
+
     public BatchProperties() throws GpUnitException {
         //initialize values from system properties
         if (System.getProperties().containsKey(PROP_GP_URL)) {
@@ -168,6 +175,9 @@ public class BatchProperties {
         }
         this.batchOutputDir=_initBatchOutputDir();
         
+        if (System.getProperties().containsKey(PROP_LOCAL_ASSERTIONS)) {
+            this.localAssertions=Boolean.getBoolean(PROP_LOCAL_ASSERTIONS);
+        }
         this.testTimeout=initTestTimeout();
         this.jobCompletionTimeout=initJobCompletionTimeout();
     }
@@ -323,6 +333,10 @@ public class BatchProperties {
         return serverDir;
     }
     
+    public boolean getRunLocalAssertions() {
+        return localAssertions;
+    }
+
     private boolean createdBatchOutputDir=false;
     private File batchOutputDir=null;
     //if necessary, create the top level download directory
