@@ -240,7 +240,9 @@
         <ant antfile="automatrix/build.xml" target="createWar" useNativeBasedir="true" />
     </target>
 
-    <target name="gpunit-junit-tests" depends="package">
+    <target name="gpunit-junit-tests" depends="package, init">
+        <property name="junit.results.dir" location="./junit" />
+        <mkdir dir="${junit.results.dir}" />
         <junit showoutput="true" printsummary="true" >
             <classpath>
                 <pathelement location="${gpunit.dir}/classes"/>
@@ -252,7 +254,9 @@
                 </fileset>
                 <pathelement location="${client.lib.dir}/GenePattern.jar" />
             </classpath>
-            <test name="org.genepattern.gpunit.yaml.PropertyExpansionTests" outfile="TEST-all" todir="${report.run.dir}" />
+            <test name="org.genepattern.gpunit.yaml.PropertyExpansionTests" outfile="gpunit-junit" todir="${junit.results.dir}" >
+                <formatter type="xml"/>
+            </test>
         </junit>
     </target>
 
