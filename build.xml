@@ -252,7 +252,7 @@
                 </fileset>
                 <pathelement location="${client.lib.dir}/GenePattern.jar" />
             </classpath>
-            <test name="org.genepattern.gpunit.yaml.PropertyExpansionTests" outfile="TEST-all" todir="./junit" />
+            <test name="org.genepattern.gpunit.yaml.PropertyExpansionTests" outfile="TEST-all" todir="${report.run.dir}" />
         </junit>
     </target>
 
