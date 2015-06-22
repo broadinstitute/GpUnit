@@ -7,6 +7,6 @@ params:
 assertions:
     files:
         TextFile.cvt.txt:
-            diffCmd: diff -B
+            diffCmd: diff
             diff: <%gpunit.testData%>/gpunit/FileDifference/input/TextFileCopy.txt
 

@@ -10,7 +10,16 @@ import org.genepattern.gpunit.BatchProperties;
 import org.junit.Assert;
 
 public class RestClientUtil {
-    public static void runTest(BatchProperties batchProps, BatchModuleTestObject testObject, JobResultValidatorRest parentJobValidator) throws GpUnitException 
+
+    /*
+     * Run a job on the server. If parentJobValidator is not null, then this job is being run on half of the parent job
+     * represented by the parent validator (i.e., its a diff job being run to verify the parent job).
+     */
+    public static void runTest(
+            BatchProperties batchProps,
+            BatchModuleTestObject testObject,
+            JobResultValidatorRest parentJobValidator
+        ) throws GpUnitException
     {
         JobRunnerRest runner;
         try {

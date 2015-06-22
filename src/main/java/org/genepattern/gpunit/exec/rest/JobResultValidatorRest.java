@@ -43,7 +43,7 @@ public class JobResultValidatorRest extends JobResultValidatorGeneric {
     @Override 
     protected String createErrorMessage(String sourceMessage) {
         if (parentJobValidator != null) {
-            return "Error processing diff for job # " + parentJobValidator.getJobId() + ": " + sourceMessage;
+            return "Error processing diff for job #" + parentJobValidator.getJobId() + ": " + sourceMessage;
         }
         else {
             return super.createErrorMessage(sourceMessage);
@@ -180,7 +180,19 @@ public class JobResultValidatorRest extends JobResultValidatorGeneric {
 
     @Override
     public void deleteJob() throws GpUnitException {
-        throw new GpUnitException(createErrorMessage("GpUnit configuration error, deleteJob Method not implemented!"));
+        restClient.deleteJob(this.getJobId());
     }
 
+    @Override
+    public void clean() throws GpUnitException {
+        final boolean saveDownloads=getBatchProperties().getSaveDownloads();
+        final boolean deleteJobs=getBatchProperties().getDeleteJobs();
+        if (!saveDownloads) {
+            cleanDownloadedFiles();
+        }
+        // if parentJobValidator != null then this is a diff job, so delete it
+        if (deleteJobs || parentJobValidator != null) {
+            deleteJob();
+        }
+    }
 }

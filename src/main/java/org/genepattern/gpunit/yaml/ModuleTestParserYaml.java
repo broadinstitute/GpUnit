@@ -60,13 +60,14 @@ public class ModuleTestParserYaml {
             throw new GpUnitException("Error parsing test yaml file: "+e.toString());
         }
         catch (Throwable t) {
-            // Try to get the originating exception for detailed error message; this is dependent
-            // on snakeyaml's exception propagation implementation
-            Throwable cause1 = t.getCause();
-            if (cause1 != null) {
-                Throwable cause2 = cause1.getCause();
-                if (cause2 != null && (cause2 instanceof InvocationTargetException)) {
-                    InvocationTargetException target = (InvocationTargetException) cause2;
+            // Try to get the originating exception and extract a useful error message. This is useful if
+            // the exception was originally thrown by user-code during YAML parsing (i.e., a reference
+            // to an undefined property during property substitution). In order to get a detailed
+            // error message to the user we need to dive down to the original InvocationTargetException.
+            // This is somewhat dependent on snakeyaml's exception propagation implementation.
+            for (Throwable cause = t; cause != null; cause = cause.getCause()) {
+                if (cause instanceof InvocationTargetException) {
+                    InvocationTargetException target = (InvocationTargetException) cause;
                     Throwable ie = target.getTargetException();
                     if (ie != null) {
                         String s = ie.getLocalizedMessage();

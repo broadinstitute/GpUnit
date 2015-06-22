@@ -47,8 +47,7 @@ public class ServerDiff extends AbstractDiffTest {
                 sb.append(serverDiffModuleName);
             }
             if (args.size() > 1) {
-                // TODO: stderr ??
-                System.out.println("Warning: superfluos args ignored for diff command: " + cmd);
+                Assert.fail("Warning: too many arguments for diff command: " + cmd);
             }
         }
         sb.append("\nparams:");

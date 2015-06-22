@@ -29,6 +29,7 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.entity.FileEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -59,7 +60,7 @@ public class JobRunnerRest {
     private BatchProperties batchProps;
     private ModuleTestObject test;
     private URL addFileUrl;
-    private URL addJobUrl;
+    private URL jobsUrl;
     private URL getTaskUrl;
 
     public JobRunnerRest(final BatchProperties batchProps, final ModuleTestObject test) throws GpUnitException 
@@ -72,54 +73,26 @@ public class JobRunnerRest {
             throw new IllegalArgumentException("test==null");
         }
         this.test=test;
-        this.addFileUrl=initAddFileUrl();
-        this.addJobUrl=initAddJobUrl();
-        this.getTaskUrl=initGetTaskUrl();
+        this.addFileUrl=initEndpointUrl("/data/upload/job_input");
+        this.jobsUrl=initEndpointUrl("/jobs");
+        this.getTaskUrl=initEndpointUrl("/tasks");
     }
 
-    private URL initAddFileUrl() throws GpUnitException 
+    private URL initEndpointUrl(String endpoint) throws GpUnitException
     {
         String gpUrl=batchProps.getGpUrl();
         if (!gpUrl.endsWith("/")) {
             gpUrl += "/";
         }
-        gpUrl += gpContextPath+"/rest/v1/data/upload/job_input";
+        gpUrl += gpContextPath+"/rest/v1"+endpoint;
         try {
             return new URL(gpUrl);
         }
         catch (MalformedURLException e) {
-            throw new GpUnitException("Error initializing path to the 'job_input' endpoint", e);
+            throw new GpUnitException("Error initializing path to the " + endpoint + " endpoint", e);
         }
     }
 
-    private URL initAddJobUrl() throws GpUnitException {
-        String gpUrl=batchProps.getGpUrl();
-        if (!gpUrl.endsWith("/")) {
-            gpUrl += "/";
-        }
-        gpUrl += gpContextPath+"/rest/v1/jobs";
-        try {
-            return new URL(gpUrl);
-        }
-        catch (MalformedURLException e) {
-            throw new GpUnitException("Error initializing path to the 'jobs' endpoint", e);
-        }
-    }
-    
-    private  URL initGetTaskUrl() throws GpUnitException {
-        String gpUrl=batchProps.getGpUrl();
-        if (!gpUrl.endsWith("/")) {
-            gpUrl += "/";
-        }
-        gpUrl += gpContextPath+"/rest/v1/tasks";
-        try {
-            return new URL(gpUrl);
-        }
-        catch (MalformedURLException e) {
-            throw new GpUnitException("Error initializing path to the 'tasks' endpoint", e);
-        }
-    }
-    
     /**
      * Prepare the (list of) input file(s) from the given yamlValue. 
      * If necessary upload each input file to the server. This method blocks while files are being transferred.
@@ -397,17 +370,17 @@ public class JobRunnerRest {
             job = initJobInputJsonObject(lsid);
         }
         catch (Exception e) {
-            throw new GpUnitException("Error preparing JSON object to POST to "+addJobUrl, e);
+            throw new GpUnitException("Error preparing JSON object to POST to "+jobsUrl, e);
         }
         
         HttpClient client = new DefaultHttpClient();
-        HttpPost post = new HttpPost(addJobUrl.toExternalForm());
+        HttpPost post = new HttpPost(jobsUrl.toExternalForm());
         post = setAuthHeaders(post);
         try {
             post.setEntity(new StringEntity(job.toString()));
         }
         catch (UnsupportedEncodingException e) {
-            throw new GpUnitException("Error preparing HTTP request, POST "+addJobUrl, e);
+            throw new GpUnitException("Error preparing HTTP request, POST "+jobsUrl, e);
         }
 
         HttpResponse response;
@@ -415,10 +388,10 @@ public class JobRunnerRest {
             response = client.execute(post);
         }
         catch (ClientProtocolException e) {
-            throw new GpUnitException("Error executing HTTP request, POST "+addJobUrl, e);
+            throw new GpUnitException("Error executing HTTP request, POST "+jobsUrl, e);
         }
         catch (IOException e) {
-            throw new GpUnitException("Error executing HTTP request, POST "+addJobUrl, e);
+            throw new GpUnitException("Error executing HTTP request, POST "+jobsUrl, e);
         }
         final int statusCode=response.getStatusLine().getStatusCode();
         final boolean success;
@@ -433,7 +406,7 @@ public class JobRunnerRest {
             success=false;
         }
         if (!success) {
-            String message="POST "+addJobUrl.toExternalForm()+" failed! "+statusCode+": "+response.getStatusLine().getReasonPhrase();
+            String message="POST "+jobsUrl.toExternalForm()+" failed! "+statusCode+": "+response.getStatusLine().getReasonPhrase();
             throw new GpUnitException(message);
         }
         
@@ -443,7 +416,7 @@ public class JobRunnerRest {
             jobLocation=locations[0].getValue();
         }
         if (jobLocation==null) {
-            final String message="POST "+addJobUrl.toExternalForm()+" failed! Missing required response header: Location";
+            final String message="POST "+jobsUrl.toExternalForm()+" failed! Missing required response header: Location";
             throw new GpUnitException(message);
         }
         URI jobUri;
@@ -452,11 +425,60 @@ public class JobRunnerRest {
             return jobUri;
         }
         catch (URISyntaxException e) {
-            final String message="POST "+addJobUrl.toExternalForm()+" failed!";
+            final String message="POST "+jobsUrl.toExternalForm()+" failed!";
             throw new GpUnitException(message, e);
         }
     }
     
+    /**
+     * Delete the job with id jobID from the server.
+     */
+    public void deleteJob(String jobID) throws GpUnitException {
+        final String urlStr=jobsUrl.toExternalForm() + "/" + jobID + "/delete";
+        URI deleteURI;
+        try {
+            deleteURI = new URI(urlStr);
+        }
+        catch (URISyntaxException e) {
+            throw new GpUnitException("URI syntax exception in "+urlStr, e);
+        }
+
+        HttpClient client = new DefaultHttpClient();
+        HttpDelete delete = new HttpDelete(deleteURI);
+
+        // set auth headers
+        String orig = batchProps.getGpUsername()+":"+batchProps.getGpPassword();
+        //encoding  byte array into base 64
+        final byte[] encoded = Base64.encodeBase64(orig.getBytes());
+        final String basicAuth="Basic "+new String(encoded);
+        delete.setHeader("Authorization", basicAuth);
+        delete.setHeader("Content-type", "application/json");
+        delete.setHeader("Accept", "application/json");
+
+        HttpResponse response;
+        try {
+            response = client.execute(delete);
+        }
+        catch (ClientProtocolException e) {
+            throw new GpUnitException("Error executing HTTP request, POST "+jobsUrl, e);
+        }
+        catch (IOException e) {
+            throw new GpUnitException("Error executing HTTP request, POST "+jobsUrl, e);
+        }
+        final int statusCode=response.getStatusLine().getStatusCode();
+        final boolean success;
+        if (statusCode >= 200 && statusCode < 300) {
+            success=true;
+        }
+        else {
+            success=false;
+        }
+        if (!success) {
+            String message="POST "+jobsUrl.toExternalForm()+" failed! "+statusCode+": "+response.getStatusLine().getReasonPhrase();
+            throw new GpUnitException(message);
+        }
+    }
+
     /**
      * Helper method to GET the response from the web server as a JobResultObj.
      * Use this, for example, to GET the taskInfo.json object from, the server.
