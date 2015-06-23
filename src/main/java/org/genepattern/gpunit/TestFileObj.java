@@ -31,7 +31,7 @@ public class TestFileObj {
         return numRows;
     }
     public void setNumRows(int numRows) throws GpUnitException {
-        if (!bp.getRunLocalAssertions()) {
+        if (!getBatchProperties().getRunLocalAssertions()) {
             Assert.fail("Num rows assertions only implemented for local assertions");
         }
         this.numRows = numRows;
@@ -40,7 +40,7 @@ public class TestFileObj {
         return numCols;
     }
     public void setNumCols(int numCols) throws GpUnitException {
-        if (!bp.getRunLocalAssertions()) {
+        if (!getBatchProperties().getRunLocalAssertions()) {
             Assert.fail("Num cols assertions only implemented for local assertions");
         }
         this.numCols = numCols;
