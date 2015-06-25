@@ -38,6 +38,7 @@
         <clone-repo git.repo.name="ExpressionFileCreator" />
         <clone-repo git.repo.name="HierarchicalClustering" />
         <clone-repo git.repo.name="TopHat" />
+        <clone-repo git.repo.name="ABSOLUTE" />
     </target>
 
     <target name="clean-test-repos">
@@ -47,6 +48,20 @@
     <!--******************************************************************************************-->
     <!-- Test targets for individual modules. Each module has a fileset definition and a run target -->
     <!--******************************************************************************************-->
+
+    <fileset id="ShortABSOLUTETests" dir="${gpunit.dir/${module.test.dir}/ABSOLUTE/gpunit" >
+        <!--ABSOLUTE v2 -->
+        <include name="nightly_smoke_test_paper_data_66524.yml" />
+    </fileset>
+
+    <target name="short-absolute-tests" depends="package, clone-test-repos" >
+        <pathconvert property="nightly.smoke.tests" refid="ShortABSOLUTETests" />
+        <run-tests
+            testcases="${nightly.smoke.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
 
     <fileset id="ShortComparativeMarkerSelectionTests" dir="${gpunit.dir}/${module.tests.dir}/ComparativeMarkerSelection/gpunit" >
         <!-- ComparativeMarkerSelection v10 -->
@@ -172,6 +187,18 @@
             numThreads="5"
             shutdownTimeout="${gpunit.shutdownTimeout}"
         />
+    </target>
+
+    <target name="nightly-smoke-tests" depends="package, clone-test-repos">
+        <union id="smoke.tests">
+            <resources refid="ShortABSOLUTETests" />
+        </union>
+        <pathconvert property="nightly.smoke.tests" refid="smoke.tests" />
+        <run-tests
+            testcases="${nightly.smoke.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+            />
     </target>
 
 </project>
