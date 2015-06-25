@@ -57,10 +57,10 @@
     <target name="short-absolute-tests" depends="package, clone-test-repos" >
         <pathconvert property="nightly.smoke.tests" refid="ShortABSOLUTETests" />
         <run-tests
-            testcases="${nightly.smoke.tests}"
-            numThreads="5"
-            shutdownTimeout="${gpunit.shutdownTimeout}"
-        />
+                testcases="${nightly.smoke.tests}"
+                numThreads="5"
+                shutdownTimeout="${gpunit.shutdownTimeout}"
+                />
     </target>
 
     <fileset id="ShortComparativeMarkerSelectionTests" dir="${gpunit.dir}/${module.tests.dir}/ComparativeMarkerSelection/gpunit" >
@@ -195,10 +195,10 @@
         </union>
         <pathconvert property="nightly.smoke.tests" refid="smoke.tests" />
         <run-tests
-            testcases="${nightly.smoke.tests}"
-            numThreads="5"
-            shutdownTimeout="${gpunit.shutdownTimeout}"
-            />
+                testcases="${nightly.smoke.tests}"
+                numThreads="5"
+                shutdownTimeout="${gpunit.shutdownTimeout}"
+                />
     </target>
 
 </project>
