@@ -116,7 +116,7 @@ public class BatchModuleTest {
                    throw new GpUnitException("Error processing test names for file: testName="+originalName+", testFile="+batchTestObj.getTestFile().getAbsolutePath());
                }
                // Otherwise, this testcase already has an init exception (i.e., it might be a .yaml file that isn't a test),
-               // so the test representing will "fail" anyway since it won't even execute.
+               // so the test representing it will "fail" anyway since it won't even execute.
            }
         }
     }

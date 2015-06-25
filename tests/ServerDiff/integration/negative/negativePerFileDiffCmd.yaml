@@ -1,0 +1,12 @@
+name: NegativePerFileDiffCmd
+description: NOTE:!!!!! THIS TEST IS INTENDED TO ALWAYS FAIL: Uses ConvertLineEndings to test a failed, single diff command for a remote server diff
+module: ConvertLineEndings
+params: 
+    input.filename: <%gpunit.testData%>/gpunit/FileDifference/input/TextFile.txt
+    output.file: <input.filename_basename>.cvt.<input.filename_extension>
+assertions:
+    files:
+        TextFile.cvt.txt:
+            diffCmd: diff
+            diff: <%gpunit.testData%>/gpunit/FileDifference/input/NegativeTestText.txt
+
