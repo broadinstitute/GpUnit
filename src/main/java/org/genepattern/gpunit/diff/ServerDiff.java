@@ -40,17 +40,25 @@ public class ServerDiff extends AbstractDiffTest {
         else {
             String cmd = args.get(0);
             if (!cmd.equalsIgnoreCase(serverDiffModuleName)) {
-                Assert.fail("No support for alternative remote diff module: " + cmd);
+                // TODO: uncomment to allow the user to name the module, which must conform to the diff module
+                // template, i.e.: "modulename arg1 arg2"
+                //sb.append(cmd);
+                Assert.fail("No support for custom remote diff module: " + cmd);
             }
             else {
                 // make sure the case sense is correct (many of the test files have lower case "diff", but the module is named "Diff")
                 sb.append(serverDiffModuleName);
             }
-            if (args.size() > 1) {
-                Assert.fail("Warning: too many arguments for diff command: " + cmd);
-            }
         }
         sb.append("\nparams:");
+        if (args.size() > 1) {
+            // TODO: uncomment to allow the yaml file to contain argumments to the diff command
+            //sb.append("\n    args:");
+            //for (int i = 1; i < args.size(); i++) {
+            //   sb.append(" " + args.get(i));
+            //}
+            Assert.fail("Warning: no support for diff command arguments: " + args.get(0));
+        }
         sb.append("\n    arg0: ");
         sb.append(actualURL);
         sb.append("\n    arg1: ");
