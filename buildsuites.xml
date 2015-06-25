@@ -49,7 +49,7 @@
     <!-- Test targets for individual modules. Each module has a fileset definition and a run target -->
     <!--******************************************************************************************-->
 
-    <fileset id="ShortABSOLUTETests" dir="${gpunit.dir/${module.test.dir}/ABSOLUTE/gpunit" >
+    <fileset id="ShortABSOLUTETests" dir="${gpunit.dir}/${module.tests.dir}/ABSOLUTE/gpunit" >
         <!--ABSOLUTE v2 -->
         <include name="nightly_smoke_test_paper_data_66524.yml" />
     </fileset>
