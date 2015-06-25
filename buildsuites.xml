@@ -189,7 +189,6 @@
         />
     </target>
 
-    #test
     <target name="nightly-smoke-tests" depends="package, clone-test-repos">
         <union id="smoke.tests">
             <resources refid="ShortABSOLUTETests" />
