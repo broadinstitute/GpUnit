@@ -71,11 +71,14 @@ public class JobResultValidatorRest extends JobResultValidatorGeneric {
             //try to download the error message
             String errorMessage = getErrorMessageFromStderrFile();
             junitMessage += NL + errorMessage;
-            try {
-                  parentJobValidator.getDownloader().downloadResultFiles();
-            }
-            catch (GpUnitException e) {
-                Assert.fail(createErrorMessage(e.getLocalizedMessage()));
+            if (null != parentJobValidator) {
+                // this is a failed diff job; download the parent job's result files if possible
+                try {
+                    parentJobValidator.getDownloader().downloadResultFiles();
+                }
+                catch (GpUnitException e) {
+                    Assert.fail(createErrorMessage(e.getLocalizedMessage()));
+                }
             }
             Assert.fail(createErrorMessage(junitMessage));
         }
