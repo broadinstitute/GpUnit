@@ -49,15 +49,15 @@
     <!-- Test targets for individual modules. Each module has a fileset definition and a run target -->
     <!--******************************************************************************************-->
 
-    <fileset id="ShortABSOLUTETests" dir="${gpunit.dir}/${module.tests.dir}/ABSOLUTE/gpunit" >
+    <fileset id="weeklyABSOLUTETests" dir="${gpunit.dir}/${module.tests.dir}/ABSOLUTE/gpunit" >
         <!--ABSOLUTE v2 -->
-        <include name="v2/weekly_smoke_test_paper_data_66524.yml" />
+        <include name="v2/weekly_test_paper_data_66524.yml" />
     </fileset>
 
-    <target name="short-absolute-tests" depends="package, clone-test-repos" >
-        <pathconvert property="nightly.smoke.tests" refid="ShortABSOLUTETests" />
+    <target name="weekly-absolute-tests" depends="package, clone-test-repos" >
+        <pathconvert property="weekly.tests" refid="weeklyABSOLUTETests" />
         <run-tests
-                testcases="${nightly.smoke.tests}"
+                testcases="${weekly.tests}"
                 numThreads="5"
                 shutdownTimeout="${gpunit.shutdownTimeout}"
                 />
@@ -191,11 +191,23 @@
 
     <target name="nightly-smoke-tests" depends="package, clone-test-repos">
         <union id="smoke.tests">
-            <resources refid="ShortABSOLUTETests" />
+            <!--resources refid="ShortABSOLUTETests" /-->
         </union>
         <pathconvert property="nightly.smoke.tests" refid="smoke.tests" />
         <run-tests
                 testcases="${nightly.smoke.tests}"
+                numThreads="5"
+                shutdownTimeout="${gpunit.shutdownTimeout}"
+                />
+    </target>
+
+    <target name="weekly-tests" depends="package, clone-test-repos">
+        <union id="weekly.tests">
+            <resources refid="weeklyABSOLUTETests" />
+        </union>
+        <pathconvert property="weekly.tests" refid="weekly.tests" />
+        <run-tests
+                testcases="${weekly.tests}"
                 numThreads="5"
                 shutdownTimeout="${gpunit.shutdownTimeout}"
                 />
