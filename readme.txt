@@ -91,7 +91,7 @@ To run a suite of all matching tests in the 'protocols' directory
     gpunit.testcase.dirs=./tests/protocols
 For more sophisticated patterns, consult the ant documentation of the
 FileSet task. You will need to update the build.xml in order to use
-this level of customization.
+this level of customization. Also see https://confluence.broadinstitute.org/pages/viewpage.action?pageId=67403904 for information on how to integrate with Continuous Integration. (needs Broad credentials to view)
 
 Step 3: Run your test(s)
 You run a test or suite of tests with the ant gpunit target.
