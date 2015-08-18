@@ -20,4 +20,4 @@ assertions:
     diffCmd: diff
     files:
         all_aml_test.preprocessed.comp.marker.odf:
-            diff: <%gpunit.testData%>/example_data/datasets/protocols/all_aml_test.preprocessed.comp.marker.odf
+            diff: <%gpunit.testData%>/gpunit/ComparativeMarkerSelection/v10/all_aml_test.preprocessed.comp.marker.IU.odf
