@@ -16,7 +16,8 @@ params:
     phenotype.test: one versus all
     output.filename: all_aml_test.preprocessed.comp.marker.odf
 assertions:
-    diffCmd: diffdataset
+    #diffCmd: diffdataset - no support in gpunit yet for diffdataset - needs to know how to format yaml to run diffdatset. Only knows about diff
+    diffCmd: diff
     files:
         all_aml_test.preprocessed.comp.marker.odf:
             diff: <%gpunit.testData%>/example_data/datasets/protocols/all_aml_test.preprocessed.comp.marker.odf
