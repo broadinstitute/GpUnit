@@ -77,20 +77,6 @@
                 />
     </target>
 
-    <fileset id="ShortComparativeMarkerSelectionTestsIU" dir="${gpunit.dir}/${module.tests.dir}/ComparativeMarkerSelection/gpunit" >
-        <!-- ComparativeMarkerSelection v10 -->
-        <include name="DiffModuleSmokeTest_Protocol_IU/CMS_Protocol_Diff_For_IU.yaml" />
-    </fileset>
-
-    <target name="short-cms-tests-iu" depends="package, clone-test-repos">
-        <pathconvert property="short.nightly.tests" refid="ShortComparativeMarkerSelectionTestsIU" />
-        <run-tests
-                testcases="${short.nightly.tests}"
-                numThreads="5"
-                shutdownTimeout="${gpunit.shutdownTimeout}"
-                />
-    </target>
-
     <fileset id="ShortExpressionFileCreatorTests" dir="${gpunit.dir}/${module.tests.dir}/ExpressionFileCreator/gpunit" >
         <!-- ExpressionFileCreator - v13 smoke tests only -->
         <include name="smoke_invalid_AP_noMM_test.yml" />
@@ -202,22 +188,6 @@
             numThreads="5"
             shutdownTimeout="${gpunit.shutdownTimeout}"
         />
-    </target>
-
-    <!-- IU Regression tests in Jenkins -->
-    <target name="short-nightly-tests-IU" depends="package, clone-test-repos">
-        <union id="short.tests">
-            <resources refid="ShortComparativeMarkerSelectionTestsIU" />
-            <resources refid="ShortExpressionFileCreatorTests" />
-            <resources refid="ShortHierarchicalClusteringTests" />
-            <resources refid="ShortTopHatTests" />
-        </union>
-        <pathconvert property="short.nightly.tests" refid="short.tests" />
-        <run-tests
-                testcases="${short.nightly.tests}"
-                numThreads="5"
-                shutdownTimeout="${gpunit.shutdownTimeout}"
-                />
     </target>
 
     <target name="nightly-smoke-tests" depends="package, clone-test-repos">
