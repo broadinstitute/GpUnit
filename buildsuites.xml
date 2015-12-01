@@ -39,6 +39,7 @@
         <clone-repo git.repo.name="HierarchicalClustering" />
         <clone-repo git.repo.name="TopHat" />
         <clone-repo git.repo.name="ABSOLUTE" />
+        <clone-repo git.repo.name="MergeHTSeqCounts" />
     </target>
 
     <target name="clean-test-repos">
@@ -48,6 +49,20 @@
     <!--******************************************************************************************-->
     <!-- Test targets for individual modules. Each module has a fileset definition and a run target -->
     <!--******************************************************************************************-->
+
+    <fileset id="nightlyMergeHTSeqCountsTests" dir="${gpunit.dir}/${module.tests.dir}/MergeHTSeqCounts/gpunit" >
+        <!--ABSOLUTE v2 -->
+        <include name="weekly_test_paper_data_66524.yml" />
+    </fileset>
+
+    <target name="nightly-absolute-tests" depends="package, clone-test-repos" >
+        <pathconvert property="nightly.tests" refid="nightlyMergeHTSeqCountsTests" />
+        <run-tests
+                testcases="${weekly.tests}"
+                numThreads="5"
+                shutdownTimeout="${gpunit.shutdownTimeout}"
+                />
+    </target>
 
     <fileset id="weeklyABSOLUTETests" dir="${gpunit.dir}/${module.tests.dir}/ABSOLUTE/gpunit" >
         <!--ABSOLUTE v2 -->
@@ -177,6 +192,7 @@
             <resources refid="ShortExpressionFileCreatorTests" />
             <resources refid="ShortHierarchicalClusteringTests" />
             <resources refid="ShortTopHatTests" />
+            <resources refid="nightlyMergeHTSeqCountsTests" />
         </union>
         <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
     	<!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
