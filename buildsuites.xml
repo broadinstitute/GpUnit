@@ -39,7 +39,7 @@
         <clone-repo git.repo.name="HierarchicalClustering" />
         <clone-repo git.repo.name="TopHat" />
         <clone-repo git.repo.name="ABSOLUTE" />
-        <!--clone-repo git.repo.name="MergeHTSeqCounts" /-->
+        <clone-repo git.repo.name="MergeHTSeqCounts" />
     </target>
 
     <target name="clean-test-repos">
@@ -192,7 +192,7 @@
             <resources refid="ShortExpressionFileCreatorTests" />
             <resources refid="ShortHierarchicalClusteringTests" />
             <resources refid="ShortTopHatTests" />
-            <!-- resources refid="nightlyMergeHTSeqCountsTests" /-->
+            <resources refid="nightlyMergeHTSeqCountsTests" />
         </union>
         <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
     	<!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
