@@ -95,7 +95,7 @@
     </target>
 
     <target name="compile" depends="init, gp-client-lib">
-        <property name="java.target" value="1.5" />
+        <property name="java.target" value="1.6" /> 
         <javac debug="true" includeantruntime="false"
             defaultexcludes="true" 
             deprecation="true" 
@@ -103,8 +103,6 @@
             optimize="false" 
             proceed="false" 
             srcdir="${gpunit.dir}/src/main/java" 
-            target="${java.target}" 
-            source="${java.target}" 
             classpathref="gpunit.classpath" >
         </javac>
     </target>
