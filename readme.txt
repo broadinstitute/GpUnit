@@ -149,6 +149,28 @@ automatically download the Java SOAP client before building GpUnit.
 For more details look at the build.xml file.
 
 --------------------
+Testing HTTPS server
+--------------------
+You may need to take some extra steps when running GpUnit tests against an HTTPS server. If you see an 
+SSLHandshakeException you may need to add the certificate to a keystore and configure your GpUnit tests
+to use it. Example error message:
+
+    javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException: PKIX path building failed: \
+        sun.security.provider.certpath.SunCertPathBuilderException: \
+        unable to find valid certification path to requested target
+
+(1) Download the certificate file.
+    From a web browser, open a link to the server, and download the certificate file.
+(2) Create or add the certificate to a keystore file. 
+    keytool -import -file dxcvm28.psc.edu_x509.cert -keystore gpunit_keystore.jks
+(3) Set the environment before running ant. This is needed by the ant <get> task which
+    downloads the client library from the server.
+    export ANT_OPTS="-Djavax.net.ssl.trustStore=gpunit_keystore.jks -Djavax.net.debug=ssl"
+(4) Set the 'gpunit.keystore' property. This is needed by the ant <junit> task which makes REST API
+    calls to the server.
+    gpunit.keystore=gpunit_keystore.jks
+
+--------------------
 How it works
 --------------------
 The build.xml file included in this project includes the 'gpunit' ant target.

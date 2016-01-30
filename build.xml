@@ -5,7 +5,7 @@
     <property name="gpunit.dir" location="./" />
     <!-- 
       - Always load the 'gpunit.default.properties' file first, then
-      - load the gpunit.properties file, which can be optionally be
+      - load the gpunit.properties file, which can optionally be
       - replaced with a different file, e.g.
       -      '-Dgpunit.properties=my.gpunit.properties'
       - NOTE: The GpUnit code in BatchProperties.java implements this
@@ -27,6 +27,11 @@
     <!-- if the client.dir already exists, skip the rest -->
     <available property="gp-client-lib-exists" file="${client.lib.dir}/GenePattern.jar" />
     <property name="report.dir" value="reports" />
+
+    <!-- optionally set junit jvm arg when testing an HTTPS server,
+         -Djavax.net.ssl.trustStore=${gpunit.keystore} 
+    -->    
+    <property name="gpunit.keystore" value="" />
     
     <path id="gp.client.classpath">
         <pathelement location="${client.lib.dir}/GenePattern.jar" />
@@ -80,8 +85,12 @@
          for SOAP client calls to the GP server -->
     <target name="gp-server-online">
         <description>Check that there is a server running at the 'gp.url'</description>
+        <condition property="gp-server-is-reachable">
+            <isreachable url="${gp.url}/gp/" />
+        </condition>
+        <fail unless="gp-server-is-reachable" message="Server is not reachable: ${gp.url}/gp/" />
         <condition property="gp-server-online">
-            <http url="${gp.url}/gp/" />
+            <http url="${gp.url}/gp/" requestMethod="HEAD" />
         </condition>
         <fail unless="gp-server-online" message="Server is not online: ${gp.url}/gp/" />
     </target>
@@ -90,7 +99,7 @@
         <description>If necessary, download the Java Programming Library from the server, and unzip into a local directory</description>
 
         <property name="http.url" value="${gp.url}/gp/downloads/GenePattern.zip" />
-        <get src="${http.url}" dest="${local.dir}/GenePattern.zip" usetimestamp="true" />
+        <get verbose="true" src="${http.url}" dest="${local.dir}/GenePattern.zip" usetimestamp="true" />
         <unzip src="${local.dir}/GenePattern.zip" dest="${client.lib.dir}" overwrite="true" />
     </target>
 
@@ -174,6 +183,8 @@
                 <syspropertyset>
                     <propertyref builtin="commandline"/>
                 </syspropertyset>
+                
+                <jvmarg value="-Djavax.net.ssl.trustStore=${gpunit.keystore}" />
             </junit>
 
             <junitreport todir="${report.run.dir}">
