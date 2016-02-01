@@ -159,15 +159,22 @@ to use it. Example error message:
         sun.security.provider.certpath.SunCertPathBuilderException: \
         unable to find valid certification path to requested target
 
-(1) Download the certificate file.
-    From a web browser, open a link to the server, and download the certificate file.
-(2) Create or add the certificate to a keystore file. 
-    keytool -import -file dxcvm28.psc.edu_x509.cert -keystore gpunit_keystore.jks
+(1) Download the certificate file. From a web browser, open a link to the server, 
+and download the certificate file.
+
+(2) Create or add the certificate to a keystore file, e.g. 'gpserver.cert'. 
+    keytool -import -file gpserver.cert -keystore gpunit_keystore.jks
+
 (3) Set the environment before running ant. This is needed by the ant <get> task which
-    downloads the client library from the server.
-    export ANT_OPTS="-Djavax.net.ssl.trustStore=gpunit_keystore.jks -Djavax.net.debug=ssl"
+downloads the client library from the server.
+    export ANT_OPTS="-Djavax.net.ssl.trustStore=gpunit_keystore.jks" 
+For debugging include this flag "-Djavax.net.debug=ssl"
+
+Note: you can skip this requirement by setting the 'gp-server-online' ant property to true.
+    gp-server-online=true
+
 (4) Set the 'gpunit.keystore' property. This is needed by the ant <junit> task which makes REST API
-    calls to the server.
+calls to the server.
     gpunit.keystore=gpunit_keystore.jks
 
 --------------------
