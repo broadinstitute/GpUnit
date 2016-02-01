@@ -36,8 +36,10 @@ public class RestClientUtil {
             jobUri=runner.submitJob();
         }
         catch (GpUnitException e) {
-            Assert.fail("Error submitting job: "+e.getLocalizedMessage());
-            return;
+            throw e;
+        }
+        catch (Throwable t) {
+            throw new GpUnitException("Unexpected error in JobRunnerRest.submitJob", t);
         }
 
         //2) poll for job completion

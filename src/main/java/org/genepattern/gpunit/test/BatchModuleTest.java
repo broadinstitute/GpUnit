@@ -243,23 +243,19 @@ public class BatchModuleTest {
     }
     
     @Test
-    public void gpunit() throws Exception {
+    public void gpunit() throws GpUnitException {
         if (testObj.getInitException() != null) {
             Assert.fail(testObj.getInitException().getLocalizedMessage());
         }
 
-        try {
-            //submit a job via new REST API
-            if (batchProps.getClient().equals(BatchProperties.GpUnitClient.REST)) {
-                RestClientUtil.runTest(batchProps, testObj, null);
-                return;
-            }
+        //submit a job via new REST API
+        if (batchProps.getClient().equals(BatchProperties.GpUnitClient.REST)) {
+            RestClientUtil.runTest(batchProps, testObj, null);
+            return;
+        }
 
-            SoapClientUtil.runTest(batchProps,testObj);
-        }
-        catch (Throwable t) {
-            Assert.fail(t.getLocalizedMessage());
-        }
+        // otherwise use legacy SOAP API
+        SoapClientUtil.runTest(batchProps,testObj);
     }
 
 }
