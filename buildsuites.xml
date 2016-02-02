@@ -151,6 +151,7 @@
 
     <fileset id="ShortTopHatTests" dir="${gpunit.dir}/${module.tests.dir}/TopHat/gpunit/" >
         <!-- TopHat v9 -->
+        <!-- turning these off for now - too noisy
         <include name="smoke_valid_pset_1_test.yml" />
         <include name="smoke_valid_pset_2_test.yml" />
         <include name="smoke_valid_pset_3_test.yml" />
@@ -162,14 +163,15 @@
         <include name="smoke_valid_pset_9_test.yml" />
         <include name="smoke_valid_pset_10_test.yml" />
         <include name="smoke_valid_pset_11_test.yml" />
-        <include name="smoke_valid_pset_12_test.yml" />
+        <include name="smoke_valid_pset_12_test.yml" /-->
         <include name="smoke_valid_pset_13_test.yml" />
         <!-- Removed until we fix the TopHat module perl wrapper script to be able to handle -->
         <!-- a transcriptome_index passed by URL (as opposed to a server-local file reference). -->
         <!--
             <include name="smoke_valid_pset_14_test.yml" />
         -->
-        <include name="smoke_valid_pset_15_test.yml" />
+        <!-- turning off too noisy
+        <include name="smoke_valid_pset_15_test.yml" /-->
     </fileset>
 
     <target name="short-tophat-tests" depends="package, clone-test-repos">
