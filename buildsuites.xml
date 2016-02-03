@@ -155,31 +155,6 @@
         <include name="smoke_valid_pset_13_test.yml" />
     </fileset>
 
-    <!-- run all 13 or so short tophat tests -->
-    <fileset id="MoreShortTopHatTests" dir="${gpunit.dir}/${module.tests.dir}/TopHat/gpunit/" >
-        <!-- TopHat v9 -->
-
-        <include name="smoke_valid_pset_1_test.yml" />
-        <include name="smoke_valid_pset_2_test.yml" />
-        <include name="smoke_valid_pset_3_test.yml" />
-        <include name="smoke_valid_pset_4_test.yml" />
-        <include name="smoke_valid_pset_5_test.yml" />
-        <include name="smoke_valid_pset_6_test.yml" />
-        <include name="smoke_valid_pset_7_test.yml" />
-        <include name="smoke_valid_pset_8_test.yml" />
-        <include name="smoke_valid_pset_9_test.yml" />
-        <include name="smoke_valid_pset_10_test.yml" />
-        <include name="smoke_valid_pset_11_test.yml" />
-        <include name="smoke_valid_pset_12_test.yml" />
-        <include name="smoke_valid_pset_13_test.yml" />
-        <!-- Removed until we fix the TopHat module perl wrapper script to be able to handle -->
-        <!-- a transcriptome_index passed by URL (as opposed to a server-local file reference). -->
-        <!--
-            <include name="smoke_valid_pset_14_test.yml" />
-        -->
-        <include name="smoke_valid_pset_15_test.yml" />
-    </fileset>
-
     <target name="short-tophat-tests" depends="package, clone-test-repos">
         <pathconvert property="short.nightly.tests" refid="ShortTopHatTests" />
         <run-tests
