@@ -16,12 +16,14 @@
     <property name="gpunit.properties" value="gpunit.properties" />
     <property file="${gpunit.properties}" />
 
+    <property name="gp.scheme" value="http" />
     <property name="gp.host" value="127.0.0.1" />
     <property name="gp.port" value="" />
+    <property name="gp.path" value="/gp" />
     <property name="gp.user" value="test" />
     <property name="gp.password" value="test" />
 
-    <property name="gp.url" value="http://${gp.host}${gp.port}" />
+    <property name="gp.url" value="${gp.scheme}://${gp.host}${gp.port}" />
     <property name="local.dir" location="${gpunit.dir}/tmp/${gp.host}" />
     <property name="client.lib.dir" location="${local.dir}/client" />
     <!-- if the client.dir already exists, skip the rest -->
@@ -85,14 +87,7 @@
          for SOAP client calls to the GP server -->
     <target name="gp-server-online">
         <description>Check that there is a server running at the 'gp.url'</description>
-        <condition property="gp-server-is-reachable">
-            <isreachable url="${gp.url}/gp/" />
-        </condition>
-        <fail unless="gp-server-is-reachable" message="Server is not reachable: ${gp.url}/gp/" />
-        <condition property="gp-server-online">
-            <http url="${gp.url}/gp/" requestMethod="HEAD" />
-        </condition>
-        <fail unless="gp-server-online" message="Server is not online: ${gp.url}/gp/" />
+        <check-url />
     </target>
 
     <target name="gp-client-lib" depends="init,gp-server-online" unless="gp-client-lib-exists">
@@ -132,6 +127,28 @@
         <antcall target="clean-test-repos"/>
     </target>
     <!-- END build gp-unit.jar -->
+
+    <!--
+        Check to see if the server is available.
+    -->
+    <macrodef name="check-url">
+        <sequential>
+            <!-- use curl command to check status -->
+            <!-- curl \-\-head \-\-silent \-\-fail \-\-show-error http://gp.indiana.edu/gp/pages/login.xhtml -->
+            <exec executable="curl"
+                failifexecutionfails="false"
+                failonerror="true"
+                outputproperty="exec.out"
+                logError="true"
+            >
+              <arg value="--head" />
+              <arg value="--silent" />
+              <arg value="--fail" />
+              <arg value="--show-error" />
+              <arg value="${gp.url}${gp.path}/pages/login.xhtml" />
+            </exec>
+        </sequential>
+    </macrodef>
 
     <!-- run a batch of gp-unit tests via SOAP client requests 
          use a single parameterized jUnit test to submit the jobs and validate the results.
