@@ -2,6 +2,8 @@
 # Basic run of 'ConvertLineEndings' module with an uploaded file
 # 
 #
+name: ConvertLineEndings_with_file_upload
+description: A basic run of the ConvertLineEndings module with an uploaded input file.
 module: ConvertLineEndings
 params: 
     input.filename: "all_aml_test.cls"
