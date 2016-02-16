@@ -28,7 +28,7 @@
     <property name="client.lib.dir" location="${local.dir}/client" />
     <!-- if the client.dir already exists, skip the rest -->
     <available property="gp-client-lib-exists" file="${client.lib.dir}/GenePattern.jar" />
-    <property name="report.dir" value="reports" />
+    <property name="report.dir" value="${gpunit.dir}/reports" />
 
     <!-- optionally set junit jvm arg when testing an HTTPS server,
          -Djavax.net.ssl.trustStore=${gpunit.keystore} 
