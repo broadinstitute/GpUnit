@@ -141,6 +141,7 @@
                 outputproperty="exec.out"
                 logError="true"
             >
+              <arg value="--insecure" /> <!-- aka '-k', perform insecure SSL connections -->
               <arg value="--head" />
               <arg value="--silent" />
               <arg value="--fail" />
