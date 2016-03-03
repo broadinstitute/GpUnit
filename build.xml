@@ -5,7 +5,7 @@
     <property name="gpunit.dir" location="./" />
     <!-- 
       - Always load the 'gpunit.default.properties' file first, then
-      - load the gpunit.properties file, which can be optionally be
+      - load the gpunit.properties file, which can optionally be
       - replaced with a different file, e.g.
       -      '-Dgpunit.properties=my.gpunit.properties'
       - NOTE: The GpUnit code in BatchProperties.java implements this
@@ -16,17 +16,24 @@
     <property name="gpunit.properties" value="gpunit.properties" />
     <property file="${gpunit.properties}" />
 
+    <property name="gp.scheme" value="http" />
     <property name="gp.host" value="127.0.0.1" />
     <property name="gp.port" value="" />
+    <property name="gp.path" value="/gp" />
     <property name="gp.user" value="test" />
     <property name="gp.password" value="test" />
 
-    <property name="gp.url" value="http://${gp.host}${gp.port}" />
+    <property name="gp.url" value="${gp.scheme}://${gp.host}${gp.port}" />
     <property name="local.dir" location="${gpunit.dir}/tmp/${gp.host}" />
     <property name="client.lib.dir" location="${local.dir}/client" />
     <!-- if the client.dir already exists, skip the rest -->
     <available property="gp-client-lib-exists" file="${client.lib.dir}/GenePattern.jar" />
-    <property name="report.dir" value="reports" />
+    <property name="report.dir" value="${gpunit.dir}/reports" />
+
+    <!-- optionally set junit jvm arg when testing an HTTPS server,
+         -Djavax.net.ssl.trustStore=${gpunit.keystore} 
+    -->    
+    <property name="gpunit.keystore" value="" />
     
     <path id="gp.client.classpath">
         <pathelement location="${client.lib.dir}/GenePattern.jar" />
@@ -80,22 +87,19 @@
          for SOAP client calls to the GP server -->
     <target name="gp-server-online">
         <description>Check that there is a server running at the 'gp.url'</description>
-        <condition property="gp-server-online">
-            <http url="${gp.url}/gp/" />
-        </condition>
-        <fail unless="gp-server-online" message="Server is not online: ${gp.url}/gp/" />
+        <check-url />
     </target>
 
     <target name="gp-client-lib" depends="init,gp-server-online" unless="gp-client-lib-exists">
         <description>If necessary, download the Java Programming Library from the server, and unzip into a local directory</description>
 
         <property name="http.url" value="${gp.url}/gp/downloads/GenePattern.zip" />
-        <get src="${http.url}" dest="${local.dir}/GenePattern.zip" usetimestamp="true" />
+        <get verbose="false" src="${http.url}" dest="${local.dir}/GenePattern.zip" usetimestamp="true" />
         <unzip src="${local.dir}/GenePattern.zip" dest="${client.lib.dir}" overwrite="true" />
     </target>
 
     <target name="compile" depends="init, gp-client-lib">
-        <property name="java.target" value="1.5" />
+        <property name="java.target" value="1.6" /> 
         <javac debug="true" includeantruntime="false"
             defaultexcludes="true" 
             deprecation="true" 
@@ -103,8 +107,6 @@
             optimize="false" 
             proceed="false" 
             srcdir="${gpunit.dir}/src/main/java" 
-            target="${java.target}" 
-            source="${java.target}" 
             classpathref="gpunit.classpath" >
         </javac>
     </target>
@@ -125,6 +127,29 @@
         <antcall target="clean-test-repos"/>
     </target>
     <!-- END build gp-unit.jar -->
+
+    <!--
+        Check to see if the server is available.
+    -->
+    <macrodef name="check-url">
+        <sequential>
+            <!-- use curl command to check status -->
+            <!-- curl \-\-head \-\-silent \-\-fail \-\-show-error http://gp.indiana.edu/gp/pages/login.xhtml -->
+            <exec executable="curl"
+                failifexecutionfails="false"
+                failonerror="true"
+                outputproperty="exec.out"
+                logError="true"
+            >
+              <arg value="--insecure" /> <!-- aka '-k', perform insecure SSL connections -->
+              <arg value="--head" />
+              <arg value="--silent" />
+              <arg value="--fail" />
+              <arg value="--show-error" />
+              <arg value="${gp.url}${gp.path}/pages/login.xhtml" />
+            </exec>
+        </sequential>
+    </macrodef>
 
     <!-- run a batch of gp-unit tests via SOAP client requests 
          use a single parameterized jUnit test to submit the jobs and validate the results.
@@ -176,6 +201,8 @@
                 <syspropertyset>
                     <propertyref builtin="commandline"/>
                 </syspropertyset>
+                
+                <jvmarg value="-Djavax.net.ssl.trustStore=${gpunit.keystore}" />
             </junit>
 
             <junitreport todir="${report.run.dir}">

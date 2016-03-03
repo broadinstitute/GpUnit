@@ -91,7 +91,7 @@ To run a suite of all matching tests in the 'protocols' directory
     gpunit.testcase.dirs=./tests/protocols
 For more sophisticated patterns, consult the ant documentation of the
 FileSet task. You will need to update the build.xml in order to use
-this level of customization.
+this level of customization. Also see https://confluence.broadinstitute.org/pages/viewpage.action?pageId=67403904 for information on how to integrate with Continuous Integration. (needs Broad credentials to view)
 
 Step 3: Run your test(s)
 You run a test or suite of tests with the ant gpunit target.
@@ -147,6 +147,35 @@ You can switch to the SOAP client with the 'gpunit.client=SOAP' configuration op
 With the SOAP client, when you run the gpunit target from ant, if necessary it will 
 automatically download the Java SOAP client before building GpUnit. 
 For more details look at the build.xml file.
+
+--------------------
+Testing HTTPS server
+--------------------
+You may need to take some extra steps when running GpUnit tests against an HTTPS server. If you see an 
+SSLHandshakeException you may need to add the certificate to a keystore and configure your GpUnit tests
+to use it. Example error message:
+
+    javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException: PKIX path building failed: \
+        sun.security.provider.certpath.SunCertPathBuilderException: \
+        unable to find valid certification path to requested target
+
+(1) Download the certificate file. From a web browser, open a link to the server, 
+and download the certificate file.
+
+(2) Create or add the certificate to a keystore file, e.g. 'gpserver.cert'. 
+    keytool -import -file gpserver.cert -keystore gpunit_keystore.jks
+
+(3) Set the environment before running ant. This is needed by the ant <get> task which
+downloads the client library from the server.
+    export ANT_OPTS="-Djavax.net.ssl.trustStore=gpunit_keystore.jks" 
+For debugging include this flag "-Djavax.net.debug=ssl"
+
+Note: you can skip this requirement by setting the 'gp-server-online' ant property to true.
+    gp-server-online=true
+
+(4) Set the 'gpunit.keystore' property. This is needed by the ant <junit> task which makes REST API
+calls to the server.
+    gpunit.keystore=gpunit_keystore.jks
 
 --------------------
 How it works

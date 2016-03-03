@@ -1,7 +1,6 @@
 package org.genepattern.gpunit.exec.soap;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 
 import org.genepattern.client.GPClient;
 import org.genepattern.gpunit.GpUnitException;
@@ -11,7 +10,9 @@ import org.genepattern.webservice.JobResult;
 
 
 public class SoapClientUtil {
-    static public void runTest(final BatchProperties batchProps, final BatchModuleTestObject testObject) throws GpUnitException, FileNotFoundException, AssertionError, Exception {
+    static public void runTest(final BatchProperties batchProps, final BatchModuleTestObject testObject) 
+    throws GpUnitException
+    {
         if (batchProps == null) {
             throw new GpUnitException("batchProps is null");
         }
@@ -23,10 +24,10 @@ public class SoapClientUtil {
         }
         Throwable initError = testObject.getInitException();
         if (initError != null) {
-            throw new Exception(initError.getMessage(), initError);
+            throw new GpUnitException(initError.getMessage(), initError);
         }
         if (testObject.getTestCase() == null) {
-            throw new Exception("testObject is null");
+            throw new GpUnitException("testObject.testCase is null");
         }
         
         //initialize gpClient
@@ -52,6 +53,5 @@ public class SoapClientUtil {
             }
         }
     }
-
 
 }

@@ -34,10 +34,13 @@
 
     <target name="clone-test-repos" unless="noclonetests" depends="package">
         <mkdir dir="${module.tests.dir}" />
+        <clone-repo git.repo.name="CoxRegression" /> <!-- tests '<R>' substitution -->
         <clone-repo git.repo.name="ComparativeMarkerSelection" />
         <clone-repo git.repo.name="ExpressionFileCreator" />
         <clone-repo git.repo.name="HierarchicalClustering" />
         <clone-repo git.repo.name="TopHat" />
+        <clone-repo git.repo.name="ABSOLUTE" />
+        <clone-repo git.repo.name="MergeHTSeqCounts" />
     </target>
 
     <target name="clean-test-repos">
@@ -48,18 +51,52 @@
     <!-- Test targets for individual modules. Each module has a fileset definition and a run target -->
     <!--******************************************************************************************-->
 
+    <fileset id="nightlyMergeHTSeqCountsTests" dir="${gpunit.dir}/${module.tests.dir}/MergeHTSeqCounts/gpunit" >
+        <!--ABSOLUTE v2 -->
+        <include name="weekly_test_paper_data_66524.yml" />
+    </fileset>
+
+    <target name="nightly-absolute-tests" depends="package, clone-test-repos" >
+        <pathconvert property="nightly.tests" refid="nightlyMergeHTSeqCountsTests" />
+        <run-tests
+                testcases="${weekly.tests}"
+                numThreads="5"
+                shutdownTimeout="${gpunit.shutdownTimeout}"
+                />
+    </target>
+
+    <fileset id="weeklyABSOLUTETests" dir="${gpunit.dir}/${module.tests.dir}/ABSOLUTE/gpunit" >
+        <!--ABSOLUTE v2 -->
+        <include name="v2/weekly_test_paper_data_66524.yml" />
+    </fileset>
+
+    <target name="weekly-absolute-tests" depends="package, clone-test-repos" >
+        <pathconvert property="weekly.tests" refid="weeklyABSOLUTETests" />
+        <run-tests
+                testcases="${weekly.tests}"
+                numThreads="5"
+                shutdownTimeout="${gpunit.shutdownTimeout}"
+                />
+    </target>
+
     <fileset id="ShortComparativeMarkerSelectionTests" dir="${gpunit.dir}/${module.tests.dir}/ComparativeMarkerSelection/gpunit" >
         <!-- ComparativeMarkerSelection v10 -->
         <include name="DefaultSmokeTest_Protocol/valid_pset_1_test.yml" />
     </fileset>
 
+    <fileset id="ShortCoxRegressionTests" dir="${gpunit.dir}/${module.tests.dir}/CoxRegression/gpunit" >
+        <!-- include all top-level tests. Hint: to add a long running test put it in a sub folder -->
+        <include name="*.yml" />
+        <include name="*.yaml" />
+    </fileset>
+
     <target name="short-cms-tests" depends="package, clone-test-repos">
         <pathconvert property="short.nightly.tests" refid="ShortComparativeMarkerSelectionTests" />
         <run-tests
-            testcases="${short.nightly.tests}"
-            numThreads="5"
-            shutdownTimeout="${gpunit.shutdownTimeout}"
-        />
+                testcases="${short.nightly.tests}"
+                numThreads="5"
+                shutdownTimeout="${gpunit.shutdownTimeout}"
+                />
     </target>
 
     <fileset id="ShortExpressionFileCreatorTests" dir="${gpunit.dir}/${module.tests.dir}/ExpressionFileCreator/gpunit" >
@@ -121,25 +158,8 @@
 
     <fileset id="ShortTopHatTests" dir="${gpunit.dir}/${module.tests.dir}/TopHat/gpunit/" >
         <!-- TopHat v9 -->
-        <include name="smoke_valid_pset_1_test.yml" />
-        <include name="smoke_valid_pset_2_test.yml" />
-        <include name="smoke_valid_pset_3_test.yml" />
-        <include name="smoke_valid_pset_4_test.yml" />
-        <include name="smoke_valid_pset_5_test.yml" />
-        <include name="smoke_valid_pset_6_test.yml" />
-        <include name="smoke_valid_pset_7_test.yml" />
-        <include name="smoke_valid_pset_8_test.yml" />
-        <include name="smoke_valid_pset_9_test.yml" />
-        <include name="smoke_valid_pset_10_test.yml" />
-        <include name="smoke_valid_pset_11_test.yml" />
-        <include name="smoke_valid_pset_12_test.yml" />
+        <!-- this test has the smallest output folder -->
         <include name="smoke_valid_pset_13_test.yml" />
-        <!-- Removed until we fix the TopHat module perl wrapper script to be able to handle -->
-        <!-- a transcriptome_index passed by URL (as opposed to a server-local file reference). -->
-        <!--
-            <include name="smoke_valid_pset_14_test.yml" />
-        -->
-        <include name="smoke_valid_pset_15_test.yml" />
     </fileset>
 
     <target name="short-tophat-tests" depends="package, clone-test-repos">
@@ -155,12 +175,15 @@
     <!-- Aggregate test suite target definitions. Set "noclonetests" to skip the git phase. -->
     <!--******************************************************************************************-->
 
+    <!-- Regression tests in Jenkins -->
     <target name="short-nightly-tests" depends="package, clone-test-repos">
         <union id="short.tests">
             <resources refid="ShortComparativeMarkerSelectionTests" />
+            <resources refid="ShortCoxRegressionTests" />
             <resources refid="ShortExpressionFileCreatorTests" />
             <resources refid="ShortHierarchicalClusteringTests" />
             <resources refid="ShortTopHatTests" />
+            <resources refid="nightlyMergeHTSeqCountsTests" />
         </union>
         <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
     	<!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
@@ -172,6 +195,30 @@
             numThreads="5"
             shutdownTimeout="${gpunit.shutdownTimeout}"
         />
+    </target>
+
+    <target name="nightly-smoke-tests" depends="package, clone-test-repos">
+        <union id="smoke.tests">
+            <!--resources refid="ShortABSOLUTETests" /-->
+        </union>
+        <pathconvert property="nightly.smoke.tests" refid="smoke.tests" />
+        <run-tests
+                testcases="${nightly.smoke.tests}"
+                numThreads="5"
+                shutdownTimeout="${gpunit.shutdownTimeout}"
+                />
+    </target>
+
+    <target name="weekly-tests" depends="package, clone-test-repos">
+        <union id="weekly.tests">
+            <resources refid="weeklyABSOLUTETests" />
+        </union>
+        <pathconvert property="weekly.tests" refid="weekly.tests" />
+        <run-tests
+                testcases="${weekly.tests}"
+                numThreads="5"
+                shutdownTimeout="${gpunit.shutdownTimeout}"
+                />
     </target>
 
 </project>
