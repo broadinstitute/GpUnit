@@ -148,7 +148,7 @@ public class BatchProperties {
         if (System.getProperties().containsKey(PROP_GP_PASSWORD)) {
             this.gpPassword=System.getProperty(PROP_GP_PASSWORD);
         }
-        String clientStr=System.getProperty(PROP_CLIENT, GpUnitClient.SOAP.toString());
+        String clientStr=System.getProperty(PROP_CLIENT, GpUnitClient.REST.toString());
         try {
             client=GpUnitClient.valueOf(clientStr);
         }
