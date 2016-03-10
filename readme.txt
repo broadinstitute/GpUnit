@@ -113,6 +113,15 @@ example GpUnit files included in this project. For even more details, look
 at the source code.
 
 --------------------
+Common dataset locations
+--------------------
+ftp://ftp.broadinstitute.org/pub/genepattern/datasets/
+http://www.broadinstitute.org/cancer/software/genepattern/data/all_aml/all_aml_train.gct
+
+ftp://gpftp.broadinstitute.org/pub/genepattern/datasets/protocols/
+
+
+--------------------
 Converting a completed job into a test
 --------------------
 You can also easily convert a completed job on a GP server into a GpUnit

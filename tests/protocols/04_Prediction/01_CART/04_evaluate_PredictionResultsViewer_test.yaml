@@ -1,5 +1,5 @@
 #04_Prediction_cart_evaluate.html
 module: PredictionResultsViewer
 params:
-    prediction.results.file: ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.pred.cart.eval.odf
+    prediction.results.file: ftp://gpftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.pred.cart.eval.odf
 

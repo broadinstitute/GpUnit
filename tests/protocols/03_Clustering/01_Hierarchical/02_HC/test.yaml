@@ -2,7 +2,7 @@
 # Job: 16228    server:  http://gpdev.broadinstitute.org/gp/
 module: HierarchicalClustering
 params: 
-    input.filename: ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct
+    input.filename: ftp://gpftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct
     column.distance.measure: 2
     row.distance.measure: 0
     clustering.method: m
