@@ -1,5 +1,5 @@
 #04_Prediction_knn_one.html
 module: PredictionResultsViewer
 params:
-    prediction.results.file: <%gpunit.gpData%>/protocols/all_aml_train.preprocessed.knn.pred.odf
+    prediction.results.file: ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.knn.pred.odf
 

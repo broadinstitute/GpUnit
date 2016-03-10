@@ -62,7 +62,7 @@
         <mkdir dir="${report.dir}" />
         
         <!-- initialize properties for a batch run -->
-        <property name="gpunit.client" value="SOAP" />
+        <property name="gpunit.client" value="REST" />
         <property name="gpunit.outputdir" value="./jobResults" />
         <property name="gpunit.batch.name" value="run_${DSTAMP}_${TSTAMP}" />
         <property name="gpunit.save.downloads" value="false" />

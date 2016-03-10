@@ -1,5 +1,6 @@
 #04_Prediction_knn_one.html
 module: FeatureSummaryViewer
 params:
-    feature.filename: <%gpunit.gpData%>/protocols/all_aml_train.preprocessed.knn.pred.feat.odf
+    feature.filename: ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml_train.preprocessed.knn.pred.feat.odf
+#    feature.filename: ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.knn.pred.feat.odf
 

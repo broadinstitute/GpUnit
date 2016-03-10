@@ -1,5 +1,5 @@
 module: SnpViewer
 params:
-    dataset.filename: <%gpunit.gpData%>/protocols/GISTIC_Hind_subset.xcorrected.xcn
-    sample.info.filename: <%gpunit.gpData%>/gistic/sample_info_subset.txt
-    sample.list.filename: <%gpunit.gpData%>/gistic/sample_list_subset.txt
+    dataset.filename: ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/GISTIC_Hind_subset.xcorrected.xcn
+    sample.info.filename: ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/sample_info_subset.txt
+    sample.list.filename: ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/sample_list_subset.txt

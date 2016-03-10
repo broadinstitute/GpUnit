@@ -1,6 +1,6 @@
 #04_Prediction_wv_one.html
 module: WeightedVotingXValidation
 params:
-    data.filename: <%gpunit.gpData%>/protocols/all_aml_train.preprocessed.gct
-    class.filename: <%gpunit.gpData%>/all_aml/all_aml_train.cls
+    data.filename: ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.gct
+    class.filename: ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.cls
 

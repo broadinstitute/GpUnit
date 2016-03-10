@@ -3,7 +3,7 @@
 # Module: KMeansClustering urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00081:2
 module: KMeansClustering
 params: 
-    input.filename: <%gpunit.gpData%>/protocols/all_aml_test.preprocessed.gct
+    input.filename: ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct
     output.base.name: all_aml_test.preprocessed_KMcluster_output
     number.of.clusters: 2
     seed.value: 12345
