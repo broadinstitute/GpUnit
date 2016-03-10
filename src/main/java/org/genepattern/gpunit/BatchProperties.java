@@ -100,6 +100,12 @@ public class BatchProperties {
      */
     public static final String PROP_JOB_COMPLETION_TIMEOUT="gpunit.jobCompletionTimeout";
 
+    /**
+     * Set the 'gpunit.localAssertions' system property to override the default (true).
+     * When true, tests are validated local (on the gpunit client machine) by downloading
+     * result files from the GP server if necessary.
+     * 
+     */
     private static final String PROP_LOCAL_ASSERTIONS = "gpunit.localAssertions"; // set to true to force local diffs for backward compatibility
 
     private String gpUrl = "http://127.0.0.1:8080";
@@ -135,7 +141,7 @@ public class BatchProperties {
     private final int testTimeout;
     
     // force GpUnit to use local assertions/diffs instead of server diffs; for backward compatibility
-    private boolean localAssertions = false;
+    private boolean localAssertions = true;
 
     public BatchProperties() throws GpUnitException {
         //initialize values from system properties
