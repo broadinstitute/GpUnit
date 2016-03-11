@@ -248,7 +248,7 @@
         <run-tests testcases="${saved-jobs.testcases}" />
     </target>
     
-    <target name="gpunit" depends="package,gp-server-online">
+    <target name="gpunit" depends="package,gp-server-online,connection-test">
         <property name="gpunit.testfolder" location="./tests" />
         <path id="testfolder.path">
             <pathelement location="${gpunit.testfolder}" />
