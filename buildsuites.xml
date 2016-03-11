@@ -34,13 +34,13 @@
 
     <target name="clone-test-repos" unless="noclonetests" depends="package">
         <mkdir dir="${module.tests.dir}" />
-        <clone-repo git.repo.name="CoxRegression" /> <!-- tests '<R>' substitution -->
+        <clone-repo git.repo.name="ABSOLUTE" />
         <clone-repo git.repo.name="ComparativeMarkerSelection" />
+        <clone-repo git.repo.name="CoxRegression" /> <!-- tests '<R>' substitution -->
         <clone-repo git.repo.name="ExpressionFileCreator" />
         <clone-repo git.repo.name="HierarchicalClustering" />
-        <clone-repo git.repo.name="TopHat" />
-        <clone-repo git.repo.name="ABSOLUTE" />
         <clone-repo git.repo.name="MergeHTSeqCounts" />
+        <clone-repo git.repo.name="TopHat" />
     </target>
 
     <target name="clean-test-repos">
@@ -51,20 +51,7 @@
     <!-- Test targets for individual modules. Each module has a fileset definition and a run target -->
     <!--******************************************************************************************-->
 
-    <fileset id="nightlyMergeHTSeqCountsTests" dir="${gpunit.dir}/${module.tests.dir}/MergeHTSeqCounts/gpunit" >
-        <!--ABSOLUTE v2 -->
-        <include name="weekly_test_paper_data_66524.yml" />
-    </fileset>
-
-    <target name="nightly-absolute-tests" depends="package, clone-test-repos" >
-        <pathconvert property="nightly.tests" refid="nightlyMergeHTSeqCountsTests" />
-        <run-tests
-                testcases="${weekly.tests}"
-                numThreads="5"
-                shutdownTimeout="${gpunit.shutdownTimeout}"
-                />
-    </target>
-
+    <!-- ABSOLUTE -->
     <fileset id="weeklyABSOLUTETests" dir="${gpunit.dir}/${module.tests.dir}/ABSOLUTE/gpunit" >
         <!--ABSOLUTE v2 -->
         <include name="v2/weekly_test_paper_data_66524.yml" />
@@ -79,15 +66,10 @@
                 />
     </target>
 
+    <!-- ComparativeMarkerSelection -->
     <fileset id="ShortComparativeMarkerSelectionTests" dir="${gpunit.dir}/${module.tests.dir}/ComparativeMarkerSelection/gpunit" >
         <!-- ComparativeMarkerSelection v10 -->
         <include name="DefaultSmokeTest_Protocol/valid_pset_1_test.yml" />
-    </fileset>
-
-    <fileset id="ShortCoxRegressionTests" dir="${gpunit.dir}/${module.tests.dir}/CoxRegression/gpunit" >
-        <!-- include all top-level tests. Hint: to add a long running test put it in a sub folder -->
-        <include name="*.yml" />
-        <include name="*.yaml" />
     </fileset>
 
     <target name="short-cms-tests" depends="package, clone-test-repos">
@@ -99,6 +81,14 @@
                 />
     </target>
 
+    <!-- CoxRegression -->
+    <fileset id="ShortCoxRegressionTests" dir="${gpunit.dir}/${module.tests.dir}/CoxRegression/gpunit" >
+        <!-- include all top-level tests. Hint: to add a long running test put it in a sub folder -->
+        <include name="*.yml" />
+        <include name="*.yaml" />
+    </fileset>
+
+    <!-- ExpressionFileCreator -->
     <fileset id="ShortExpressionFileCreatorTests" dir="${gpunit.dir}/${module.tests.dir}/ExpressionFileCreator/gpunit" >
         <!-- ExpressionFileCreator - v13 smoke tests only -->
         <include name="smoke_invalid_AP_noMM_test.yml" />
@@ -126,6 +116,7 @@
         />
     </target>
 
+    <!-- HierarchicalClustering -->
     <fileset id="ShortHierarchicalClusteringTests" dir="${gpunit.dir}/${module.tests.dir}/HierarchicalClustering/gpunit" >
         <!-- HierarchicalClustering - v6 ColOriented -->
         <include name="col_oriented/valid_pset_1_test.yml" />
@@ -156,6 +147,22 @@
         />
     </target>
 
+    <!-- MergeHTSeqCounts -->
+    <fileset id="nightlyMergeHTSeqCountsTests" dir="${gpunit.dir}/${module.tests.dir}/MergeHTSeqCounts/gpunit" >
+        <!--ABSOLUTE v2 -->
+        <include name="weekly_test_paper_data_66524.yml" />
+    </fileset>
+
+    <target name="nightly-mergehtseq-tests" depends="package, clone-test-repos" >
+        <pathconvert property="nightly.tests" refid="nightlyMergeHTSeqCountsTests" />
+        <run-tests
+                testcases="${weekly.tests}"
+                numThreads="5"
+                shutdownTimeout="${gpunit.shutdownTimeout}"
+                />
+    </target>
+
+    <!-- TopHat -->
     <fileset id="ShortTopHatTests" dir="${gpunit.dir}/${module.tests.dir}/TopHat/gpunit/" >
         <!-- TopHat v9 -->
         <!-- this test has the smallest output folder -->
