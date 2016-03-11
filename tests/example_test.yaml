@@ -1,4 +1,5 @@
 name: testDefault
+description: Description of a test case.
 module: GISTIC
 params: !!map
     markers.file: "http://www.broadinstitute.org/mpr/publications/projects/CNS/100K_markerpositions.hg16.txt"

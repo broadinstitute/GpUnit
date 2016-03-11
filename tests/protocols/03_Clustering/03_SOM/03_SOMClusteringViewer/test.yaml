@@ -1,3 +1,3 @@
 module: SOMClusterViewer
 params:
-    som.cluster.filename: <%gpunit.gpData%>/protocols/all_aml_test.preprocessed0.odf
+    som.cluster.filename: ftp://gpftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed0.odf

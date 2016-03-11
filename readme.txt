@@ -49,7 +49,7 @@ Edit the configuration file as necessary.
 Run the ant 'gpunit' target.
     ant gpunit
 View the JUnit report.
-    open reports/html/index.html
+    open reports/current/html/index.html
 
 This target runs the default suite of GpUnit tests on the default 
 GenePattern Server using the default username and password.
@@ -111,6 +111,15 @@ for a GpUnit yaml file (it is schemaless), there is an implicit schema.
 At the moment, if you need more details you will have to look at the
 example GpUnit files included in this project. For even more details, look 
 at the source code.
+
+--------------------
+Common dataset locations
+--------------------
+ftp://ftp.broadinstitute.org/pub/genepattern/datasets/
+http://www.broadinstitute.org/cancer/software/genepattern/data/all_aml/all_aml_train.gct
+
+ftp://gpftp.broadinstitute.org/pub/genepattern/datasets/protocols/
+
 
 --------------------
 Converting a completed job into a test

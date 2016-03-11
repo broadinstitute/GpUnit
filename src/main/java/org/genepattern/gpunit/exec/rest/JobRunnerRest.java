@@ -1,13 +1,10 @@
 package org.genepattern.gpunit.exec.rest;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -20,24 +17,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpMessage;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.entity.FileEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.genepattern.gpunit.BatchProperties;
 import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.ModuleTestObject;
 import org.genepattern.gpunit.exec.rest.json.JobResultObj;
 import org.genepattern.gpunit.exec.rest.json.TaskObj;
-import org.genepattern.gpunit.BatchProperties;
 import org.genepattern.gpunit.yaml.InputFileUtil;
 
 import com.google.gson.Gson;
@@ -45,7 +40,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
 /**
@@ -56,12 +50,13 @@ import com.google.gson.JsonPrimitive;
  */
 public class JobRunnerRest {
     //context path is hard-coded
-    private String gpContextPath="gp";
+    private final String gpContextPath="gp";
     private BatchProperties batchProps;
     private ModuleTestObject test;
     private URL addFileUrl;
     private URL jobsUrl;
     private URL getTaskUrl;
+    private RestClient restClient;
 
     public JobRunnerRest(final BatchProperties batchProps, final ModuleTestObject test) throws GpUnitException 
     {
@@ -73,12 +68,13 @@ public class JobRunnerRest {
             throw new IllegalArgumentException("test==null");
         }
         this.test=test;
-        this.addFileUrl=initEndpointUrl("/data/upload/job_input");
-        this.jobsUrl=initEndpointUrl("/jobs");
-        this.getTaskUrl=initEndpointUrl("/tasks");
+        this.addFileUrl=initEndpointUrl(batchProps, "/data/upload/job_input");
+        this.jobsUrl=initEndpointUrl(batchProps, "/jobs");
+        this.getTaskUrl=initEndpointUrl(batchProps, "/tasks");
+        this.restClient=new RestClient(batchProps);
     }
 
-    private URL initEndpointUrl(String endpoint) throws GpUnitException
+    private URL initEndpointUrl(final BatchProperties batchProps, final String endpoint) throws GpUnitException
     {
         String gpUrl=batchProps.getGpUrl();
         if (!gpUrl.endsWith("/")) {
@@ -264,29 +260,6 @@ public class JobRunnerRest {
         return uploadFile(localFile);        
     }
     
-    private HttpMessage setAuthHeaders(HttpMessage message) {
-        //for basic auth, use a header like this
-        //Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==
-        String orig = batchProps.getGpUsername()+":"+batchProps.getGpPassword();
-        //encoding  byte array into base 64
-        byte[] encoded = Base64.encodeBase64(orig.getBytes());
-
-        final String basicAuth="Basic "+new String(encoded);
-        message.setHeader("Authorization", basicAuth);
-        message.setHeader("Content-type", "application/json");
-        message.setHeader("Accept", "application/json");
-        
-        return message;
-    }
-
-    private HttpGet setAuthHeaders(HttpGet get) {
-        return (HttpGet) setAuthHeaders((HttpMessage)get);
-    }
-
-    private HttpPost setAuthHeaders(HttpPost post) {
-        return (HttpPost) setAuthHeaders((HttpMessage)post);
-    }
-    
     private URL uploadFile(File localFile) throws GpUnitException {
         if (localFile==null) {
             throw new IllegalArgumentException("localFile==null");
@@ -311,7 +284,7 @@ public class JobRunnerRest {
         
         urlStr+="?name="+encFilename; 
         HttpPost post = new HttpPost(urlStr);
-        post = setAuthHeaders(post);
+        post = restClient.setAuthHeaders(post);
         FileEntity entity = new FileEntity(localFile, "binary/octet-stream");
         post.setEntity(entity);
         HttpResponse response = null;
@@ -354,7 +327,7 @@ public class JobRunnerRest {
             throw new GpUnitException("URI syntax exception in "+urlStr, e);
         }
         
-        JsonObject jsonObject=readJsonObjectFromUri(taskUri);
+        JsonObject jsonObject=restClient.readJsonObjectFromUri(taskUri);
         return new TaskObj.Builder().fromJsonObject(jsonObject).build();
     }
 
@@ -375,7 +348,7 @@ public class JobRunnerRest {
         
         HttpClient client = new DefaultHttpClient();
         HttpPost post = new HttpPost(jobsUrl.toExternalForm());
-        post = setAuthHeaders(post);
+        post = restClient.setAuthHeaders(post);
         try {
             post.setEntity(new StringEntity(job.toString()));
         }
@@ -447,13 +420,14 @@ public class JobRunnerRest {
         HttpDelete delete = new HttpDelete(deleteURI);
 
         // set auth headers
-        String orig = batchProps.getGpUsername()+":"+batchProps.getGpPassword();
-        //encoding  byte array into base 64
-        final byte[] encoded = Base64.encodeBase64(orig.getBytes());
-        final String basicAuth="Basic "+new String(encoded);
-        delete.setHeader("Authorization", basicAuth);
-        delete.setHeader("Content-type", "application/json");
-        delete.setHeader("Accept", "application/json");
+        delete=restClient.setAuthHeaders(delete);
+//        String orig = batchProps.getGpUsername()+":"+batchProps.getGpPassword();
+//        //encoding  byte array into base 64
+//        final byte[] encoded = Base64.encodeBase64(orig.getBytes());
+//        final String basicAuth="Basic "+new String(encoded);
+//        delete.setHeader("Authorization", basicAuth);
+//        delete.setHeader("Content-type", "application/json");
+//        delete.setHeader("Accept", "application/json");
 
         HttpResponse response;
         try {
@@ -491,107 +465,15 @@ public class JobRunnerRest {
      * @throws Exception
      */
     public JobResultObj getJobResultObj(final URI uri) throws GpUnitException {
-        JsonObject jsonObject=readJsonObjectFromUri(uri);
+        JsonObject jsonObject=restClient.readJsonObjectFromUri(uri);
         JobResultObj jobResultObj=new JobResultObj.Builder().gsonObject(jsonObject).build();
         return jobResultObj;
-    }
-    
-    /**
-     * GET the JSON representation of the contents at the given URI.
-     * This is a general purpose helper method for working with the GenePattern REST API.
-     * 
-     * @param uri
-     * @return
-     * @throws GpUnitException
-     */
-    protected JsonObject readJsonObjectFromUri(final URI uri) throws GpUnitException {
-        HttpClient client = new DefaultHttpClient();
-        HttpGet get = new HttpGet(uri);
-        get = setAuthHeaders(get);
-        
-        final HttpResponse response;
-        try {
-            response=client.execute(get);
-        }
-        catch (ClientProtocolException e) {
-            throw new GpUnitException("Error getting contents from uri="+uri, e);
-        }
-        catch (IOException e) {
-            throw new GpUnitException("Error getting contents from uri="+uri, e);
-        }
-        final int statusCode=response.getStatusLine().getStatusCode();
-        final boolean success;
-        if (statusCode >= 200 && statusCode < 300) {
-            success=true;
-        }
-        else {
-            success=false;
-        }
-        if (!success) {
-            String message="GET "+uri.toString()+" failed! "+statusCode+": "+response.getStatusLine().getReasonPhrase();
-            throw new GpUnitException(message);
-        }
-        
-        HttpEntity entity = response.getEntity();
-        if (entity == null) {
-            final String message="GET "+uri.toString()+" failed! The response should contain an entity";
-            throw new GpUnitException(message);
-        }
-
-        BufferedReader reader=null;
-        try {
-            reader=new BufferedReader(
-                    new InputStreamReader( response.getEntity().getContent() )); 
-            JsonObject jsonObject=readJsonObject(reader);
-            return jsonObject;
-        }
-        catch (IOException e) {
-            final String message="GET "+uri.toString()+", I/O error handling response";
-            throw new GpUnitException(message, e);
-        }
-        catch (Exception e) {
-            final String message="GET "+uri.toString()+", Error parsing JSON response";
-            throw new GpUnitException(message, e);
-        }
-        catch (Throwable t) {
-            final String message="GET "+uri.toString()+", Unexpected error reading response";
-            throw new GpUnitException(message, t);
-        }
-        finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                }
-                catch (IOException e) {
-                    final String message="GET "+uri.toString()+", I/O error closing reader";
-                    throw new GpUnitException(message, e);
-                }
-            }
-        }
-    }
-    
-    /**
-     * Helper class which creates a new JsonObject by parsing the contents from the
-     * given Reader.
-     * 
-     * @param reader, an open and initialized reader, for example from an HTTP response.
-     *     The calling method must close the reader.
-     * @return
-     * @throws GpUnitException
-     */
-    protected JsonObject readJsonObject(final Reader reader) throws GpUnitException {
-        JsonParser parser = new JsonParser();
-        JsonElement jsonElement=parser.parse(reader);
-        if (jsonElement == null) {
-            throw new GpUnitException("JsonParser returned null JsonElement");
-        }
-        return jsonElement.getAsJsonObject();
     }
     
     public void downloadFile(final URL from, final File toFile) throws Exception {
         HttpClient client = new DefaultHttpClient();        
         HttpGet get = new HttpGet(from.toExternalForm());
-        get = setAuthHeaders(get);
+        get = restClient.setAuthHeaders(get);
         //HACK: in order to by-pass the GP login page, and use Http Basic Authentication,
         //     need to set the User-Agent to start with 'GenePatternRest'
         get.setHeader("User-Agent", "GenePatternRest");

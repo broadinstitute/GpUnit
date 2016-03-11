@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="gp-unit" default="package">
-    <dirname property="project.basedir" file="${ant.file.gp-unit}"/>
+    <dirname property="project.basedir" file="${ant.file.gp-unit}" />
     <property file="${project.basedir}/gpunit.default.properties" />
-    <property name="gpunit.dir" location="./" />
+    <dirname property="gpunit.dir" file="${ant.file.gp-unit}" />
     <!-- 
       - Always load the 'gpunit.default.properties' file first, then
       - load the gpunit.properties file, which can optionally be
@@ -28,7 +28,10 @@
     <property name="client.lib.dir" location="${local.dir}/client" />
     <!-- if the client.dir already exists, skip the rest -->
     <available property="gp-client-lib-exists" file="${client.lib.dir}/GenePattern.jar" />
-    <property name="report.dir" value="${gpunit.dir}/reports" />
+    <!-- location for downloading job results -->
+    <property name="gpunit.outputdir" value="${local.dir}/jobResults" />
+    <!-- location for generating junit reports -->
+    <property name="report.dir" value="${user.dir}/reports" />
 
     <!-- optionally set junit jvm arg when testing an HTTPS server,
          -Djavax.net.ssl.trustStore=${gpunit.keystore} 
@@ -62,8 +65,7 @@
         <mkdir dir="${report.dir}" />
         
         <!-- initialize properties for a batch run -->
-        <property name="gpunit.client" value="SOAP" />
-        <property name="gpunit.outputdir" value="./jobResults" />
+        <property name="gpunit.client" value="REST" />
         <property name="gpunit.batch.name" value="run_${DSTAMP}_${TSTAMP}" />
         <property name="gpunit.save.downloads" value="false" />
         <property name="gpunit.delete.jobs" value="false" />
@@ -88,6 +90,16 @@
     <target name="gp-server-online">
         <description>Check that there is a server running at the 'gp.url'</description>
         <check-url />
+    </target>
+
+    <!--
+        This target verifies that the gpunit client can talk to the remove server; 
+        Added as a way to test that the client is properly configured to connect to HTTPS servers.
+        Hint: Set -Dgpunit.keystore when necessary.
+    -->
+    <target name="connection-test" depends="package, gp-server-online">
+        <echo>Checking connection ... </echo>
+        <run-tests testcases="connection-test" junit.test.name="org.genepattern.gpunit.test.ConnectionTest" />
     </target>
 
     <target name="gp-client-lib" depends="init,gp-server-online" unless="gp-client-lib-exists">
@@ -118,13 +130,11 @@
     <target name="clean">
         <delete dir="${gpunit.dir}/classes" />
         <delete dir="${gpunit.dir}/dist" />
-        <delete dir="${gp.annotations.dir}/classes" />
-        <delete dir="${gp.annotations.dir}/dist" />
         <delete dir="${report.dir}" />
         <delete dir="${gpunit.outputdir}" />
         <delete file="System.out" />
         <!-- Clean up the repositories created by imported buildsuites.xml -->
-        <antcall target="clean-test-repos"/>
+        <antcall target="clean-test-repos" />
     </target>
     <!-- END build gp-unit.jar -->
 
@@ -158,6 +168,7 @@
          Look at the gpunit-all-protocols target for an example. 
       -->
     <macrodef name="run-tests">
+        <attribute name="junit.test.name" default="org.genepattern.gpunit.test.BatchModuleTest" />
         <attribute name="testcases" />
         <attribute name="numThreads" default="${gpunit.numThreads}" />
         <!-- when running jobs in parallel, this is the max time in seconds to wait before finishing the test -->
@@ -174,7 +185,7 @@
 
             <junit fork="yes" printsummary="on" haltonfailure="false" showoutput="@{showoutput}" logfailedtests="true" failureProperty="test.failure" >
                 <formatter type="@{junit.formatter}" usefile="@{usefile}" />
-                <test name="org.genepattern.gpunit.test.BatchModuleTest" outfile="TEST-all" todir="${report.run.dir}"/>
+                <test name="@{junit.test.name}" outfile="TEST-all" todir="${report.run.dir}"/>
                 <classpath refid="gpunit.classpath" />
                 <sysproperty key="gpunit.testcase.dirs" value="@{testcases}" />
 
@@ -237,7 +248,7 @@
         <run-tests testcases="${saved-jobs.testcases}" />
     </target>
     
-    <target name="gpunit" depends="package,gp-server-online">
+    <target name="gpunit" depends="package,gp-server-online,connection-test">
         <property name="gpunit.testfolder" location="./tests" />
         <path id="testfolder.path">
             <pathelement location="${gpunit.testfolder}" />
