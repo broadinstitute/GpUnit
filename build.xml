@@ -90,6 +90,16 @@
         <check-url />
     </target>
 
+    <!--
+        This target verifies that the gpunit client can talk to the remove server; 
+        Added as a way to test that the client is properly configured to connect to HTTPS servers.
+        Hint: Set -Dgpunit.keystore when necessary.
+    -->
+    <target name="connection-test" depends="package, gp-server-online">
+        <echo>Checking connection ... </echo>
+        <run-tests testcases="connection-test" junit.test.name="org.genepattern.gpunit.test.ConnectionTest" />
+    </target>
+
     <target name="gp-client-lib" depends="init,gp-server-online" unless="gp-client-lib-exists">
         <description>If necessary, download the Java Programming Library from the server, and unzip into a local directory</description>
 
@@ -158,6 +168,7 @@
          Look at the gpunit-all-protocols target for an example. 
       -->
     <macrodef name="run-tests">
+        <attribute name="junit.test.name" default="org.genepattern.gpunit.test.BatchModuleTest" />
         <attribute name="testcases" />
         <attribute name="numThreads" default="${gpunit.numThreads}" />
         <!-- when running jobs in parallel, this is the max time in seconds to wait before finishing the test -->
@@ -174,7 +185,7 @@
 
             <junit fork="yes" printsummary="on" haltonfailure="false" showoutput="@{showoutput}" logfailedtests="true" failureProperty="test.failure" >
                 <formatter type="@{junit.formatter}" usefile="@{usefile}" />
-                <test name="org.genepattern.gpunit.test.BatchModuleTest" outfile="TEST-all" todir="${report.run.dir}"/>
+                <test name="@{junit.test.name}" outfile="TEST-all" todir="${report.run.dir}"/>
                 <classpath refid="gpunit.classpath" />
                 <sysproperty key="gpunit.testcase.dirs" value="@{testcases}" />
 
