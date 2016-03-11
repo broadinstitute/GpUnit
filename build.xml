@@ -28,7 +28,10 @@
     <property name="client.lib.dir" location="${local.dir}/client" />
     <!-- if the client.dir already exists, skip the rest -->
     <available property="gp-client-lib-exists" file="${client.lib.dir}/GenePattern.jar" />
-    <property name="report.dir" value="${gpunit.dir}/reports" />
+    <!-- location for downloading job results -->
+    <property name="gpunit.outputdir" value="${local.dir}/jobResults" />
+    <!-- location for generating junit reports -->
+    <property name="report.dir" value="${user.dir}/reports" />
 
     <!-- optionally set junit jvm arg when testing an HTTPS server,
          -Djavax.net.ssl.trustStore=${gpunit.keystore} 
@@ -63,7 +66,6 @@
         
         <!-- initialize properties for a batch run -->
         <property name="gpunit.client" value="REST" />
-        <property name="gpunit.outputdir" value="./jobResults" />
         <property name="gpunit.batch.name" value="run_${DSTAMP}_${TSTAMP}" />
         <property name="gpunit.save.downloads" value="false" />
         <property name="gpunit.delete.jobs" value="false" />
