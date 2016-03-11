@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="gp-unit" default="package">
-    <dirname property="project.basedir" file="${ant.file.gp-unit}"/>
+    <dirname property="project.basedir" file="${ant.file.gp-unit}" />
     <property file="${project.basedir}/gpunit.default.properties" />
-    <property name="gpunit.dir" location="./" />
+    <dirname property="gpunit.dir" file="${ant.file.gp-unit}" />
     <!-- 
       - Always load the 'gpunit.default.properties' file first, then
       - load the gpunit.properties file, which can optionally be
@@ -128,13 +128,11 @@
     <target name="clean">
         <delete dir="${gpunit.dir}/classes" />
         <delete dir="${gpunit.dir}/dist" />
-        <delete dir="${gp.annotations.dir}/classes" />
-        <delete dir="${gp.annotations.dir}/dist" />
         <delete dir="${report.dir}" />
         <delete dir="${gpunit.outputdir}" />
         <delete file="System.out" />
         <!-- Clean up the repositories created by imported buildsuites.xml -->
-        <antcall target="clean-test-repos"/>
+        <antcall target="clean-test-repos" />
     </target>
     <!-- END build gp-unit.jar -->
 
