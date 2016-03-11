@@ -11,7 +11,9 @@ params:
     runningTime: "0"
     verbose: "no"
     copyInputFiles: "yes"
-    input0: "TestGpUnit/all_aml_test.cls"
+    #input0: "TestGpUnit/all_aml_test.cls"
+    #input0: "<GenePatternURL>/data//xchip/sqa/Modules/TestSuiteData/TestGpUnit/all_aml_test.cls"
+    input0: "http://gpdev.broadinstitute.org/gp/data//xchip/sqa/Modules/TestSuiteData/TestGpUnit/all_aml_test.cls"
 assertions:
     files:
         "all_aml_test.cp0.cls":

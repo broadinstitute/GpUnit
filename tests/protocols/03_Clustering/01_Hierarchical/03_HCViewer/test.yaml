@@ -1,6 +1,6 @@
 module: HierarchicalClusteringViewer
 params:
-    cdt.file: "<%gpunit.gpData%>/protocols/all_aml_test.preprocessed.cdt"
-    gtr.file: "<%gpunit.gpData%>/protocols/all_aml_test.preprocessed.gtr"
-    atr.file: "<%gpunit.gpData%>/protocols/all_aml_test.preprocessed.atr"
+    cdt.file: "ftp://gpftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.cdt"
+    gtr.file: "ftp://gpftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gtr"
+    atr.file: "ftp://gpftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.atr"
 

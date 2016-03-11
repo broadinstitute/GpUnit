@@ -2,7 +2,7 @@
 # Job: 16218    server:  http://gpdev.broadinstitute.org/gp/
 module: PreprocessDataset
 params: 
-    input.filename: "<%gpunit.gpData%>/all_aml/all_aml_test.gct"
+    input.filename: "ftp://gpftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct"
     threshold.and.filter: 1
     floor: 20
     ceiling: 20000
