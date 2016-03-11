@@ -113,7 +113,7 @@ public class BatchProperties {
     private String gpPassword = "test";
 
 
-    private GpUnitClient client=GpUnitClient.SOAP;
+    private GpUnitClient client=GpUnitClient.REST;
 
 
     private String outputDir="./jobResults";
