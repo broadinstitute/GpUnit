@@ -49,7 +49,7 @@ Edit the configuration file as necessary.
 Run the ant 'gpunit' target.
     ant gpunit
 View the JUnit report.
-    open reports/html/index.html
+    open reports/current/html/index.html
 
 This target runs the default suite of GpUnit tests on the default 
 GenePattern Server using the default username and password.
