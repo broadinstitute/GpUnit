@@ -43,7 +43,9 @@
         <clone-repo git.repo.name="TopHat" />
     </target>
 
-    <target name="clean-test-repos">
+    <target name="clean-test-repos"
+        description="clean the module.tests.dir, which is a clone of all the module GitHub repositories"
+    >
         <delete dir="${module.tests.dir}" />
     </target>
 

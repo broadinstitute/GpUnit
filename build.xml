@@ -127,12 +127,33 @@
         <jar basedir="${gpunit.dir}/classes" jarfile="${gpunit.dir}/dist/gp-unit.jar" />
     </target>
 
-    <target name="clean">
+    <target name="clean-gpunit-dist" 
+        description="clean the GpUnit binary distribution by deleting the class files and support libraries">
         <delete dir="${gpunit.dir}/classes" />
         <delete dir="${gpunit.dir}/dist" />
-        <delete dir="${report.dir}" />
+    </target>
+    
+    <target name="clean-test-run" depends="clean-gpunit-outputdir, clean-report-dir"
+        description="calls 'clean-gpunit-outputdir' and 'clean-report-dir'"
+    >
+    </target>
+
+    <target name="clean-gpunit-outputdir"
+        description="clean the ${gpunit.outputdir}, which includes all downloaded job results"
+    >
         <delete dir="${gpunit.outputdir}" />
         <delete file="System.out" />
+    </target>
+
+    <target name="clean-report-dir"
+        description="clean the ${report.dir} and the ${gpunit.outputdir}"
+    >
+        <delete dir="${report.dir}" />
+    </target>
+
+    <target name="clean" depends="clean-gpunit-run, clean-gpunit-dist"
+        description="cleans all output files, including the binary distribution"
+    >
         <!-- Clean up the repositories created by imported buildsuites.xml -->
         <antcall target="clean-test-repos" />
     </target>
