@@ -151,7 +151,7 @@
         <delete dir="${report.dir}" />
     </target>
 
-    <target name="clean" depends="clean-gpunit-run, clean-gpunit-dist"
+    <target name="clean" depends="clean-test-run, clean-gpunit-dist"
         description="cleans all output files, including the binary distribution"
     >
         <!-- Clean up the repositories created by imported buildsuites.xml -->
