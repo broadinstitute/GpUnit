@@ -186,6 +186,12 @@ Note: you can skip this requirement by setting the 'gp-server-online' ant proper
 calls to the server.
     gpunit.keystore=gpunit_keystore.jks
 
+Note: I had problems with this when running GpUnit with Java 7, this thread covers JSSE Tuning Parameters which
+may need to be set:
+    https://blogs.oracle.com/java-platform-group/entry/diagnosing_tls_ssl_and_https
+Example,
+    -Dhttps.protocols=TLSv1,TLSv1.1,TLSv1.2
+
 --------------------
 How it works
 --------------------
