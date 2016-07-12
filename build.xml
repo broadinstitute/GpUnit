@@ -87,8 +87,8 @@
 
     <!-- in order to compile gp-unit, and to run gp-unit tests, must download the client library, 
          for SOAP client calls to the GP server -->
-    <target name="gp-server-online">
-        <description>Check that there is a server running at the 'gp.url'</description>
+    <target name="gp-server-online"
+        description="check that the server is online at '${gp.url}' " >
         <check-url />
     </target>
 
@@ -97,20 +97,22 @@
         Added as a way to test that the client is properly configured to connect to HTTPS servers.
         Hint: Set -Dgpunit.keystore when necessary.
     -->
-    <target name="connection-test" depends="package, gp-server-online">
+    <target name="connection-test" depends="package, gp-server-online"
+        description="Run the 'org.genepattern.gpunit.test.ConnectionTest' junit test">
         <echo>Checking connection ... </echo>
         <run-tests testcases="connection-test" junit.test.name="org.genepattern.gpunit.test.ConnectionTest" />
     </target>
 
-    <target name="gp-client-lib" depends="init,gp-server-online" unless="gp-client-lib-exists">
-        <description>If necessary, download the Java Programming Library from the server, and unzip into a local directory</description>
+    <target name="gp-client-lib" depends="init,gp-server-online" unless="gp-client-lib-exists"
+        description="download the GenePattern Java Programming Library (SOAP client) from the server" >
 
         <property name="http.url" value="${gp.url}/gp/downloads/GenePattern.zip" />
         <get verbose="false" src="${http.url}" dest="${local.dir}/GenePattern.zip" usetimestamp="true" />
         <unzip src="${local.dir}/GenePattern.zip" dest="${client.lib.dir}" overwrite="true" />
     </target>
 
-    <target name="compile" depends="init, gp-client-lib">
+    <target name="compile" depends="init, gp-client-lib"
+        description="compile GpUnit">
         <property name="java.target" value="1.6" /> 
         <javac debug="true" includeantruntime="false"
             defaultexcludes="true" 
@@ -123,7 +125,9 @@
         </javac>
     </target>
 
-    <target name="package" depends="compile">
+    <target name="package" depends="compile"
+        description="build and package GpUnit, creates the 'gp-unit.jar' file"
+        >
         <jar basedir="${gpunit.dir}/classes" jarfile="${gpunit.dir}/dist/gp-unit.jar" />
     </target>
 
@@ -160,12 +164,12 @@
     <!-- END build gp-unit.jar -->
 
     <!--
-        Check to see if the server is available.
+        Check to see if the server is online.
     -->
     <macrodef name="check-url">
         <sequential>
             <!-- use curl command to check status -->
-            <!-- curl \-\-head \-\-silent \-\-fail \-\-show-error http://gp.indiana.edu/gp/pages/login.xhtml -->
+            <!-- curl \-\-head \-\-silent \-\-fail \-\-show-error http://127.0.0.1:8080/gp/pages/login.xhtml -->
             <exec executable="curl"
                 failifexecutionfails="false"
                 failonerror="true"
@@ -248,7 +252,8 @@
         </sequential> 
     </macrodef>
     
-    <target name="gpunit-all-protocols" depends="package">
+    <target name="gpunit-all-protocols" depends="package"
+        description="Run all GpUnit tests in the './tests/protocols' folder" >
         <path id="all-protocols.path">
             <pathelement location="./tests/protocols" />
         </path>
@@ -261,15 +266,18 @@
         />
     </target>
 
-    <target name="gpunit-saved-jobs" depends="package">
+    <target name="gpunit-all-saved-jobs" depends="package"
+        description="Run all GpUnit tests in the './tests/saved_jobs' folder" >
         <path id="saved-jobs.path">
             <pathelement location="./tests/saved_jobs" />
         </path>
         <property name="saved-jobs.testcases" refid="saved-jobs.path" /> 
         <run-tests testcases="${saved-jobs.testcases}" />
     </target>
-    
-    <target name="gpunit" depends="package,gp-server-online,connection-test">
+
+    <target name="gpunit" depends="package,gp-server-online,connection-test"
+        description="Run all GpUnit tests in the '${gpunit.testfolder}' (default=./tests)"
+        >
         <property name="gpunit.testfolder" location="./tests" />
         <path id="testfolder.path">
             <pathelement location="${gpunit.testfolder}" />
@@ -280,26 +288,17 @@
             shutdownTimeout="${gpunit.shutdownTimeout}" />
     </target>
     
-    <target name="gpunit-cufflinks" depends="package">
-        <path id="testfolder.path">
-            <pathelement location="${gpunit.testfolder}" />
-        </path>
-        <property name="testcases" refid="testfolder.path" />
-        <run-tests 
-            testcases="${testcases}" 
-            numthreads="5" 
-            shutdownTimeout="1800"
-        />
-    </target>
-
-    <target name="compile-automatrix" depends="package">
+    <target name="compile-automatrix" depends="package"
+        description="compile automatrix, see ./automatrix/build.xml"
+        >
         <!-- For the interim, just copy the locally built gp-unit.jar over the archived one in the automatrix -->
         <!-- lib dir, and then try to compile automatrix. -->
         <copy file="${gpunit.dir}/dist/gp-unit.jar" todir="./automatrix/website/WEB-INF/lib" />
         <ant antfile="automatrix/build.xml" target="createWar" useNativeBasedir="true" />
     </target>
 
-    <target name="gpunit-junit-tests" depends="package, init">
+    <target name="gpunit-junit-tests" depends="init, package"
+        description="run junit test of the GpUnit source code">
         <property name="junit.results.dir" location="./junit" />
         <mkdir dir="${junit.results.dir}" />
         <junit showoutput="true" printsummary="true" >

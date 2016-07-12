@@ -32,7 +32,8 @@
         </sequential>
     </macrodef>
 
-    <target name="clone-test-repos" unless="noclonetests" depends="package">
+    <target name="clone-test-repos" unless="noclonetests" depends="package"
+        description="make a local copy (git clone) of each GenePattern module GitHub repository" >
         <mkdir dir="${module.tests.dir}" />
         <clone-repo git.repo.name="ABSOLUTE" />
         <clone-repo git.repo.name="ComparativeMarkerSelection" />
