@@ -35,8 +35,10 @@
 
     <!-- optionally set junit jvm arg when testing an HTTPS server,
          -Djavax.net.ssl.trustStore=${gpunit.keystore} 
+         -Djavax.net.ssl.trustStorePassword=${gpunit.keystore.password}
     -->    
     <property name="gpunit.keystore" value="" />
+    <property name="gpunit.keystore.password" value="" />
     
     <path id="gp.client.classpath">
         <pathelement location="${client.lib.dir}/GenePattern.jar" />
@@ -241,6 +243,7 @@
                 </syspropertyset>
                 
                 <jvmarg value="-Djavax.net.ssl.trustStore=${gpunit.keystore}" />
+                <jvmarg value="-Djavax.net.ssl.trustStorePassword=${gpunit.keystore.password}" />
             </junit>
 
             <junitreport todir="${report.run.dir}">

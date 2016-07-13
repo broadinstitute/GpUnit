@@ -169,27 +169,29 @@ to use it. Example error message:
         unable to find valid certification path to requested target
 
 (1) Download the certificate file. From a web browser, open a link to the server, 
-and download the certificate file.
+and save the certificate file, e.g. 'gpserver.cert'.
 
-(2) Create or add the certificate to a keystore file, e.g. 'gpserver.cert'. 
+(2) Add the certificate to a new or existing keystore file,  e.g. 'gpunit_keystore.jks'
     keytool -import -file gpserver.cert -keystore gpunit_keystore.jks
 
-(3) Set the environment before running ant. This is needed by the ant <get> task which
-downloads the client library from the server.
-    export ANT_OPTS="-Djavax.net.ssl.trustStore=gpunit_keystore.jks" 
-For debugging include this flag "-Djavax.net.debug=ssl"
+(3) Set 'gpunit.keystore' and 'gpunit.keystore.password' properties.
+    gpunit.keystore=gpunit_keystore.jks
+    gpunit.keystore.password=my_password
 
-The 'check-url' target tests the connection with a curl command. To by-pass this test:
+These are passed along as java command line args by the ant <junit> task.
+    -Djavax.net.ssl.trustStore=${gpunit.keystore} 
+    -Djavax.net.ssl.trustStorePassword=${gpunit.keystore.password}
+The tests make REST API calls to the server.
+
+(4) Optionally skip the 'check-url' target. Before running the tests, GpUnit checks the connection with a curl command. 
+To by-pass this test:
     -Dcheck-url.skip=1
 
-(4) Set the 'gpunit.keystore' property. This is needed by the ant <junit> task which makes REST API
-calls to the server.
-    gpunit.keystore=gpunit_keystore.jks
-
-Note: I had problems with this when running GpUnit with Java 7, this thread covers JSSE Tuning Parameters which
-may need to be set:
+(5) Use Java 8+ if you can. I was not able to connect to some HTTPS servers when running gpUnit with Java 7.
+For best results use Java 8+. This thread describes additional JSSE Tuning Parameters which:
     https://blogs.oracle.com/java-platform-group/entry/diagnosing_tls_ssl_and_https
 Example,
+    -Djavax.net.debug=ssl, for debugging
     -Dhttps.protocols=TLSv1,TLSv1.1,TLSv1.2
 
 --------------------
