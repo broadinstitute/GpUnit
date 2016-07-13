@@ -85,10 +85,8 @@
         <property name="gpunit.testTimeout" value="" /> <!-- Junit test timeout, fail an indidivual junit test when this timeout is reached -->
     </target>
 
-    <!-- in order to compile gp-unit, and to run gp-unit tests, must download the client library, 
-         for SOAP client calls to the GP server -->
-    <target name="gp-server-online"
-        description="check that the server is online at '${gp.url}' " >
+    <target name="check-url" unless="check-url.skip"
+        description="check that the server is online, curl --head '${gp.url}' " >
         <check-url />
     </target>
 
@@ -97,12 +95,14 @@
         Added as a way to test that the client is properly configured to connect to HTTPS servers.
         Hint: Set -Dgpunit.keystore when necessary.
     -->
-    <target name="connection-test" depends="package, gp-server-online"
+    <target name="connection-test" depends="package, check-url"
         description="Run the 'org.genepattern.gpunit.test.ConnectionTest' junit test">
         <echo>Checking connection ... </echo>
         <run-tests testcases="connection-test" junit.test.name="org.genepattern.gpunit.test.ConnectionTest" />
     </target>
 
+    <!-- in order to compile gp-unit, and to run gp-unit tests, must download the client library, 
+         for SOAP client calls to the GP server -->
     <target name="gp-client-lib" depends="init" unless="gp-client-lib-exists"
         description="download the GenePattern Java Programming Library (SOAP client) from the server" >
 
@@ -277,7 +277,7 @@
         <run-tests testcases="${saved-jobs.testcases}" />
     </target>
 
-    <target name="gpunit" depends="package,gp-server-online,connection-test"
+    <target name="gpunit" depends="package, connection-test"
         description="Run all GpUnit tests in the '${gpunit.testfolder}' (default=./tests)"
         >
         <property name="gpunit.testfolder" location="./tests" />

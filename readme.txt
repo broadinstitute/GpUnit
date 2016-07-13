@@ -179,8 +179,8 @@ downloads the client library from the server.
     export ANT_OPTS="-Djavax.net.ssl.trustStore=gpunit_keystore.jks" 
 For debugging include this flag "-Djavax.net.debug=ssl"
 
-Note: you can skip this requirement by setting the 'gp-server-online' ant property to true.
-    gp-server-online=true
+The 'check-url' target tests the connection with a curl command. To by-pass this test:
+    -Dcheck-url.skip=1
 
 (4) Set the 'gpunit.keystore' property. This is needed by the ant <junit> task which makes REST API
 calls to the server.
