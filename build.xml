@@ -107,7 +107,7 @@
     <condition property="gp-client-lib-check-url.skip">
         <or>
             <isTrue value="${gp-client-lib-exists}" />
-            <isTrue value="${check-url.skip} "/>
+            <isTrue value="${check-url.skip}" />
         </or>
     </condition>
     <target name="gp-client-lib-check-url" unless="gp-client-lib-check-url.skip">
