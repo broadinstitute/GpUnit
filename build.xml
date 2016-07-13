@@ -103,11 +103,13 @@
         <run-tests testcases="connection-test" junit.test.name="org.genepattern.gpunit.test.ConnectionTest" />
     </target>
 
-    <target name="gp-client-lib" depends="init,gp-server-online" unless="gp-client-lib-exists"
+    <target name="gp-client-lib" depends="init" unless="gp-client-lib-exists"
         description="download the GenePattern Java Programming Library (SOAP client) from the server" >
 
-        <property name="http.url" value="${gp.url}/gp/downloads/GenePattern.zip" />
-        <get verbose="false" src="${http.url}" dest="${local.dir}/GenePattern.zip" usetimestamp="true" />
+        <!-- todo: would be nice to optionally call <check-url /> -->
+        <get verbose="false" 
+            src="${gp.url}${gp.path}/downloads/GenePattern.zip" 
+            dest="${local.dir}/GenePattern.zip" usetimestamp="true" />
         <unzip src="${local.dir}/GenePattern.zip" dest="${client.lib.dir}" overwrite="true" />
     </target>
 
