@@ -87,11 +87,6 @@
         <property name="gpunit.testTimeout" value="" /> <!-- Junit test timeout, fail an indidivual junit test when this timeout is reached -->
     </target>
 
-    <target name="check-url" unless="check-url.skip"
-        description="check that the server is online, curl --head '${gp.url}' " >
-        <check-url />
-    </target>
-
     <!--
         This target verifies that the gpunit client can talk to the remove server; 
         Added as a way to test that the client is properly configured to connect to HTTPS servers.
@@ -103,12 +98,26 @@
         <run-tests testcases="connection-test" junit.test.name="org.genepattern.gpunit.test.ConnectionTest" />
     </target>
 
-    <!-- in order to compile gp-unit, and to run gp-unit tests, must download the client library, 
-         for SOAP client calls to the GP server -->
-    <target name="gp-client-lib" depends="init" unless="gp-client-lib-exists"
+    <target name="check-url" unless="check-url.skip"
+        description="check that the server is online, curl --head '${gp.url}' " >
+        <check-url />
+    </target>
+
+    <!-- the (convoluted) ant way to optionally call <check-url /> before downloading the client library -->
+    <condition property="gp-client-lib-check-url.skip">
+        <or>
+            <isTrue value="${gp-client-lib-exists}" />
+            <isTrue value="${check-url.skip} "/>
+        </or>
+    </condition>
+    <target name="gp-client-lib-check-url" unless="gp-client-lib-check-url.skip">
+        <check-url />
+    </target>
+
+    <!-- the gp-client-lib is needed to compile GpUnit -->
+    <target name="gp-client-lib" depends="init, gp-client-lib-check-url" unless="gp-client-lib-exists"
         description="download the GenePattern Java Programming Library (SOAP client) from the server" >
 
-        <!-- todo: would be nice to optionally call <check-url /> -->
         <get verbose="false" 
             src="${gp.url}${gp.path}/downloads/GenePattern.zip" 
             dest="${local.dir}/GenePattern.zip" usetimestamp="true" />
