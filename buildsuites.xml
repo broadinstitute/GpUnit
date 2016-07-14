@@ -173,7 +173,7 @@
     </fileset>
 
     <target name="short-tophat-tests" depends="package, clone-test-repos">
-        <pathconvert property="short.nightly.tests" refid="ShortTopHatTests" />
+        <pathconvert property=":" refid="ShortTopHatTests" />
         <run-tests
             testcases="${short.nightly.tests}"
             numThreads="5"
@@ -200,6 +200,28 @@
     	<!-- with ";" as the separator on both platforms (!). The pathconvert task transforms the fileset -->
     	<!-- to one with a delimiter that properly matches what the code expects. -->
         <pathconvert property="short.nightly.tests" refid="short.tests" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
+    <!-- Regression tests in Jenkins for IU -->
+    <target name="short-nightly-tests-iu" depends="package, clone-test-repos">
+        <union id="short.tests.iu">
+            <resources refid="ShortComparativeMarkerSelectionTests" />
+            <!-- resources refid="ShortCoxRegressionTests" / -->
+            <resources refid="ShortExpressionFileCreatorTests" />
+            <resources refid="ShortHierarchicalClusteringTests" />
+            <resources refid="ShortTopHatTests" />
+            <resources refid="nightlyMergeHTSeqCountsTests" />
+        </union>
+        <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
+        <!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
+        <!-- with ";" as the separator on both platforms (!). The pathconvert task transforms the fileset -->
+        <!-- to one with a delimiter that properly matches what the code expects. -->
+        <pathconvert property="short.nightly.tests" refid="short.tests.iu" />
         <run-tests
             testcases="${short.nightly.tests}"
             numThreads="5"
