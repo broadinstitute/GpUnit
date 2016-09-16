@@ -57,7 +57,7 @@
     <!-- ABSOLUTE -->
     <fileset id="weeklyABSOLUTETests" dir="${gpunit.dir}/${module.tests.dir}/ABSOLUTE/gpunit" >
         <!--ABSOLUTE v2 -->
-        <include name="v2/weekly_test_paper_data_66524.yml" />
+        <include name="v2/Weekly/*.yml" />
     </fileset>
 
     <target name="weekly-absolute-tests" depends="package, clone-test-repos" >
