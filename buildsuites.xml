@@ -110,24 +110,8 @@
 
     <!-- HierarchicalClustering -->
     <fileset id="ShortHierarchicalClusteringTests" dir="${gpunit.dir}/${module.tests.dir}/HierarchicalClustering/gpunit" >
-        <!-- HierarchicalClustering - v6 ColOriented -->
-        <include name="col_oriented/valid_pset_1_test.yml" />
-        <include name="col_oriented/valid_pset_2_test.yml" />
-        <include name="col_oriented/valid_pset_3_test.yml" />
-        <include name="col_oriented/valid_pset_4_test.yml" />
-        <include name="col_oriented/valid_pset_5_test.yml" />
-        <include name="col_oriented/valid_pset_6_test.yml" />
-        <include name="col_oriented/valid_pset_7_test.yml" />
-        <include name="col_oriented/valid_pset_8_test.yml" />
-        <!-- HierarchicalClustering v6 - RowOriented -->
-        <include name="row_oriented/valid_pset_1_test.yml" />
-        <include name="row_oriented/valid_pset_2_test.yml" />
-        <include name="row_oriented/valid_pset_3_test.yml" />
-        <include name="row_oriented/valid_pset_4_test.yml" />
-        <include name="row_oriented/valid_pset_5_test.yml" />
-        <include name="row_oriented/valid_pset_6_test.yml" />
-        <include name="row_oriented/valid_pset_7_test.yml" />
-        <include name="row_oriented/valid_pset_8_test.yml" />
+        <!-- HierarchicalClustering - v6 -->
+        <include name="*.yml" />
     </fileset>
 
     <target name="short-hc-tests" depends="package, clone-test-repos">
