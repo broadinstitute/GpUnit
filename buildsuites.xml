@@ -52,6 +52,8 @@
 
     <!--******************************************************************************************-->
     <!-- Test targets for individual modules. Each module has a fileset definition and a run target -->
+    <!-- Ideally short running tests will be in the top level gpunit dir, and other will be in a sub dir -->
+    <!-- see below for examples -->
     <!--******************************************************************************************-->
 
     <!-- ABSOLUTE -->
@@ -72,7 +74,7 @@
     <!-- ComparativeMarkerSelection -->
     <fileset id="ShortComparativeMarkerSelectionTests" dir="${gpunit.dir}/${module.tests.dir}/ComparativeMarkerSelection/gpunit" >
         <!-- ComparativeMarkerSelection v10 -->
-        <include name="DefaultSmokeTest_Protocol/valid_pset_1_test.yml" />
+        <include name="DefaultSmokeTest_Protocol/*.yml" />
     </fileset>
 
     <target name="short-cms-tests" depends="package, clone-test-repos">
@@ -94,20 +96,7 @@
     <!-- ExpressionFileCreator -->
     <fileset id="ShortExpressionFileCreatorTests" dir="${gpunit.dir}/${module.tests.dir}/ExpressionFileCreator/gpunit" >
         <!-- ExpressionFileCreator - v13 smoke tests only -->
-        <include name="smoke_invalid_AP_noMM_test.yml" />
-        <include name="smoke_invalid_GCRMA_and_CDF_test.yml" />
-        <include name="smoke_RT150777_regression_test.yml" />
-        <include name="smoke_valid_pset_1_test.yml" />
-        <include name="smoke_valid_pset_2_test.yml" />
-        <include name="smoke_valid_pset_4_test.yml" />
-        <include name="smoke_valid_pset_5_test.yml" />
-        <include name="smoke_valid_pset_6_test.yml" />
-        <include name="smoke_valid_pset_9_test.yml" />
-        <include name="smoke_valid_pset_10_test.yml" />
-        <include name="smoke_valid_pset_11_test.yml" />
-        <include name="smoke_valid_pset_12_test.yml" />
-        <include name="smoke_valid_pset_13_test.yml" />
-        <include name="smoke_valid_pset_14_test.yml" />
+        <include name="smoke*.yml" />
     </fileset>
 
     <target name="short-efc-tests" depends="package, clone-test-repos">
