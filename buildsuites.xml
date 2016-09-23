@@ -125,12 +125,25 @@
 
     <!-- MergeHTSeqCounts -->
     <fileset id="nightlyMergeHTSeqCountsTests" dir="${gpunit.dir}/${module.tests.dir}/MergeHTSeqCounts/gpunit" >
-        <!--ABSOLUTE v2 -->
         <include name="weekly_test_paper_data_66524.yml" />
     </fileset>
 
     <target name="nightly-mergehtseq-tests" depends="package, clone-test-repos" >
         <pathconvert property="nightly.tests" refid="nightlyMergeHTSeqCountsTests" />
+        <run-tests
+                testcases="${weekly.tests}"
+                numThreads="5"
+                shutdownTimeout="${gpunit.shutdownTimeout}"
+                />
+    </target>
+
+<!-- PreprocessReadCounts -->
+    <fileset id="nightlyPreprocessReadCountsTests" dir="${gpunit.dir}/${module.tests.dir}/PreprocessReadCounts/gpunit" >
+        <include name="smoke*.yml" />
+    </fileset>
+
+    <target name="nightly-preprocessreadcounts-tests" depends="package, clone-test-repos" >
+        <pathconvert property="nightly.tests" refid="nightlyPreprocessReadCountsTests" />
         <run-tests
                 testcases="${weekly.tests}"
                 numThreads="5"
@@ -167,6 +180,7 @@
             <resources refid="ShortHierarchicalClusteringTests" />
             <resources refid="ShortTopHatTests" />
             <resources refid="nightlyMergeHTSeqCountsTests" />
+            <resources refid="nightlyPreprocessReadCountsTests" />
         </union>
         <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
     	<!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
@@ -189,6 +203,7 @@
             <resources refid="ShortHierarchicalClusteringTests" />
             <resources refid="ShortTopHatTests" />
             <resources refid="nightlyMergeHTSeqCountsTests" />
+            <resources refid="nightlyPreprocessReadCountsTests" />
         </union>
         <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
         <!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
