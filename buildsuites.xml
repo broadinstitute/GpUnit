@@ -135,7 +135,7 @@
                 testcases="${short.nightly.tests}"
                 numThreads="5"
                 shutdownTimeout="${gpunit.shutdownTimeout}"
-                />
+        />
     </target>
 
 <!-- PreprocessReadCounts -->
@@ -149,7 +149,7 @@
                 testcases="${short.nightly.tests}"
                 numThreads="5"
                 shutdownTimeout="${gpunit.shutdownTimeout}"
-                />
+        />
     </target>
 
     <!-- TopHat -->
