@@ -41,6 +41,7 @@
         <clone-repo git.repo.name="ExpressionFileCreator" />
         <clone-repo git.repo.name="HierarchicalClustering" />
         <clone-repo git.repo.name="MergeHTSeqCounts" />
+        <clone-repo git.repo.name="PreprocessReadCounts" />
         <clone-repo git.repo.name="TopHat" />
     </target>
 
@@ -131,7 +132,7 @@
     <target name="nightly-mergehtseq-tests" depends="package, clone-test-repos" >
         <pathconvert property="nightly.tests" refid="nightlyMergeHTSeqCountsTests" />
         <run-tests
-                testcases="${weekly.tests}"
+                testcases="${short.nightly.tests}"
                 numThreads="5"
                 shutdownTimeout="${gpunit.shutdownTimeout}"
                 />
@@ -145,7 +146,7 @@
     <target name="nightly-preprocessreadcounts-tests" depends="package, clone-test-repos" >
         <pathconvert property="nightly.tests" refid="nightlyPreprocessReadCountsTests" />
         <run-tests
-                testcases="${weekly.tests}"
+                testcases="${short.nightly.tests}"
                 numThreads="5"
                 shutdownTimeout="${gpunit.shutdownTimeout}"
                 />
