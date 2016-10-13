@@ -42,6 +42,7 @@
         <clone-repo git.repo.name="HeatMapViewer" />
         <clone-repo git.repo.name="HierarchicalClustering" />
         <clone-repo git.repo.name="MergeHTSeqCounts" />
+        <clone-repo git.repo.name="PreprocessDataset" />
         <clone-repo git.repo.name="PreprocessReadCounts" />
         <clone-repo git.repo.name="TopHat" />
     </target>
@@ -154,6 +155,20 @@
         />
     </target>
 
+<!-- PreprocessDataset -->
+    <fileset id="nightlyPreprocessDatasetTests" dir="${gpunit.dir}/${module.tests.dir}/PreprocessDataset/gpunit" >
+        <include name="smoke*.yml" />
+    </fileset>
+
+    <target name="nightly-preprocessdataset-tests" depends="package, clone-test-repos" >
+        <pathconvert property="nightly.tests" refid="nightlyPreprocessDatasetTests" />
+        <run-tests
+                testcases="${short.nightly.tests}"
+                numThreads="5"
+                shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
 <!-- PreprocessReadCounts -->
     <fileset id="nightlyPreprocessReadCountsTests" dir="${gpunit.dir}/${module.tests.dir}/PreprocessReadCounts/gpunit" >
         <include name="smoke*.yml" />
@@ -198,6 +213,7 @@
             <resources refid="ShortHierarchicalClusteringTests" />
             <resources refid="ShortTopHatTests" />
             <resources refid="nightlyMergeHTSeqCountsTests" />
+            <resources refid="nightlyPreprocessDatasetTests" />
             <resources refid="nightlyPreprocessReadCountsTests" />
         </union>
         <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
@@ -222,6 +238,7 @@
             <resources refid="ShortHierarchicalClusteringTests" />
             <resources refid="ShortTopHatTests" />
             <resources refid="nightlyMergeHTSeqCountsTests" />
+            <resources refid="nightlyPreprocessDatasetTests" />
             <resources refid="nightlyPreprocessReadCountsTests" />
         </union>
         <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
