@@ -34,11 +34,11 @@
     <property name="report.dir" value="${user.dir}/reports" />
 
     <!-- optionally set junit jvm arg when testing an HTTPS server,
-         -Djavax.net.ssl.trustStore=${gpunit.keystore} 
-         -Djavax.net.ssl.trustStorePassword=${gpunit.keystore.password}
+         -Djavax.net.ssl.trustStore=${gpunit.trustStore} 
+         -Djavax.net.ssl.trustStorePassword=${gpunit.trustStorePassword}
     -->    
-    <property name="gpunit.keystore" value="" />
-    <property name="gpunit.keystore.password" value="" />
+    <property name="gpunit.trustStore" value="" />
+    <property name="gpunit.trustStorePassword" value="" />
     
     <path id="gp.client.classpath">
         <pathelement location="${client.lib.dir}/GenePattern.jar" />
@@ -90,7 +90,7 @@
     <!--
         This target verifies that the gpunit client can talk to the remove server; 
         Added as a way to test that the client is properly configured to connect to HTTPS servers.
-        Hint: Set -Dgpunit.keystore when necessary.
+        Hint: Set -Dgpunit.trustStore when necessary.
     -->
     <target name="connection-test" depends="package, check-url"
         description="Run the 'org.genepattern.gpunit.test.ConnectionTest' junit test">
@@ -251,8 +251,8 @@
                     <propertyref builtin="commandline"/>
                 </syspropertyset>
                 
-                <jvmarg value="-Djavax.net.ssl.trustStore=${gpunit.keystore}" />
-                <jvmarg value="-Djavax.net.ssl.trustStorePassword=${gpunit.keystore.password}" />
+                <jvmarg value="-Djavax.net.ssl.trustStore=${gpunit.trustStore}" />
+                <jvmarg value="-Djavax.net.ssl.trustStorePassword=${gpunit.trustStorePassword}" />
             </junit>
 
             <junitreport todir="${report.run.dir}">

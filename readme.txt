@@ -174,13 +174,13 @@ and save the certificate file, e.g. 'gpserver.cert'.
 (2) Add the certificate to a new or existing keystore file,  e.g. 'gpunit_keystore.jks'
     keytool -import -file gpserver.cert -keystore gpunit_keystore.jks
 
-(3) Set 'gpunit.keystore' and 'gpunit.keystore.password' properties.
-    gpunit.keystore=gpunit_keystore.jks
-    gpunit.keystore.password=my_password
+(3) Set 'gpunit.trustStore' and 'gpunit.trustStorePassword' properties.
+    gpunit.trustStore=gpunit_keystore.jks
+    gpunit.trustStorePassword=my_password
 
 These are passed along as java command line args by the ant <junit> task.
-    -Djavax.net.ssl.trustStore=${gpunit.keystore} 
-    -Djavax.net.ssl.trustStorePassword=${gpunit.keystore.password}
+    -Djavax.net.ssl.trustStore=${gpunit.trustStore} 
+    -Djavax.net.ssl.trustStorePassword=${gpunit.trustStorePassword}
 The tests make REST API calls to the server.
 
 (4) Optionally skip the 'check-url' target. Before running the tests, GpUnit checks the connection with a curl command. 
