@@ -108,6 +108,16 @@ public class BatchProperties {
      */
     private static final String PROP_LOCAL_ASSERTIONS = "gpunit.localAssertions"; // set to true to force local diffs for backward compatibility
 
+    /**
+     * Set 'gpunit.testData' to change the default location for input files.
+     * By default, gpunit.testData=ftp://gpftp.broadinstitute.org
+     * Example entry in test.yaml file:
+       <pre>
+           input.file: "<%gpunit.testData%>/gpunit/FileDifference/input/TextFile.txt"
+       </pre>
+     */
+    public static final String PROP_TEST_DATA="gpunit.testData";
+
     private String gpUrl = "http://127.0.0.1:8080";
     private String gpUsername =  "test";
     private String gpPassword = "test";

@@ -158,8 +158,16 @@ public class BatchModuleTest {
             propFileName = "gpunit.properties";
         }
         loadGpunitProperties(propFileName);
+        
+        // Initialize built-in default properties
+        initProperty( BatchProperties.PROP_TEST_DATA, "ftp://gpftp.broadinstitute.org" );
     }
-
+    
+    protected static void initProperty(final String key, final String value) {
+        if (!System.getProperties().containsKey(key)) {
+            System.setProperty(key, value);
+        }
+    }
 
     private static boolean loadGpunitProperties(String fileName) {
         File gpunitPropsFile=new File(fileName);
