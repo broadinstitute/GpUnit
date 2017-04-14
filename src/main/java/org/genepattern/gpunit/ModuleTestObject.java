@@ -167,7 +167,7 @@ public class ModuleTestObject {
         //by default save output files into a directory based on the test case file
         final String basename=dropExtension(testCaseFile);
         if (testCaseFile.getParentFile() != null) {
-            return testCaseFile.getParentFile().getName() + "_" + basename;
+            return testCaseFile.getParentFile().getName() + "/" + basename;
         }
         else {
             return basename;
