@@ -1,5 +1,7 @@
 package org.genepattern.gpunit;
 
+import static org.genepattern.gpunit.BatchProperties.isNullOrEmpty;
+
 import java.io.File;
 
 import org.genepattern.gpunit.ModuleTestObject;
@@ -92,34 +94,22 @@ public class BatchModuleTestObject {
      * @return a directory into which to download job results for the given completed test
      */
     public File getJobResultDir(final File batchOutputDir, final String jobId) throws GpUnitException {
-        File testCaseFile=null;
-        String testName=null;
-        testCaseFile=getTestFile();
-        ModuleTestObject testCase=getTestCase();
-        if (testCase != null) {
-            testName=testCase.getName();
-            if (testName != null && testName.length()==0) {
-                testName=null;
-            }
-        }
-
         String dirname=null;
-        if (testCaseFile != null) {
-            dirname=testCase.getTestNameFromFile(testCaseFile);
+        if (this.testFile != null) {
+            dirname=ModuleTestObject.getJobDirName(this.testFile);
         }
-        else if (testName != null) {
+        else if (this.testCase !=null && !isNullOrEmpty(testCase.getName())) {
             //otherwise, use the testname
-            dirname = testName;
+            dirname = testCase.getName();
         }
-        else if (jobId != null) {
+        else if (!isNullOrEmpty(jobId)) {
             //otherwise, use the job id
             dirname = jobId;
         }
         else {
             throw new IllegalArgumentException("Can't create job result directory, testCase and jobId are not set!");
         }
-        File jobResultDir=new File(batchOutputDir, dirname);
-        return jobResultDir;
+        return new File(batchOutputDir, dirname);
     }
 
     public String toString() {

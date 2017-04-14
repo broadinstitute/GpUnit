@@ -14,6 +14,10 @@ public class BatchProperties {
         }
     }
     
+    public static final boolean isNullOrEmpty(final String str) {
+        return str==null || str.trim().length()==0;
+    }
+
     public static boolean isSet(final String val) {
         if (val==null) {
             return false;

@@ -1,5 +1,7 @@
 package org.genepattern.gpunit;
 
+import static org.genepattern.gpunit.BatchProperties.isNullOrEmpty;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -162,22 +164,36 @@ public class ModuleTestObject {
         if (testCaseFile==null) {
             throw new IllegalArgumentException("testCaseFile==null");
         }
-        String dirname;
         //by default save output files into a directory based on the test case file
-        String basename=dropExtension(testCaseFile);
+        final String basename=dropExtension(testCaseFile);
         if (testCaseFile.getParentFile() != null) {
-            dirname = testCaseFile.getParentFile().getName() + "_" + basename;
+            return testCaseFile.getParentFile().getName() + "_" + basename;
         }
         else {
-            dirname = basename;
+            return basename;
         }
-        return dirname;
     }
 
-    //optionally set the test name based on the fromFile path
+    /** optionally set the test name based on the fromFile path */
     public void setNameFromFile(final File fromFile) {
-        if (getName() == null) {
-            setName(getTestNameFromFile(fromFile));
+        if (!isNullOrEmpty(this.name)) {
+            return;
+        }
+        final String _name=getTestNameFromFile(fromFile);
+        this.setName(_name);
+    }
+    
+    /** 
+     * by default download job result files into a directory name based on the test case file 
+     *   job_dir_name=[<testfile.parentdir.name>_]<testfile.basename>
+     */
+    public static final String getJobDirName(final File testFile) {
+        final String basename=dropExtension(testFile);
+        if (testFile.getParentFile() != null) {
+            return testFile.getParentFile().getName() + "_" + basename;
+        }
+        else {
+            return basename;
         }
     }
 
