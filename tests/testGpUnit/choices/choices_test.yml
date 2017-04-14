@@ -2,7 +2,7 @@
 # test choice input parameters, with default values
 #
 module: testChoiceParameters
-params: 
+params: {}
 assertions:
     jobStatus: success
 

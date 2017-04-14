@@ -1,5 +1,7 @@
 package org.genepattern.gpunit.test;
 
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
@@ -111,7 +113,7 @@ public class BatchModuleTest {
                if (null != testCase) {
                    testCase.setName(uniqueName);
                }
-               else if (null == batchTestObj.getInitException()) {
+               else if (!batchTestObj.hasInitExceptions()) {
                    // There is no valid testcase, but no Exception was generated during initialization
                    throw new GpUnitException("Error processing test names for file: testName="+originalName+", testFile="+batchTestObj.getTestFile().getAbsolutePath());
                }
@@ -252,8 +254,8 @@ public class BatchModuleTest {
     
     @Test
     public void gpunit() throws GpUnitException {
-        if (testObj.getInitException() != null) {
-            Assert.fail(testObj.getInitException().getLocalizedMessage());
+        if (testObj.hasInitExceptions()) {
+            fail(testObj.getInitException().getLocalizedMessage());
         }
 
         //submit a job via new REST API

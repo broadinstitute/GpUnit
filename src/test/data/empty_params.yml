@@ -1,0 +1,7 @@
+# Example test-case for junit test ...
+#   Parse yaml file with empty 'params'
+#
+module: ConvertLineEndings
+params: {}
+assertions:
+    jobStatus: success

@@ -2,8 +2,10 @@ package org.genepattern.gpunit.yaml;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.LineNumberReader;
 
+import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.ModuleTestObject;
 
 /**
@@ -34,33 +36,33 @@ Example input file parameters,
  * @author pcarr
  */
 public class ExecutionLogParser {
-
-    static public ModuleTestObject parse(File executionLog) throws Exception {
-        File testDir = null;
-        if (executionLog.isAbsolute()) {
-            testDir = executionLog.getParentFile();
-        }
-        else {
-            testDir = executionLog.getCanonicalFile().getParentFile();
-        }
-        V v = new V(testDir);
+    public static ModuleTestObject parse(final File executionLog) throws GpUnitException {
+        GpUnitFileParser.checkTestFile(executionLog);
+        final File testDir = GpUnitFileParser.initTestDir(executionLog);
+        final V v = new V(testDir);
         
         LineNumberReader reader = null;
-        reader = new LineNumberReader(new FileReader(executionLog));
         try {
+            reader = new LineNumberReader(new FileReader(executionLog));
             String line = null;
             while((line = reader.readLine()) != null) {
                 v.nextLine(line);
             }
         }
+        catch (Throwable t) {
+            throw new GpUnitException("File I/O error parsing execution log='"+executionLog+"': "+t.getLocalizedMessage(), t);
+        }
         finally {
             if (reader != null) {
-                reader.close();
+                try {
+                    reader.close();
+                } 
+                catch (IOException e) {
+                    throw new GpUnitException("Unexpected I/O error parsing execution log='"+executionLog+"': "+e.getLocalizedMessage(), e);
+                }
             }
         }
-        
-        ModuleTestObject testCase = v.getTestCase();
-        
+        final ModuleTestObject testCase = v.getTestCase();
         //set the test name
         if (testCase.getName() == null) {
             String testName = "testName";
@@ -96,18 +98,16 @@ public class ExecutionLogParser {
             return testCase;
         }
         
-        private void error(String errorMessage) throws Exception {
-            throw new Exception(errorMessage);
+        private void error(String errorMessage) throws GpUnitException {
+            throw new GpUnitException(errorMessage);
         }
         
-        public void nextLine(String line) throws Exception {
+        public void nextLine(String line) throws GpUnitException {
             ++lineCount;
             if (line == null) {
-                //TODO: should throw exception?
                 return;
             }
             if (line.trim().length() == 0) {
-                //TODO: should throw exception?
                 return;
             }
             //strip out leading '#' and whitespace
@@ -160,7 +160,7 @@ public class ExecutionLogParser {
             } 
         }
         
-        private ParamEntry parseParamLine(String line) throws Exception {
+        private ParamEntry parseParamLine(String line) throws GpUnitException {
             //Example input file parameters,
 // * 1) external url
 //#    input.filename = ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.cls

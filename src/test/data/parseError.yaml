@@ -1,0 +1,8 @@
+#
+# Example test-case for junit test ...
+#   Incorrect yaml file should fail the job
+module: ConvertLineEndings
+# Error, params declared with no values
+params: 
+assertions:
+    jobStatus: success

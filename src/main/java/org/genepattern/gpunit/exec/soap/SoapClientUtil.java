@@ -19,12 +19,9 @@ public class SoapClientUtil {
         if (testObject == null) {
             throw new GpUnitException("testObject is null");
         }
-        if (testObject.getTestCase() == null) {
-            throw new GpUnitException("testObject.testCase is null");
-        }
-        Throwable initError = testObject.getInitException();
-        if (initError != null) {
-            throw new GpUnitException(initError.getMessage(), initError);
+        if (testObject.hasInitExceptions()) {
+            Throwable initError = testObject.getInitException();
+            throw new GpUnitException("testObject initialization error", initError);
         }
         if (testObject.getTestCase() == null) {
             throw new GpUnitException("testObject.testCase is null");

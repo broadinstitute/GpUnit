@@ -3,12 +3,14 @@ package org.genepattern.gpunit.yaml;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.io.InputStream;
 
 import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.ModuleTestObject;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.ConstructorException;
 import org.yaml.snakeyaml.parser.ParserException;
 
 /**
@@ -17,17 +19,30 @@ import org.yaml.snakeyaml.parser.ParserException;
  * @author pcarr
  */
 public class ModuleTestParserYaml {
-    static public ModuleTestObject parse(File testFile) throws GpUnitException, FileNotFoundException {
+    public static ModuleTestObject parse(final File testFile) throws GpUnitException {
         ModuleTestObject test = null;
-        InputStream is = null;
+        FileInputStream is = null;
         try {
             is = new FileInputStream(testFile);
             test = parse(is);
             test = initInputdir(testFile, test);
             return test;
         }
-        catch (FileNotFoundException e) {
-            throw e;
+        catch (GpUnitException e) {
+            throw new GpUnitException("Error parsing testFile='"+testFile+"'", e);
+        }
+        catch (Throwable t) {
+            throw new GpUnitException("Unexpected error reading testFile='"+testFile+"'", t);
+        }
+        finally {
+            if (is != null) {
+                try {
+                    is.close();
+                }
+                catch (IOException e) {
+                    throw new GpUnitException("Unexpected error closing file input stream, testFile='"+testFile+"'", e);
+                }
+            }
         }
     }
     
@@ -56,8 +71,11 @@ public class ModuleTestParserYaml {
             ModuleTestObject obj = yaml.loadAs(is, ModuleTestObject.class);
             return obj;
         }
+        catch (ConstructorException e) {
+            throw new GpUnitException(e);
+        }
         catch (ParserException e) {
-            throw new GpUnitException("Error parsing test yaml file: "+e.toString());
+            throw new GpUnitException(e);
         }
         catch (Throwable t) {
             // Try to get the originating exception and extract a useful error message. This is useful if

@@ -109,7 +109,6 @@ public class PropertyExpansionTests {
 		} catch (GpUnitException gpe) {
 			Assert.fail();
 		}
-		assert (false);
 		Assert.assertTrue(exp.equals("prefix http://rooturl"));
 	}
 
