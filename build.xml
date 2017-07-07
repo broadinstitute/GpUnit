@@ -55,7 +55,32 @@
         <path refid="gp.client.classpath" />
     </path>
 
-    <target name="init">
+    <!-- 
+      Enable verbose output
+          ant -Dverbose=true ...
+      As a convenience, also set to true, based on ant command line flags
+          ant -v (-verbose) ...
+          ant -d (-debug) ...
+
+      Note: Use the 'echoproperties' task for extended debugging, e.g.
+          <echoproperties destfile="echoproperties.out" />
+      Note: To print the current command line
+          <echo message="${sun.java.command}" />
+    -->
+    <target name="init-verbose">
+        <condition property="verbose">
+            <or>
+                <istrue value="${verbose}" />
+                <contains string="${sun.java.command}" substring=" -v " />
+                <contains string="${sun.java.command}" substring=" -verbose " />
+                <contains string="${sun.java.command}" substring=" -d " />
+                <contains string="${sun.java.command}" substring=" -debug " />
+            </or>
+        </condition>
+        <echo if:true="${verbose}" message="verbose='${verbose}'" />
+    </target>
+
+    <target name="init" depends="init-verbose">
         <echo>initializing directories ... </echo>
         <echo>local.dir: ${local.dir} </echo>
         <echo>report.dir: ${report.dir} </echo>
