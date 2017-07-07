@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="gp-unit" default="package">
+<project name="gp-unit" default="package"
+    xmlns:if="ant:if"
+    xmlns:unless="ant:unless"
+>
     <dirname property="project.basedir" file="${ant.file.gp-unit}" />
     <property file="${project.basedir}/gpunit.default.properties" />
     <dirname property="gpunit.dir" file="${ant.file.gp-unit}" />
@@ -54,6 +57,16 @@
         </fileset>
         <path refid="gp.client.classpath" />
     </path>
+
+    <!--
+      Set 'verbose' flag as an ant target
+      Usage:
+        ant verbose ...
+    -->
+    <target name="verbose"
+      description="set 'verbose' flag">
+        <property name="verbose" value="true" />
+    </target>
 
     <!-- 
       Enable verbose output
