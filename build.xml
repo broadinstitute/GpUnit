@@ -61,10 +61,16 @@
     <!--
       Set 'verbose' flag as an ant target
       Usage:
-        ant verbose ...
+        ant verbose target[s] ...
+      This is equivalent to 
+        ant -Dverbose=true target[s] ...
+      
+      Note: this target is unnecessary when running ant in debug or verbose mode
+        ant -debug, -d ...
+        ant -verbose, -v ...
     -->
     <target name="verbose"
-      description="set 'verbose' flag">
+      description="set 'verbose' flag; ant verbose ...">
         <property name="verbose" value="true" />
     </target>
 
@@ -123,6 +129,112 @@
         <property name="gpunit.shutdownTimeout" value="" /> <!-- Global timeout, exit junit after this timeout period. -->
         <property name="gpunit.jobCompletionTimeout" value="" /> <!-- Job poll timeout, stop polling for GP job completion after this timeout -->
         <property name="gpunit.testTimeout" value="" /> <!-- Junit test timeout, fail an indidivual junit test when this timeout is reached -->
+        
+        <has-value pname="gpunit.trustStore" />
+        <has-value pname="gpunit.trustStorePassword" />
+    </target>
+
+    <!-- 
+      Macrodef: has-value, to check for empty values
+      Usage:
+        <has-value pname="my-param" />
+        <echo if:set="my_param.has_value">my_param is set to: ${my_param}</echo>
+      Sets @{pname}.has_value to "true" if the parameter is set to a non-empty value.
+      This is a workaround for incorrect (imho) implementation of if:blank and unless:blank
+    -->
+    <macrodef name="has-value">
+        <attribute name="pname" />
+        <attribute name="suffix" default=".has_value" />
+        <sequential>
+            <property name="@{pname}@{suffix}" value="true" if:set="@{pname}" unless:blank="${@{pname}}" />
+        </sequential>
+    </macrodef>
+
+    <!--
+      Macrodef: echo-value, print the value of the given property, 
+        with special handling for unset, empty and boolean values.
+        This is split into two macrodefs to enable verbose output.
+      Usage:
+        <echo-value pname="my-param" />
+    -->
+    <macrodef name="echo-value">
+        <attribute name="pname" />
+        <attribute name="suffix" default=".has_value" />
+        <sequential>
+            <has-value pname="@{pname}" suffix="@{suffix}" />
+            <echo-value-succint pname="@{pname}" />
+            <echo-value-verbose if:set="verbose" pname="@{pname}" suffix="@{suffix}" />
+        </sequential>
+    </macrodef>
+
+    <!-- don't call this directly, it is called from the 'echo-value' macrodef -->
+    <macrodef name="echo-value-succint">
+        <attribute name="pname" />
+        <sequential>
+            <echo if:set="@{pname}">@{pname}='${@{pname}}'</echo>
+            <echo unless:set="@{pname}">@{pname}=(not set)</echo>
+        </sequential>
+    </macrodef>
+
+    <!-- 
+      don't call this directly, it is called from the 'echo-value' macrodef
+      when in verbose mode
+      -->
+    <macrodef name="echo-value-verbose">
+        <attribute name="pname" />
+        <attribute name="suffix" default=".has_value" />
+        <sequential>
+            <echo       if:set="@{pname}"    >    if:set="@{pname}"</echo>
+            <echo   unless:set="@{pname}"    >    unless:set="@{pname}"</echo>
+            <echo      if:true="${@{pname}}" >    if:true="$${@{pname}}"</echo>
+            <echo  unless:true="${@{pname}}" >    unless:true="$${@{pname}}"</echo>
+            <echo     if:blank="${@{pname}}" >    if:blank="$${@{pname}}"</echo>
+            <echo unless:blank="${@{pname}}" >    unless:blank="$${@{pname}}"</echo>
+            <!-- for illustration only, incorrect use of if:blank ... 
+            <echo     if:blank="@{pname}"    >    if:blank="@{pname}"</echo>
+            <echo unless:blank="@{pname}"    >    unless:blank="@{pname}"</echo>
+            -->
+            
+            <!-- recommended, if:set="gpunit.trustStore.has_value" ... -->
+            <echo>    is '@{pname}' set ...</echo>
+            <!-- echo>    recommended ...</echo -->
+            <echo       if:set="@{pname}@{suffix}"    >        (recommended) if:set="@{pname}@{suffix}"</echo>
+            <echo   unless:set="@{pname}@{suffix}"    >        (recommended) unless:set="@{pname}@{suffix}"</echo>
+            <!-- alternative 1, if:true"${gpunit.trustStore.has_value}" ... -->
+            <!-- echo>    alternative 1 ...</echo -->
+            <echo      if:true="${@{pname}@{suffix}}" >              (alt 1) if:true="$${@{pname}@{suffix}}"</echo>
+            <echo  unless:true="${@{pname}@{suffix}}" >              (alt 1) unless:true="$${@{pname}@{suffix}}"</echo>
+            <!-- alternative 2, does not require 'has-value' macrodef
+                 if:set="gpunit.trustStore" unless:blank="${gpunit.trustStore}" ...  -->
+            <!-- echo>    alternative 2 ... </echo -->
+            <echo if:set="@{pname}" unless:blank="${@{pname}}">              (alt 2) if:set="@{pname}" unless:blank="$${@{pname}}"</echo>
+        </sequential>
+    </macrodef>
+
+    <!--                                                                                                                                                               
+      Test 'gpunit.trustStore' and 'gpunit.trustStorePassword' flags
+      Usage: 
+        ant -Dgpunit.trustStore=A test-gpunit.trustStore-flag                                                                                                           
+        ant -Dgpunit.trustStorePassword=B test-gpunit.trustStore-flag                                                                                                           
+      -->
+    <target name="test-gpunit.trustStore-flags" depends="init"
+        description="for debugging 'gpunit.trustStore' and 'gpunit.trustStorePassword' flags"
+    >
+        <!-- check if the verbose flag is set -->
+        <condition property="verbose">
+            <or>
+                <contains string="${sun.java.command}" substring=" -v " />
+                <contains string="${sun.java.command}" substring=" -verbose " />
+            </or>
+        </condition>
+        <echo>verbose: ${verbose}</echo>
+
+        <echo-value pname="gpunit.trustStore" />
+        <echo if:set="gpunit.trustStore.has_value">    jvmarg: -Djavax.net.ssl.trustStore=${gpunit.trustStore}</echo>
+        <echo unless:set="gpunit.trustStore.has_value">    jvmarg not set: -Djavax.net.ssl.trustStore</echo>
+        <echo-value pname="gpunit.trustStorePassword" />
+        <echo if:set="gpunit.trustStorePassword.has_value">    jvmarg: -Djavax.net.ssl.trustStorePassword=${gpunit.trustStorePassword}</echo>
+        <echo unless:set="gpunit.trustStorePassword.has_value">    jvmarg not set: -Djavax.net.ssl.trustStorePassword</echo> 
     </target>
 
     <!--
@@ -130,7 +242,7 @@
         Added as a way to test that the client is properly configured to connect to HTTPS servers.
         Hint: Set -Dgpunit.trustStore when necessary.
     -->
-    <target name="connection-test" depends="package, check-url"
+    <target name="connection-test" depends="package, check-url" unless="connection-test.skip"
         description="Run the 'org.genepattern.gpunit.test.ConnectionTest' junit test">
         <echo>Checking connection ... </echo>
         <run-tests testcases="connection-test" junit.test.name="org.genepattern.gpunit.test.ConnectionTest" />
@@ -288,9 +400,11 @@
                 <syspropertyset>
                     <propertyref builtin="commandline"/>
                 </syspropertyset>
-                
-                <jvmarg value="-Djavax.net.ssl.trustStore=${gpunit.trustStore}" />
-                <jvmarg value="-Djavax.net.ssl.trustStorePassword=${gpunit.trustStorePassword}" />
+
+                <jvmarg if:set="gpunit.trustStore.has_value" 
+                    value="-Djavax.net.ssl.trustStore=${gpunit.trustStore}" />
+                <jvmarg if:set="gpunit.trustStorePassword.has_value" 
+                    value="-Djavax.net.ssl.trustStorePassword=${gpunit.trustStorePassword}" />
             </junit>
 
             <junitreport todir="${report.run.dir}">
