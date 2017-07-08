@@ -2,6 +2,7 @@
 <project name="gp-unit" default="package"
     xmlns:if="ant:if"
     xmlns:unless="ant:unless"
+    xmlns:artifact="antlib:org.apache.maven.artifact.ant"
 >
     <dirname property="project.basedir" file="${ant.file.gp-unit}" />
     <property file="${project.basedir}/gpunit.default.properties" />
@@ -274,7 +275,89 @@
         <unzip src="${local.dir}/GenePattern.zip" dest="${client.lib.dir}" overwrite="true" />
     </target>
 
-    <target name="compile" depends="init, gp-client-lib"
+    <!-- location for maven dependencies copied into this project -->
+    <property name="dependency.dir" location="target/dependency" />
+
+    <target name="download-deps" depends="init"
+        description="install maven dependencies"
+    >
+        <path id="maven-ant-tasks.classpath" path="lib/maven-ant-tasks-2.1.3.jar" />
+        <typedef resource="org/apache/maven/artifact/ant/antlib.xml"
+            uri="antlib:org.apache.maven.artifact.ant"
+            classpathref="maven-ant-tasks.classpath" />
+
+        <artifact:dependencies pathId="dependencies.classpath" cacheDependencyRefs="true" 
+            filesetId="dependency.fileset"
+            sourcesFilesetId="sources.dependency.fileset"
+            javadocFilesetId="javadoc.dependency.fileset"
+            versionsId="dependency.versions"
+        >
+
+            <dependency groupId="commons-codec" artifactId="commons-codec" version="1.3" />
+            <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-compress -->
+            <dependency groupId="org.apache.commons" artifactId="commons-compress" version="1.8" />
+            <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
+            <dependency groupId="com.google.code.gson" artifactId="gson" version="2.3.1" />
+            <!-- https://mvnrepository.com/artifact/org.hamcrest/hamcrest-core -->
+            <dependency groupId="org.hamcrest" artifactId="hamcrest-core" version="1.3" />
+            <!-- https://mvnrepository.com/artifact/junit/junit -->
+            <dependency groupId="junit" artifactId="junit" version="4.11" />
+            <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpcore -->
+            <!-- dependency groupId="org.apache.httpcomponents" artifactId="httpcore" version="4.0.1" / -->
+            <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
+            <!-- dependency groupId="org.apache.httpcomponents" artifactId="httpclient" version="4.0" / -->
+            <dependency groupId="org.apache.httpcomponents" artifactId="httpclient" version="4.5.3" />
+            <!--
+            <dependency groupId="org.apache.httpcomponents"
+                artifactId="httpclient"
+                version="4.5.3">
+            </dependency>
+            -->
+            <!-- https://mvnrepository.com/artifact/org.yaml/snakeyaml -->
+            <dependency groupId="org.yaml" artifactId="snakeyaml" version="1.10" />
+            
+            <!-- https://mvnrepository.com/artifact/org.mockito/mockito-core -->
+            <dependency groupId="org.mockito" artifactId="mockito-core" version="1.9.5" scope="test" />
+            <!-- https://mvnrepository.com/artifact/org.objenesis/objenesis -->
+            <dependency groupId="org.objenesis" artifactId="objenesis" version="1.0" scope="test" />
+            <!-- https://mvnrepository.com/artifact/org.hamcrest/hamcrest-core -->
+            <dependency groupId="org.hamcrest" artifactId="hamcrest-core" version="1.3" scope="test" />
+        </artifact:dependencies>
+
+        <path id="gpunit.classpath">
+            <pathelement location="${gpunit.dir}/classes"/>
+            <!--
+            <fileset dir="${gpunit.dir}/lib">
+                <include name="**/*.jar"/>
+            </fileset>
+            -->
+            <pathelement location="lib/gp-modules-updated.jar" />
+            <path refid="gp.client.classpath" />
+            <path refid="dependencies.classpath" />
+        </path>
+
+        <copy todir="${dependency.dir}">
+            <fileset refid="dependency.fileset" />
+            <!-- This mapper strips off all leading directory information -->
+            <mapper type="flatten" />
+        </copy>
+
+        <copy todir="${dependency.dir}/src">
+            <fileset refid="sources.dependency.fileset" />
+            <mapper classpathref="maven-ant-tasks.classpath"
+                  classname="org.apache.maven.artifact.ant.VersionMapper"
+                  from="${dependency.versions}" to="flatten" />
+        </copy>
+
+        <copy todir="${dependency.dir}/javadoc">
+            <fileset refid="javadoc.dependency.fileset" />
+            <mapper classpathref="maven-ant-tasks.classpath"
+                  classname="org.apache.maven.artifact.ant.VersionMapper"
+                  from="${dependency.versions}" to="flatten" />
+        </copy>
+    </target>
+
+    <target name="compile" depends="init, gp-client-lib, download-deps"
         description="compile GpUnit">
         <property name="java.target" value="1.6" /> 
         <javac debug="true" includeantruntime="false"
@@ -294,10 +377,17 @@
         <jar basedir="${gpunit.dir}/classes" jarfile="${gpunit.dir}/dist/gp-unit.jar" />
     </target>
 
+    <target name="clean-deps"
+        description="clean the 3rd party dependencies downloaded from the maven repository"
+    >
+        <delete dir="${dependency.dir}" />
+    </target>
+        
     <target name="clean-gpunit-dist" 
         description="clean the GpUnit binary distribution by deleting the class files and support libraries">
         <delete dir="${gpunit.dir}/classes" />
         <delete dir="${gpunit.dir}/dist" />
+        <delete dir="${gpunit.dir}/target" />
     </target>
     
     <target name="clean-test-run" depends="clean-gpunit-outputdir, clean-report-dir"
@@ -528,9 +618,7 @@
                 <fileset dir="${gpunit.dir}/src/test/lib" >
                     <include name="**/*.jar"/>
                 </fileset>
-                <fileset dir="./lib">
-                    <include name="**/*.jar"/>
-                </fileset>
+                <path refid="dependencies.classpath" />
                 <pathelement location="${client.lib.dir}/GenePattern.jar" />
             </classpath>
             <test name="org.genepattern.gpunit.yaml.PropertyExpansionTests" outfile="gpunit-junit" todir="${junit.results.dir}" >
@@ -540,6 +628,6 @@
     </target>
 
     <!-- Import module test suite targets and fileset definitions -->
-	<import file="buildsuites.xml" />
+    <import file="buildsuites.xml" />
 
 </project>
