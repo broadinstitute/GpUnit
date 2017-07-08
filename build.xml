@@ -248,7 +248,7 @@
         <run-tests testcases="connection-test" junit.test.name="org.genepattern.gpunit.test.ConnectionTest" />
     </target>
 
-    <target name="check-url" unless="check-url.skip"
+    <target name="check-url" depends="init-verbose" unless="check-url.skip"
         description="check that the server is online, curl --head '${gp.url}' " >
         <check-url />
     </target>
@@ -327,25 +327,80 @@
     <!-- END build gp-unit.jar -->
 
     <!--
+      'curl' command line wrapper
+      Usage:
+        <curl url="${my-url}" />         
+        <curl head="true" url="${my-url}" />
+      As an alternative, pass all command line args via the 'extra-args' property ... 
+          <curl extra-args="-I -s -f -S" url="${my-url}" />
+          ant -Dcheck-url.extra-args="-I -s -f -S" ...
+    -->
+    <macrodef name="curl">
+      <attribute name="url" />
+
+      <!-- curl command line options, set these properties to "true" to enable each option -->
+      <attribute name="head" default="false"
+        description="-I, --head command line option" />
+      <attribute name="insecure" default="false" 
+        description="-k, --insecure, insecure SSL connections" />
+      <attribute name="silent" default="true" 
+        description="-s, --silent, don't show progress meter or error messages" />
+      <attribute name="fail" default="true" 
+        description="-f, --fail, fail silently on server errors and return error 22" />
+      <attribute name="show-error" default="true" 
+        description="-S, --show-error" />
+        
+      <!-- extra command line args -->
+      <attribute name="extra-args" default="" />
+        
+      <sequential>
+        <exec executable="curl"
+          failifexecutionfails="false"
+          failonerror="true"
+          outputproperty="exec.out"
+          logError="true"
+        >
+          <arg value="--insecure"    if:true="@{insecure}" /> 
+          <arg value="--head"        if:true="@{head}" />
+          <arg value="--silent"      if:true="@{silent}" />
+          <arg value="--fail"        if:true="@{fail}" />
+          <arg value="--show-error"  if:true="@{show-error}" />
+          <arg line="@{extra-args}" unless:blank="@{extra-args}" />
+          <arg value="@{url}" />
+        </exec>
+        </sequential>
+    </macrodef>
+
+    <!--
         Check to see if the server is online.
     -->
+    <property name="check-url.head"       value="true" />
+    <property name="check-url.insecure"   value="false" />
+    <property name="check-url.silent"     value="true" />
+    <property name="check-url.fail"       value="true" />
+    <property name="check-url.show-error" value="true" />
+    <property name="check-url.extra-args" value="" />
     <macrodef name="check-url">
+        <attribute name="url" default="${gp.url}${gp.path}/pages/login.xhtml" />
+
+        <attribute name="head" default="true"
+            description="when true, append the '--head' flag to the curl command" />
+        <attribute name="insecure" default="${check-url.insecure}" 
+            description="when true, append the '--insecure' flag to the curl command" />
+        <attribute name="silent" default="${check-url.silent}" />
+        <attribute name="fail" default="${check-url.fail}" />
+        <attribute name="show-error" default="${check-url.show-error}" />
         <sequential>
             <!-- use curl command to check status -->
-            <!-- curl \-\-head \-\-silent \-\-fail \-\-show-error http://127.0.0.1:8080/gp/pages/login.xhtml -->
-            <exec executable="curl"
-                failifexecutionfails="false"
-                failonerror="true"
-                outputproperty="exec.out"
-                logError="true"
-            >
-              <arg value="--insecure" /> <!-- aka '-k', perform insecure SSL connections -->
-              <arg value="--head" />
-              <arg value="--silent" />
-              <arg value="--fail" />
-              <arg value="--show-error" />
-              <arg value="${gp.url}${gp.path}/pages/login.xhtml" />
-            </exec>
+            <!-- curl -I http://127.0.0.1:8080/gp/pages/login.xhtml -->
+            <curl head="${check-url.head}" 
+                insecure="${check-url.insecure}" 
+                silent="${check-url.silent}" 
+                fail="${check-url.fail}" 
+                show-error="${check-url.show-error}" 
+                extra-args="${check-url.extra-args}"
+                url="@{url}" 
+            />
         </sequential>
     </macrodef>
 
