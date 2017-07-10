@@ -33,7 +33,7 @@ public class GpAssertions {
     private BatchProperties getBatchProperties() {
         if (null == bp) {
             try {
-                bp = BatchProperties.Factory.initFromProps();
+                bp = BatchProperties.Builder.initFromProps();
             }
             catch (GpUnitException gpe) {
                 throw new ParserException("Error properties during yaml parsing", null, "error intializing properties", null);

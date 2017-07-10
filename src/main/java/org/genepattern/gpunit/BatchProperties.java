@@ -8,8 +8,8 @@ import org.genepattern.gpunit.GpUnitException;
  * Helper class for setting shared properties of a single run of a batch of gp-unit tests.
  */
 public class BatchProperties {
-    final static public class Factory {
-        static public BatchProperties initFromProps() throws GpUnitException {
+    public static final class Builder {
+        public static final BatchProperties initFromProps() throws GpUnitException {
             return new BatchProperties();
         }
     }

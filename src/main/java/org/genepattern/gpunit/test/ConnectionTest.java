@@ -20,7 +20,7 @@ public class ConnectionTest {
     
     @Test
     public void restApiConnection() throws GpUnitException, URISyntaxException {
-        final BatchProperties batchProps = BatchProperties.Factory.initFromProps();
+        final BatchProperties batchProps = BatchProperties.Builder.initFromProps();
         RestClient restClient=new RestClient(batchProps);
         JsonObject json=restClient.getJson("/rest/v1/config/gp-version");
         assertNotNull("Expecting json response", json);
