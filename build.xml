@@ -215,10 +215,10 @@
     <!--                                                                                                                                                               
       Test 'gpunit.trustStore' and 'gpunit.trustStorePassword' flags
       Usage: 
-        ant -Dgpunit.trustStore=A test-gpunit.trustStore-flag                                                                                                           
-        ant -Dgpunit.trustStorePassword=B test-gpunit.trustStore-flag                                                                                                           
-      -->
-    <target name="test-gpunit.trustStore-flags" depends="init"
+        ant -Dgpunit.trustStore=A debug-trustStore-flags
+        ant -Dgpunit.trustStorePassword=B debug-trustStore-flags
+    -->
+    <target name="debug-trustStore-flags" depends="init"
         description="for debugging 'gpunit.trustStore' and 'gpunit.trustStorePassword' flags"
     >
         <!-- check if the verbose flag is set -->
