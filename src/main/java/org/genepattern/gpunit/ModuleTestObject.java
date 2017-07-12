@@ -32,7 +32,7 @@ public class ModuleTestObject {
     private BatchProperties getBatchProperties() {
         if (null == bp) {
             try {
-                bp = BatchProperties.Builder.initFromProps();
+                bp = BatchProperties.initFromProps();
             }
             catch (GpUnitException gpe) {
                 throw new ParserException("Error properties during yaml parsing", null, "error intializing properties", null);
