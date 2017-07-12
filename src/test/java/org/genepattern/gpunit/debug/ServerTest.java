@@ -1,44 +1,26 @@
 package org.genepattern.gpunit.debug;
 
-import static org.junit.Assert.assertNotNull;
+import static org.genepattern.gpunit.test.ConnectionTest.doConnectionTest;
 
 import java.net.URISyntaxException;
 
 import org.genepattern.gpunit.BatchProperties;
 import org.genepattern.gpunit.GpUnitException;
-import org.genepattern.gpunit.exec.rest.RestClient;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.google.gson.JsonObject;
-
 /**
- * junit tests to validate the connection to the server.
- * @author pcarr
- *
+ * for testing/debugging, make a REST API call to test the connection to the server
  */
-public class ConnectionTest {
-
-    public void doConnectionTest(final BatchProperties batchProps) throws URISyntaxException, GpUnitException {
-        RestClient restClient=new RestClient(batchProps);
-        JsonObject json=restClient.getJson("/rest/v1/config/gp-version");
-        assertNotNull("Expecting json response", json);
-    }
-    
-    // TODO: start your local server before running this test
+public class ServerTest {
+    // TODO: set username/password before running this test
     @Ignore @Test
-    public void restApiConnection_initFromProps() throws GpUnitException, URISyntaxException {
-        final BatchProperties batchProps = BatchProperties.initFromProps();
-        doConnectionTest(batchProps);
-    }
-    
-    @Test
     public void restApiConnection_gpprod() throws GpUnitException, URISyntaxException {
         final BatchProperties batchProps = new BatchProperties.Builder()
             .scheme("https")
             .host("genepattern.broadinstitute.org")
             .username("test")
-            .password("test")
+            .password("****")
         .build();
         doConnectionTest(batchProps);
     }
@@ -49,8 +31,8 @@ public class ConnectionTest {
         final BatchProperties batchProps = new BatchProperties.Builder()
             .scheme("https")
             .host("gp.indiana.edu")
-            .username("")
-            .password("")
+            .username("broadtest")
+            .password("******")
         .build();
         doConnectionTest(batchProps);
     }
