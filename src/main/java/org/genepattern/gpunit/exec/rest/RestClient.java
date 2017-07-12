@@ -10,6 +10,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpMessage;
 import org.apache.http.HttpResponse;
@@ -132,6 +133,11 @@ public class RestClient {
             success=false;
         }
         if (!success) {
+            // for debugging
+            for(final Header header : response.getAllHeaders()) {
+                String str=header.toString();
+                System.out.println("    "+str);
+            }
             String message="GET "+uri.toString()+" failed! "+statusCode+": "+response.getStatusLine().getReasonPhrase();
             throw new GpUnitException(message);
         }
