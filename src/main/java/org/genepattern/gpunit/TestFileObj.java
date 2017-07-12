@@ -18,7 +18,7 @@ public class TestFileObj {
     protected BatchProperties getBatchProperties() {
         if (null == bp) {
             try {
-                bp = BatchProperties.Factory.initFromProps();
+                bp = BatchProperties.initFromProps();
             }
             catch (GpUnitException gpe) {
                 throw new ParserException("Error properties during yaml parsing", null, "error intializing properties", null);

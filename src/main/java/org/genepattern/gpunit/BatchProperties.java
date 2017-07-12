@@ -1,6 +1,7 @@
 package org.genepattern.gpunit;
 
 import java.io.File;
+import java.util.Properties;
 
 import org.genepattern.gpunit.GpUnitException;
 
@@ -8,12 +9,6 @@ import org.genepattern.gpunit.GpUnitException;
  * Helper class for setting shared properties of a single run of a batch of gp-unit tests.
  */
 public class BatchProperties {
-    final static public class Factory {
-        static public BatchProperties initFromProps() throws GpUnitException {
-            return new BatchProperties();
-        }
-    }
-    
     public static final boolean isNullOrEmpty(final String str) {
         return str==null || str.trim().length()==0;
     }
@@ -157,54 +152,75 @@ public class BatchProperties {
     // force GpUnit to use local assertions/diffs instead of server diffs; for backward compatibility
     private boolean localAssertions = true;
 
-    public BatchProperties() throws GpUnitException {
+    public BatchProperties(final Properties sysProps) throws GpUnitException {
         //initialize values from system properties
-        if (System.getProperties().containsKey(PROP_GP_URL)) {
-            this.gpUrl=System.getProperty(PROP_GP_URL);
+        if (sysProps.containsKey(PROP_GP_URL)) {
+            this.gpUrl=sysProps.getProperty(PROP_GP_URL);
         }
-        if (System.getProperties().containsKey(PROP_GP_USERNAME)) {
-            this.gpUsername=System.getProperty(PROP_GP_USERNAME);
+        if (sysProps.containsKey(PROP_GP_USERNAME)) {
+            this.gpUsername=sysProps.getProperty(PROP_GP_USERNAME);
         }
-        if (System.getProperties().containsKey(PROP_GP_PASSWORD)) {
-            this.gpPassword=System.getProperty(PROP_GP_PASSWORD);
+        if (sysProps.containsKey(PROP_GP_PASSWORD)) {
+            this.gpPassword=sysProps.getProperty(PROP_GP_PASSWORD);
         }
-        String clientStr=System.getProperty(PROP_CLIENT, GpUnitClient.REST.toString());
+        String clientStr=sysProps.getProperty(PROP_CLIENT, GpUnitClient.REST.toString());
         try {
             client=GpUnitClient.valueOf(clientStr);
         }
         catch (Throwable t) {
             throw new GpUnitException("Error initializing client from "+PROP_CLIENT+"="+clientStr+": "+t.getLocalizedMessage());
         }
-        if (System.getProperties().containsKey(PROP_OUTPUT_DIR)) {
-            this.outputDir=System.getProperty(PROP_OUTPUT_DIR, outputDir);
+        if (sysProps.containsKey(PROP_OUTPUT_DIR)) {
+            this.outputDir=sysProps.getProperty(PROP_OUTPUT_DIR, outputDir);
         }
-        if (System.getProperties().containsKey(PROP_BATCH_NAME)) {
-            this.batchName=System.getProperty(PROP_BATCH_NAME, batchName);
+        if (sysProps.containsKey(PROP_BATCH_NAME)) {
+            this.batchName=sysProps.getProperty(PROP_BATCH_NAME, batchName);
         }
         
         //options for handling input files
-        this.uploadDir=System.getProperty(PROP_UPLOAD_DIR);
-        this.serverDir=System.getProperty(PROP_SERVER_DIR);
+        this.uploadDir=sysProps.getProperty(PROP_UPLOAD_DIR);
+        this.serverDir=sysProps.getProperty(PROP_SERVER_DIR);
         
         //options for handling result files
-        if (System.getProperties().containsKey(PROP_SAVE_DOWNLOADS)) {
-            this.saveDownloads=Boolean.getBoolean(PROP_SAVE_DOWNLOADS);
+        if (sysProps.containsKey(PROP_SAVE_DOWNLOADS)) {
+            //this.saveDownloads=Boolean.getBoolean(PROP_SAVE_DOWNLOADS);
+            this.saveDownloads=Boolean.valueOf(sysProps.getProperty(PROP_SAVE_DOWNLOADS));
         }
-        if (System.getProperties().containsKey(PROP_DELETE_JOBS)) {
-            this.deleteJobs=Boolean.getBoolean(PROP_DELETE_JOBS);
+        if (sysProps.containsKey(PROP_DELETE_JOBS)) {
+            //this.deleteJobs=Boolean.getBoolean(PROP_DELETE_JOBS);
+            this.deleteJobs=Boolean.valueOf(sysProps.getProperty(PROP_DELETE_JOBS));
         }
         this.batchOutputDir=_initBatchOutputDir();
         
-        if (System.getProperties().containsKey(PROP_LOCAL_ASSERTIONS)) {
-            this.localAssertions=Boolean.getBoolean(PROP_LOCAL_ASSERTIONS);
+        if (sysProps.containsKey(PROP_LOCAL_ASSERTIONS)) {
+            //this.localAssertions=Boolean.getBoolean(PROP_LOCAL_ASSERTIONS);
+            this.localAssertions=Boolean.valueOf(sysProps.getProperty(PROP_LOCAL_ASSERTIONS));
         }
-        this.testTimeout=initTestTimeout();
-        this.jobCompletionTimeout=initJobCompletionTimeout();
+        this.testTimeout=initTestTimeout(sysProps);
+        this.jobCompletionTimeout=initJobCompletionTimeout(sysProps);
+    }
+    
+    public BatchProperties(final Builder in) throws GpUnitException {
+        //initialize values from Builder
+        this.client=in.client;
+        this.gpUrl=in.scheme+"://"+in.host+in.initPort();
+        this.gpUsername=in.username;
+        this.gpPassword=in.password;
+        this.outputDir=in.outputdir;
+        this.batchName=in.batchName;
+        this.uploadDir=in.uploadDir;
+        this.serverDir=in.serverDir;
+        this.saveDownloads=in.saveDownloads;
+        this.deleteJobs=in.deleteJobs;
+        this.batchOutputDir=_initBatchOutputDir();
+        this.localAssertions=in.localAssertions;
+        this.testTimeout=in.initTestTimeout();
+        this.jobCompletionTimeout=in.initJobCompletionTimeout();
     }
 
-    public static int getIntegerProperty(final String propName, int defaultValue) throws GpUnitException {
-        if (System.getProperties().containsKey(propName)) {
-            String propValue=System.getProperty(propName).trim();
+    public static int getIntegerProperty(final Properties sysProps, final String propName, int defaultValue) throws GpUnitException {
+        if (sysProps.containsKey(propName)) {
+            String propValue=sysProps.getProperty(propName).trim();
             if (propValue.length()==0) {
                 return defaultValue;
             }
@@ -229,7 +245,8 @@ public class BatchProperties {
      * @param propName
      * @return
      */
-    public  String getSubstitutionProperty(final String propName) throws GpUnitException {
+    public String getSubstitutionProperty(final String propName) throws GpUnitException {
+        //TODO: replace with Properties arg
         if (System.getProperties().containsKey(propName)) {
             return System.getProperty(propName).trim();
         }
@@ -247,15 +264,15 @@ public class BatchProperties {
      * @return
      * @throws GpUnitException
      */
-    public static int initShutdownTimeout() throws GpUnitException {
+    public static int initShutdownTimeout(final Properties sysProps) throws GpUnitException {
         // if 'shutdownTimeout' is set, use it,
-        int shutdownTimeout=BatchProperties.getIntegerProperty(BatchProperties.PROP_SHUTDOWN_TIMEOUT, -1);
+        int shutdownTimeout=BatchProperties.getIntegerProperty(sysProps, BatchProperties.PROP_SHUTDOWN_TIMEOUT, -1);
         if (shutdownTimeout>0) {
             return shutdownTimeout;
         }
         // otherwise, use the greater of testTimeout and jobCompletionTimeout padded by one minute
-        int testTimeout=BatchProperties.getIntegerProperty(BatchProperties.PROP_TEST_TIMEOUT, -1);
-        int jobCompletionTimeout=BatchProperties.getIntegerProperty(BatchProperties.PROP_JOB_COMPLETION_TIMEOUT, -1);
+        int testTimeout=BatchProperties.getIntegerProperty(sysProps, BatchProperties.PROP_TEST_TIMEOUT, -1);
+        int jobCompletionTimeout=BatchProperties.getIntegerProperty(sysProps, BatchProperties.PROP_JOB_COMPLETION_TIMEOUT, -1);
         int max = Math.max(testTimeout,  jobCompletionTimeout);
         if (max>0) {
             return 60+max;
@@ -273,18 +290,18 @@ public class BatchProperties {
      * 
      * @return
      */
-    public static int initTestTimeout() throws GpUnitException {
-        int testTimeout=BatchProperties.getIntegerProperty(BatchProperties.PROP_TEST_TIMEOUT, -1);
+    protected static int initTestTimeout(final Properties sysProps) throws GpUnitException {
+        int testTimeout=BatchProperties.getIntegerProperty(sysProps, BatchProperties.PROP_TEST_TIMEOUT, -1);
         if (testTimeout>0) {
             return testTimeout;
         }
 
-        int jobCompletionTimeout=BatchProperties.getIntegerProperty(BatchProperties.PROP_JOB_COMPLETION_TIMEOUT, -1);
+        int jobCompletionTimeout=BatchProperties.getIntegerProperty(sysProps, BatchProperties.PROP_JOB_COMPLETION_TIMEOUT, -1);
         if (jobCompletionTimeout>0) {
             return 60+jobCompletionTimeout;
         }
 
-        int shutdownTimeout=BatchProperties.getIntegerProperty(BatchProperties.PROP_SHUTDOWN_TIMEOUT, -1);
+        int shutdownTimeout=BatchProperties.getIntegerProperty(sysProps, BatchProperties.PROP_SHUTDOWN_TIMEOUT, -1);
         if (shutdownTimeout>0) {
             return shutdownTimeout;
         }
@@ -302,18 +319,18 @@ public class BatchProperties {
      * @return
      * @throws GpUnitException
      */
-    public static int initJobCompletionTimeout() throws GpUnitException {
-        int jobCompletionTimeout=BatchProperties.getIntegerProperty(BatchProperties.PROP_JOB_COMPLETION_TIMEOUT, -1);
+    protected static int initJobCompletionTimeout(final Properties sysProps) throws GpUnitException {
+        int jobCompletionTimeout=getIntegerProperty(sysProps, BatchProperties.PROP_JOB_COMPLETION_TIMEOUT, -1);
         if (jobCompletionTimeout>0) {
             return jobCompletionTimeout;
         }
 
-        int testTimeout=BatchProperties.getIntegerProperty(BatchProperties.PROP_TEST_TIMEOUT, -1);
+        int testTimeout=getIntegerProperty(sysProps, BatchProperties.PROP_TEST_TIMEOUT, -1);
         if (testTimeout>0) {
             return testTimeout;
         }
 
-        int shutdownTimeout=BatchProperties.getIntegerProperty(BatchProperties.PROP_SHUTDOWN_TIMEOUT, -1);
+        int shutdownTimeout=getIntegerProperty(sysProps, BatchProperties.PROP_SHUTDOWN_TIMEOUT, -1);
         if (shutdownTimeout>0) {
             return shutdownTimeout;
         }
@@ -401,6 +418,221 @@ public class BatchProperties {
      */
     public int getTestTimeout() {
         return testTimeout;
+    }
+
+    /**
+     * Initialize BatchProperties from System properties
+     */
+    public static final BatchProperties initFromProps() throws GpUnitException {
+        Properties props;
+        try {
+            props=System.getProperties();
+        }
+        catch (SecurityException e) {
+            props=new Properties();
+        }
+        catch (Throwable t) {
+            props=new Properties();
+        }
+        return new BatchProperties(props);
+    }
+
+    public static final class Builder {
+        private GpUnitClient client=GpUnitClient.REST;
+
+        //private String gpUrl = "http://127.0.0.1:8080";
+        private String scheme="http";
+        private String host="127.0.0.1";
+        //private String port=":8080";
+        private String port="";
+        //private String servletPath="/gp";
+        private String username =  "test";
+        private String password = "test";
+        
+        private String outputdir="./jobResults";
+        private String batchName="latest";
+        private String uploadDir=null;
+        private String serverDir=null;
+        private boolean saveDownloads=false;
+        private boolean localAssertions = true;
+
+        private int testTimeout = -1;
+        private int jobCompletionTimeout = -1;
+        private int shutdownTimeout = -1;
+
+        private boolean deleteJobs = true;
+        
+        public Builder client(final GpUnitClient client) {
+            this.client=client;
+            return this;
+        }
+        
+        public Builder scheme(final String scheme) {
+            this.scheme=scheme;
+            return this;
+        }
+        
+        public Builder host(final String host) {
+            this.host=host;
+            return this;
+        }
+        
+        public Builder port(final Integer port) {
+            if (port==null) {
+                this.port="";
+            }
+            else if (port <= 0) {
+                throw new IllegalArgumentException("Must be null or a valid port number, port="+port);
+            }
+            else {
+                this.port=":"+port;
+            }
+            return this;
+        }
+        
+//        public Builder servletPath(final String servletPath) {
+//            if (isNullOrEmpty(servletPath)) {
+//                throw new IllegalArgumentException("Invalid servletPath='"+servletPath+"'");
+//            }
+//            if (servletPath.startsWith("/")) {
+//                this.servletPath=servletPath;
+//            }
+//            else {
+//                this.servletPath="/"+servletPath;
+//            }
+//            return this;
+//        }
+        
+        public Builder username(final String username) {
+            this.username=username;
+            return this;
+        }
+        
+        public Builder password(final String password) {
+            this.password=password;
+            return this;
+        }
+
+        // gpunit.outputdir
+        public Builder outputdir(final String outputdir) {
+            this.outputdir=outputdir;
+            return this;
+        }
+        
+        // gpunit.batch.name
+        public Builder batchName(final String batchName) {
+            this.batchName=batchName;
+            return this;
+        }
+        
+        // gpunit.upload.dir
+        public Builder uploadDir(final String uploadDir) {
+            this.uploadDir=uploadDir;
+            return this;
+        }
+        
+        // gpunit.server.dir
+        public Builder serverDir(final String serverDir) {
+            this.serverDir=serverDir;
+            return this;
+        }
+        
+        // gpunit.save.downloads
+        public Builder saveDownloads(final boolean saveDownloads) {
+            this.saveDownloads=saveDownloads;
+            return this;
+        }
+        
+        // gpunit.delete.jobs
+        public Builder deleteJobs(final boolean deleteJobs) {
+            this.deleteJobs=deleteJobs;
+            return this;
+        }
+        
+        // gpunit.localAssertions
+        public Builder localAssertions(final boolean localAssertions) {
+            this.localAssertions=localAssertions;
+            return this;
+        }
+
+        // gpunit.testTimeout
+        public Builder testTimeout(final int testTimeout) {
+            this.testTimeout=testTimeout;
+            return this;
+        }
+        
+        // gpunit.jobCompletionTimeout
+        public Builder jobCompletionTimeout(final int jobCompletionTimeout) {
+            this.jobCompletionTimeout=jobCompletionTimeout;
+            return this;
+        }
+        
+        // gpunit.shutdownTimeout
+        public Builder shutdownTimeout(final int shutdownTimeout) {
+            this.shutdownTimeout=shutdownTimeout;
+            return this;
+        }
+
+        protected String initPort() {
+            if (port==null) {
+                return ":8080";
+            }
+            return port;
+        }
+        
+        /**
+         * Helper method for initializing 'testTimeout' from System properties.
+         * If 'testTimeout' is set, use it.
+         * Otherwise, if 'jobCompletionTimeout' is set, padded by one minute.
+         * Otherwise, if 'shutdownTimeout' is set, use it.
+         * Otherwise, use hard-coded default value of 1200 seconds.
+         * 
+         * @return
+         */
+        protected int initTestTimeout() throws GpUnitException {
+            if (testTimeout>0) {
+                return testTimeout;
+            }
+            else if (jobCompletionTimeout>0) {
+                return 60+jobCompletionTimeout;
+            }
+            else if (shutdownTimeout>0) {
+                return shutdownTimeout;
+            }
+            else {
+                return 1200;
+            }
+        }
+
+        /**
+         * Helper method for initializing 'jobCompletionTimeout' from System properties.
+         * If 'jobCompletionTimeout' is set, use it.
+         * Otherwise if 'testTimeout' is set, use it.
+         * Otherwise if 'shutdownTimeout' is set, use it.
+         * Otherwise, use hard-coded value of 900 seconds.
+         * 
+         * @return
+         * @throws GpUnitException
+         */
+        protected int initJobCompletionTimeout() throws GpUnitException {
+            if (jobCompletionTimeout>0) {
+                return jobCompletionTimeout;
+            }
+            else if (testTimeout>0) {
+                return testTimeout;
+            }
+            else if (shutdownTimeout>0) {
+                return shutdownTimeout;
+            }
+            else {
+                return 900;
+            }
+        }
+
+        public BatchProperties build() throws GpUnitException {
+            return new BatchProperties(this);
+        }
+
     }
 
 }
