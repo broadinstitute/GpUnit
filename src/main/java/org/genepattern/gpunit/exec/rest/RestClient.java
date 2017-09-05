@@ -16,9 +16,7 @@ import org.apache.http.HttpMessage;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.genepattern.gpunit.BatchProperties;
 import org.genepattern.gpunit.GpUnitException;
@@ -74,7 +72,7 @@ public class RestClient {
         }
     }
 
-    public HttpMessage setAuthHeaders(final HttpMessage message) {
+    public <T extends HttpMessage> T setAuthHeaders(final T message) {
         //for basic auth, use a header like this
         //Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==
         final String orig = batchProps.getGpUsername()+":"+batchProps.getGpPassword();
@@ -89,18 +87,6 @@ public class RestClient {
         return message;
     }
 
-    public HttpGet setAuthHeaders(HttpGet get) {
-        return (HttpGet) setAuthHeaders((HttpMessage)get);
-    }
-
-    public HttpPost setAuthHeaders(HttpPost post) {
-        return (HttpPost) setAuthHeaders((HttpMessage)post);
-    }
-    
-    public HttpDelete setAuthHeaders(HttpDelete delete) {
-        return (HttpDelete) setAuthHeaders((HttpMessage)delete);
-    }
-    
     /**
      * GET the JSON representation of the contents at the given URI.
      * This is a general purpose helper method for working with the GenePattern REST API.
