@@ -25,6 +25,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.FileEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
@@ -285,7 +286,7 @@ public class JobRunnerRest {
         urlStr+="?name="+encFilename; 
         HttpPost post = new HttpPost(urlStr);
         post = restClient.setAuthHeaders(post);
-        FileEntity entity = new FileEntity(localFile, "binary/octet-stream");
+        FileEntity entity = new FileEntity(localFile, ContentType.DEFAULT_BINARY);
         post.setEntity(entity);
         HttpResponse response = null;
         try {
