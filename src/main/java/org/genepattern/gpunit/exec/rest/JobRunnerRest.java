@@ -27,7 +27,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.FileEntity;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.genepattern.gpunit.BatchProperties;
 import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.ModuleTestObject;
@@ -271,7 +271,7 @@ public class JobRunnerRest {
             throw new GpUnitException("File is a directory: "+localFile.getAbsolutePath());
         }
         
-        HttpClient client = new DefaultHttpClient();
+        final HttpClient client = HttpClients.createDefault();
         
         String urlStr=addFileUrl.toExternalForm();
         final String encFilename;
@@ -346,7 +346,7 @@ public class JobRunnerRest {
             throw new GpUnitException("Error preparing JSON object to POST to "+jobsUrl, e);
         }
         
-        HttpClient client = new DefaultHttpClient();
+        final HttpClient client = HttpClients.createDefault();
         HttpPost post = new HttpPost(jobsUrl.toExternalForm());
         post = restClient.setAuthHeaders(post);
         try {
@@ -416,7 +416,7 @@ public class JobRunnerRest {
             throw new GpUnitException("URI syntax exception in "+urlStr, e);
         }
 
-        HttpClient client = new DefaultHttpClient();
+        final HttpClient client = HttpClients.createDefault();
         HttpDelete delete = new HttpDelete(deleteURI);
 
         // set auth headers
@@ -471,7 +471,7 @@ public class JobRunnerRest {
     }
     
     public void downloadFile(final URL from, final File toFile) throws Exception {
-        HttpClient client = new DefaultHttpClient();        
+        final HttpClient client = HttpClients.createDefault();
         HttpGet get = new HttpGet(from.toExternalForm());
         get = restClient.setAuthHeaders(get);
         //HACK: in order to by-pass the GP login page, and use Http Basic Authentication,

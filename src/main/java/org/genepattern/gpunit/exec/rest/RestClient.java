@@ -17,7 +17,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.genepattern.gpunit.BatchProperties;
 import org.genepattern.gpunit.GpUnitException;
 
@@ -96,7 +96,7 @@ public class RestClient {
      * @throws GpUnitException
      */
     protected JsonObject readJsonObjectFromUri(final URI uri) throws GpUnitException {
-        HttpClient client = new DefaultHttpClient();
+        final HttpClient client = HttpClients.createDefault();
         HttpGet get = new HttpGet(uri);
         get = setAuthHeaders(get);
         
