@@ -21,7 +21,7 @@ import org.genepattern.webservice.WebServiceException;
  * @author pcarr
  *
  */
-public class ModuleRunner {
+public class ModuleRunnerSoap {
     private GPClient gpClient;
     private BatchProperties batchProps;
     private AnalysisWebServiceProxy webService;
@@ -29,7 +29,7 @@ public class ModuleRunner {
     private JobResult jobResult;
     private int jobId = -1;
 
-    public ModuleRunner(ModuleTestObject test) {
+    public ModuleRunnerSoap(ModuleTestObject test) {
         this.test = test;
     }
     
@@ -117,10 +117,6 @@ public class ModuleRunner {
     }
     
     synchronized static public GPClient initGpClient(BatchProperties batchProps) {
-        //final String gpUrl = System.getProperty("genePatternUrl", "http://gpdev.broadinstitute.org");
-        //final String gpUsername = System.getProperty("username", "jntest");
-        //final String gpPassword = System.getProperty("password", "jntest");
-        
         GPClient gpClient = null;
         try {
             gpClient = new GPClient(batchProps.getGpUrl(), batchProps.getGpUsername(), batchProps.getGpPassword());

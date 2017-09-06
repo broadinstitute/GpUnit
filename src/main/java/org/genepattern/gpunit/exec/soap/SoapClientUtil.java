@@ -28,9 +28,9 @@ public class SoapClientUtil {
         }
         
         //initialize gpClient
-        GPClient gpClient = ModuleRunner.initGpClient(batchProps);
+        GPClient gpClient = ModuleRunnerSoap.initGpClient(batchProps);
 
-        ModuleRunner runner = new ModuleRunner(testObject.getTestCase());
+        ModuleRunnerSoap runner = new ModuleRunnerSoap(testObject.getTestCase());
         runner.setGpClient(gpClient);
         runner.setBatchProperties(batchProps);
         runner.runJobAndWait();
