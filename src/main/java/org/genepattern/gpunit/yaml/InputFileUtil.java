@@ -165,6 +165,7 @@ public class InputFileUtil {
             }
             
             try {
+                @SuppressWarnings("unused")
                 URL url = new URL( (String) pValue);
                 //it's a url, pass by reference
                 return (String) pValue;

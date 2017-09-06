@@ -161,7 +161,6 @@ public class JobResultDownloaderSoap implements JobResultDownloader {
         List<File> not_deleted=new ArrayList<File>(); 
         
         for(Entry<String,File> entry : resultFilesMap.entrySet()) {
-            String filename=entry.getKey();
             File file=entry.getValue();
             if (file.isFile()) {
                 boolean success=file.delete();
