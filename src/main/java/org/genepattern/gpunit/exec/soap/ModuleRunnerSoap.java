@@ -22,47 +22,24 @@ import org.genepattern.webservice.WebServiceException;
  *
  */
 public class ModuleRunnerSoap {
-    private GPClient gpClient;
-    private BatchProperties batchProps;
+    private final BatchProperties batchProps;
+    private final ModuleTestObject test;
+    private final GPClient gpClient;
     private AnalysisWebServiceProxy webService;
-    private ModuleTestObject test;
-    private JobResult jobResult;
-    private int jobId = -1;
 
-    public ModuleRunnerSoap(ModuleTestObject test) {
-        this.test = test;
-    }
-    
-    public void setGpClient(GPClient gpClient) {
-        this.gpClient = gpClient;
-    }
-    
-    public void setBatchProperties(final BatchProperties batchProps) {
+    public ModuleRunnerSoap(final BatchProperties batchProps, final ModuleTestObject test) {
         this.batchProps=batchProps;
-    }
-    
-    public void setModuleTestObject(ModuleTestObject test) {
         this.test = test;
+        this.gpClient = ModuleRunnerSoap.initGpClient(batchProps);
     }
     
-    public JobResult getJobResult() {
-        return jobResult;
-    }
-    
-    public int getJobId() {
-        return jobId;
-    }
-    
-    public void runJobAndWait() {
-        this.jobResult = runJobSoap();
-        if (jobResult != null) {
-            this.jobId = jobResult.getJobNumber();
-        }
+    public JobResult runJobAndWait() {
+        return runJobSoap();
     }
     
     public void deleteJob(int jobId) throws GpUnitException {
         if (webService==null) {
-            this.webService=initWebService();
+            this.webService=initWebService(batchProps);
         }
         try {
             webService.deleteJob(jobId);
@@ -85,7 +62,7 @@ public class ModuleRunnerSoap {
         String nameOrLsid = test.getModule();
         
         if (gpClient == null) {
-            this.gpClient = initGpClient();
+            throw new AssertionError("GpUnit configuration error, gpClient==null");
         }
         try {
             Parameter[] params = initParams(gpClient, batchProps, nameOrLsid, test);
@@ -100,23 +77,7 @@ public class ModuleRunnerSoap {
         return jobResult;
     }
 
-    synchronized static public GPClient initGpClient() {
-        final String gpUrl = System.getProperty("genePatternUrl", "http://gpdev.broadinstitute.org");
-        final String gpUsername = System.getProperty("username", "jntest");
-        final String gpPassword = System.getProperty("password", "jntest");
-        
-        GPClient gpClient = null;
-        try {
-            gpClient = new GPClient(gpUrl, gpUsername, gpPassword);
-        }
-        catch (Throwable t) {
-            t.printStackTrace();
-            throw new AssertionError("Error initializing gpClient for gpUrl='"+gpUrl+"': "+t.getLocalizedMessage());
-        }
-        return gpClient;
-    }
-    
-    synchronized static public GPClient initGpClient(BatchProperties batchProps) {
+    protected static GPClient initGpClient(final BatchProperties batchProps) {
         GPClient gpClient = null;
         try {
             gpClient = new GPClient(batchProps.getGpUrl(), batchProps.getGpUsername(), batchProps.getGpPassword());
@@ -128,14 +89,11 @@ public class ModuleRunnerSoap {
         return gpClient;
     }
     
-    synchronized static public AnalysisWebServiceProxy initWebService() throws GpUnitException {
-        final String gpUrl = System.getProperty("genePatternUrl", "http://gpdev.broadinstitute.org");
-        final String gpUsername = System.getProperty("username", "jntest");
-        final String gpPassword = System.getProperty("password", "jntest");
+    protected static AnalysisWebServiceProxy initWebService(final BatchProperties batchProps) throws GpUnitException {
         AnalysisWebServiceProxy analysisProxy = null;
         try {
-            analysisProxy = new AnalysisWebServiceProxy(gpUrl, gpUsername, gpPassword);
-            //final int timeout=Integer.MAX_VALUE; //in milliseconds
+            analysisProxy = new AnalysisWebServiceProxy(batchProps.getGpUrl(), batchProps.getGpUsername(), batchProps.getGpPassword());
+            //in milliseconds
             final int timeout=60*1000;
             analysisProxy.setTimeout(timeout);
             return analysisProxy;
@@ -145,7 +103,7 @@ public class ModuleRunnerSoap {
         }
     }
     
-    static private Parameter[] initParams(final GPClient gpClient, final BatchProperties batchProps, final String nameOrLsid, final ModuleTestObject test) 
+    private static Parameter[] initParams(final GPClient gpClient, final BatchProperties batchProps, final String nameOrLsid, final ModuleTestObject test) 
             throws WebServiceException, GpUnitException
     {
         InputFileUtil ifutil=new InputFileUtil(gpClient, batchProps, nameOrLsid);
