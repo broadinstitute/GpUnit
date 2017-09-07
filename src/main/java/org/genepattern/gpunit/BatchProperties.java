@@ -28,10 +28,22 @@ public class BatchProperties {
         REST,
     }
     
-    // list of properties, configurable via System.setProperty 
-    final static public String PROP_GP_URL="genePatternUrl";
-    final static public String PROP_GP_USERNAME="username";
-    final static public String PROP_GP_PASSWORD="password";
+    /**
+     * set 'gp.url' to the server on which to run the tests, e.g.
+     *   -Dgp.url=https://genepattern.broadinstitute.org
+     *   -Dgp.url=http://127.0.0.1:8080
+     */
+    final static public String PROP_GP_URL="gp.url";
+
+    /**
+     * set 'gp.user' to a valid server username
+     */
+    final static public String PROP_GP_USERNAME="gp.user";
+
+    /**
+     * optionally set 'gp.password' to a valid password
+     */
+    final static public String PROP_GP_PASSWORD="gp.password";
     
     /**
      * The root path from which to search for test.yaml files.

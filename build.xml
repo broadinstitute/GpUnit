@@ -532,10 +532,10 @@
                 <classpath refid="gpunit.classpath" />
                 <sysproperty key="gpunit.testcase.dirs" value="@{testcases}" />
 
-                <sysproperty key="genePatternUrl" value="${gp.url}" />
-                <sysproperty key="username" value="${gp.user}" />
-                <sysproperty key="password" value="${gp.password}" />
-                
+                <sysproperty key="gp.url" value="${gp.url}" />
+                <sysproperty key="gp.user" value="${gp.user}" />
+                <sysproperty key="gp.password" value="${gp.password}" />
+
                 <sysproperty key="gpunit.client" value="${gpunit.client}" />
                 <sysproperty key="gpunit.outputdir" value="${gpunit.outputdir}" />
                 <sysproperty key="gpunit.batch.name" value="${gpunit.batch.name}" />
