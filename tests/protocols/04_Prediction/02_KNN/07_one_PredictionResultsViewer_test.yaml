@@ -1,5 +1,5 @@
 #04_Prediction_knn_one.html
 module: PredictionResultsViewer
 params:
-    prediction.results.file: ftp://gpftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.knn.pred.odf
+    prediction.results.file: https://software.broadinstitute.org/cancer/software/genepattern/data/protocols/all_aml_train.preprocessed.knn.pred.odf
 

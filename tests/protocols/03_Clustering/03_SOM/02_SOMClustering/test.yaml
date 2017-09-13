@@ -3,7 +3,7 @@
 # Module: SOMClustering urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00029:2
 module: SOMClustering
 params: 
-    dataset.filename: ftp://gpftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct
+    dataset.filename: https://software.broadinstitute.org/cancer/software/genepattern/data/protocols/all_aml_test.preprocessed.gct
     output.stub: all_aml_test.preprocessed
     cluster.range: 2-3
     seed.range: 42

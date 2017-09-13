@@ -1,8 +1,8 @@
 #04_Prediction_knn_two.html
 module: KNN
 params:
-    train.filename: ftp://gpftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.gct
-    train.class.filename: ftp://gpftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.cls
-    test.filename: ftp://gpftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct
-    test.class.filename: ftp://gpftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.cls         
+    train.filename: https://software.broadinstitute.org/cancer/software/genepattern/data/protocols/all_aml_train.preprocessed.gct
+    train.class.filename: https://software.broadinstitute.org/cancer/software/genepattern/data/all_aml/all_aml_train.cls
+    test.filename: https://software.broadinstitute.org/cancer/software/genepattern/data/all_aml/all_aml_test.gct
+    test.class.filename: https://software.broadinstitute.org/cancer/software/genepattern/data/all_aml/all_aml_test.cls         
 

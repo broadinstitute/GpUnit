@@ -1,8 +1,8 @@
 #04_Prediction_svm.html:
 module: SVM
 params:
-    train.data.filename: ftp://gpftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.gct
-    train.cls.filename: ftp://gpftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.cls
-    test.data.filename: ftp://gpftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct
-    test.cls.filename: ftp://gpftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.cls 
+    train.data.filename: https://software.broadinstitute.org/cancer/software/genepattern/data/all_aml/all_aml_train.gct
+    train.cls.filename: https://software.broadinstitute.org/cancer/software/genepattern/data/all_aml/all_aml_train.cls
+    test.data.filename: https://software.broadinstitute.org/cancer/software/genepattern/data/all_aml/all_aml_test.gct
+    test.cls.filename: https://software.broadinstitute.org/cancer/software/genepattern/data/all_aml/all_aml_test.cls 
 

@@ -1,3 +1,3 @@
 module: PreprocessDataset
 params: 
-    input.filename: ftp://gpftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct
+    input.filename: https://software.broadinstitute.org/cancer/software/genepattern/data/all_aml/all_aml_test.gct
