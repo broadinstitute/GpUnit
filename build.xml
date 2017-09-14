@@ -150,11 +150,16 @@
         <has-value pname="gpunit.trustStorePassword" />
     </target>
 
-    <target name="help" depends="init">
+    <target name="help" depends="init"
+        description="init and print gpunit.properties"
+    >
         <echo-value pname="gp.user" />
         <echo-value pname="gp.url" />
         <echo-value pname="gpunit.testfolder" />
         <echo-value pname="gpunit.client" />
+        
+        <echo-value pname="gpunit.dir" />
+        <echo-value pname="client.lib.dir" />
     </target>
 
     <!-- 
