@@ -12,8 +12,10 @@
 	<classpathentry kind="lib" path="target/dependency/mockito-core-1.9.5.jar"/>
 	<classpathentry kind="lib" path="target/dependency/xz-1.5.jar"/>
 	<classpathentry kind="lib" path="target/dependency/objenesis-1.0.jar"/>
-	<classpathentry kind="lib" path="target/dependency/httpclient-4.5.3.jar"/>
+	<classpathentry kind="lib" path="target/dependency/httpclient-4.5.3.jar" sourcepath="target/dependency/src/httpclient-sources.jar"/>
 	<classpathentry kind="lib" path="target/dependency/httpcore-4.4.6.jar"/>
+	<classpathentry kind="lib" path="target/dependency/log4j-1.2.17.jar"/>
+	<classpathentry kind="lib" path="target/dependency/commons-logging-1.2.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/GENEPATTERN_CLIENT"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/genepattern-server"/>
