@@ -27,7 +27,29 @@ public class BatchProperties {
         SOAP,
         REST,
     }
-    
+
+//    this code snippet is not needed when the 'log4j.properties' file is on the classpath
+//    protected static void setIfNotSet(final String key, final String value) {
+//        System.setProperty(key, System.getProperty(key, value));
+//    }
+//    protected static void initLogging() {
+//        setIfNotSet("org.apache.commons.logging.Log", 
+//            "org.apache.commons.logging.impl.SimpleLog" );
+//        setIfNotSet("org.apache.commons.logging.simplelog.showdatetime", 
+//            "true" );
+//        setIfNotSet("org.apache.commons.logging.simplelog.log.org.apache.http", 
+//            "ERROR" );
+//        setIfNotSet("org.apache.commons.logging.simplelog.log.org.apache.http.wire", 
+//            "ERROR" ); 
+//
+//        // to debug mystery 'System.out' file in working dir ...
+//        // java ... -Dlog4j.debug ...
+//        // setIfNotSet("log4j.debug", "true" ); 
+//    }
+//    static {
+//        initLogging();
+//    }
+
     /**
      * set 'gp.url' to the server on which to run the tests, e.g.
      *   -Dgp.url=https://genepattern.broadinstitute.org
