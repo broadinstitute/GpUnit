@@ -155,6 +155,7 @@
     >
         <echo-value pname="gp.user" />
         <echo-value pname="gp.url" />
+        <echo-value pname="gp.path" />
         <echo-value pname="gpunit.testfolder" />
         <echo-value pname="gpunit.client" />
         
@@ -498,6 +499,7 @@
         <sequential>
             <!-- use curl command to check status -->
             <!-- curl -I http://127.0.0.1:8080/gp/pages/login.xhtml -->
+            <echo if:true="${verbose}" message="checking status, url=@{url}" />
             <curl head="${check-url.head}" 
                 insecure="${check-url.insecure}" 
                 silent="${check-url.silent}" 
