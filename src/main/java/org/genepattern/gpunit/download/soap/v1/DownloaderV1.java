@@ -1,10 +1,8 @@
 package org.genepattern.gpunit.download.soap.v1;
 
 import java.io.File;
-import java.io.IOException;
 
 import org.genepattern.gpunit.GpUnitException;
-import org.genepattern.gpunit.download.JobResultDownloader;
 import org.genepattern.webservice.JobResult;
 
 /**

@@ -12,7 +12,7 @@ import org.genepattern.gpunit.BatchProperties;
 
 public class JobResultDownloaderRest extends JobResultDownloaderGeneric {
     public JobResultDownloaderRest(final File downloadDir, final BatchProperties props) {
-        super(downloadDir, props);
+        super(downloadDir);
     }
 
     private JobRunnerRest runner;

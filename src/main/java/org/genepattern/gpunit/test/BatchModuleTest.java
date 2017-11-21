@@ -224,7 +224,7 @@ public class BatchModuleTest {
 
     @BeforeClass 
     public static void beforeClass() throws GpUnitException {
-        batchProps = BatchProperties.Factory.initFromProps();
+        batchProps = BatchProperties.initFromProps();
     }
     
     @AfterClass

@@ -2,6 +2,7 @@
 <project name="gp-unit" default="package"
     xmlns:if="ant:if"
     xmlns:unless="ant:unless"
+    xmlns:artifact="antlib:org.apache.maven.artifact.ant"
 >
     <dirname property="project.basedir" file="${ant.file.gp-unit}" />
     <property file="${project.basedir}/gpunit.default.properties" />
@@ -99,7 +100,22 @@
         <echo if:true="${verbose}" message="verbose='${verbose}'" />
     </target>
 
-    <target name="init" depends="init-verbose">
+    <!--
+      Apache Commons Logging configuration for HttpClient
+        see: https://hc.apache.org/httpcomponents-client-ga/logging.html
+    -->
+    <target name="init-logging">
+        <!-- Note: change 'ERROR' to 'DEBUG' for more detailed output -->
+        <property name="org.apache.commons.logging.Log" value="org.apache.commons.logging.impl.SimpleLog" />
+        <property name="org.apache.commons.logging.simplelog.showdatetime" value="true" />
+        <property name="org.apache.commons.logging.simplelog.log.org.apache.http" value="ERROR" />
+        <property name="org.apache.commons.logging.simplelog.log.org.apache.http.wire" value="ERROR" />
+        <propertyset id="org.apache.commons.props">
+            <propertyref prefix="org.apache.commons" />
+        </propertyset>
+    </target>
+
+    <target name="init" depends="init-verbose, init-logging">
         <echo>initializing directories ... </echo>
         <echo>local.dir: ${local.dir} </echo>
         <echo>report.dir: ${report.dir} </echo>
@@ -132,6 +148,21 @@
         
         <has-value pname="gpunit.trustStore" />
         <has-value pname="gpunit.trustStorePassword" />
+    </target>
+
+    <target name="help" depends="init"
+        description="init and print gpunit.properties"
+    >
+        <echo-value pname="gpunit.properties" />
+        <echo-value pname="gp.user" />
+        <echo-value pname="gp.url" />
+        <echo-value pname="gp.path" />
+        <echo-value pname="gpunit.testfolder" />
+        <echo-value pname="gpunit.client" />
+        <echo-value pname="gpunit.numThreads" />
+        
+        <echo-value pname="gpunit.dir" />
+        <echo-value pname="client.lib.dir" />
     </target>
 
     <!-- 
@@ -214,10 +245,10 @@
     <!--                                                                                                                                                               
       Test 'gpunit.trustStore' and 'gpunit.trustStorePassword' flags
       Usage: 
-        ant -Dgpunit.trustStore=A test-gpunit.trustStore-flag                                                                                                           
-        ant -Dgpunit.trustStorePassword=B test-gpunit.trustStore-flag                                                                                                           
-      -->
-    <target name="test-gpunit.trustStore-flags" depends="init"
+        ant -Dgpunit.trustStore=A debug-trustStore-flags
+        ant -Dgpunit.trustStorePassword=B debug-trustStore-flags
+    -->
+    <target name="debug-trustStore-flags" depends="init"
         description="for debugging 'gpunit.trustStore' and 'gpunit.trustStorePassword' flags"
     >
         <!-- check if the verbose flag is set -->
@@ -274,7 +305,77 @@
         <unzip src="${local.dir}/GenePattern.zip" dest="${client.lib.dir}" overwrite="true" />
     </target>
 
-    <target name="compile" depends="init, gp-client-lib"
+    <!-- location for maven dependencies copied into this project -->
+    <property name="dependency.dir" location="target/dependency" />
+
+    <target name="download-deps" depends="init"
+        description="install maven dependencies"
+    >
+        <path id="maven-ant-tasks.classpath" path="lib/maven-ant-tasks-2.1.3.jar" />
+        <typedef resource="org/apache/maven/artifact/ant/antlib.xml"
+            uri="antlib:org.apache.maven.artifact.ant"
+            classpathref="maven-ant-tasks.classpath" />
+
+        <artifact:dependencies pathId="dependencies.classpath" cacheDependencyRefs="true" 
+            filesetId="dependency.fileset"
+            sourcesFilesetId="sources.dependency.fileset"
+            javadocFilesetId="javadoc.dependency.fileset"
+            versionsId="dependency.versions"
+        >
+
+            <dependency groupId="commons-codec" artifactId="commons-codec" version="1.3" />
+            <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-compress -->
+            <dependency groupId="org.apache.commons" artifactId="commons-compress" version="1.8" />
+            <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
+            <dependency groupId="com.google.code.gson" artifactId="gson" version="2.3.1" />
+            <!-- https://mvnrepository.com/artifact/org.hamcrest/hamcrest-core -->
+            <dependency groupId="org.hamcrest" artifactId="hamcrest-core" version="1.3" />
+            <!-- https://mvnrepository.com/artifact/junit/junit -->
+            <dependency groupId="junit" artifactId="junit" version="4.11" />
+            <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
+            <dependency groupId="org.apache.httpcomponents" artifactId="httpclient" version="4.5.3" />
+            <!-- https://mvnrepository.com/artifact/org.yaml/snakeyaml -->
+            <dependency groupId="org.yaml" artifactId="snakeyaml" version="1.10" />
+            <!-- https://mvnrepository.com/artifact/log4j/log4j -->
+            <dependency groupId="log4j" artifactId="log4j" version="1.2.17" />
+            
+            <!-- https://mvnrepository.com/artifact/org.mockito/mockito-core -->
+            <dependency groupId="org.mockito" artifactId="mockito-core" version="1.9.5" scope="test" />
+            <!-- https://mvnrepository.com/artifact/org.objenesis/objenesis -->
+            <dependency groupId="org.objenesis" artifactId="objenesis" version="1.0" scope="test" />
+            <!-- https://mvnrepository.com/artifact/org.hamcrest/hamcrest-core -->
+            <dependency groupId="org.hamcrest" artifactId="hamcrest-core" version="1.3" scope="test" />
+        </artifact:dependencies>
+
+        <path id="gpunit.classpath">
+            <pathelement location="${gpunit.dir}/classes" />
+            <pathelement location="lib/gp-modules-updated.jar" />
+            <path refid="gp.client.classpath" />
+            <path refid="dependencies.classpath" />
+        </path>
+
+        <copy todir="${dependency.dir}">
+            <fileset refid="dependency.fileset" />
+            <!-- This mapper strips off all leading directory information -->
+            <mapper type="flatten" />
+        </copy>
+
+        <copy todir="${dependency.dir}/src">
+            <fileset refid="sources.dependency.fileset" />
+            <mapper classpathref="maven-ant-tasks.classpath"
+                  classname="org.apache.maven.artifact.ant.VersionMapper"
+                  from="${dependency.versions}" to="flatten" />
+        </copy>
+
+        <copy todir="${dependency.dir}/javadoc">
+            <fileset refid="javadoc.dependency.fileset" />
+            <mapper classpathref="maven-ant-tasks.classpath"
+                  classname="org.apache.maven.artifact.ant.VersionMapper"
+                  from="${dependency.versions}" to="flatten" />
+        </copy>
+    </target>
+
+    <target name="compile" depends="init, gp-client-lib, download-deps"
         description="compile GpUnit">
         <property name="java.target" value="1.6" /> 
         <javac debug="true" includeantruntime="false"
@@ -294,10 +395,17 @@
         <jar basedir="${gpunit.dir}/classes" jarfile="${gpunit.dir}/dist/gp-unit.jar" />
     </target>
 
+    <target name="clean-deps"
+        description="clean the 3rd party dependencies downloaded from the maven repository"
+    >
+        <delete dir="${dependency.dir}" />
+    </target>
+        
     <target name="clean-gpunit-dist" 
         description="clean the GpUnit binary distribution by deleting the class files and support libraries">
         <delete dir="${gpunit.dir}/classes" />
         <delete dir="${gpunit.dir}/dist" />
+        <delete dir="${gpunit.dir}/target" />
     </target>
     
     <target name="clean-test-run" depends="clean-gpunit-outputdir, clean-report-dir"
@@ -393,6 +501,7 @@
         <sequential>
             <!-- use curl command to check status -->
             <!-- curl -I http://127.0.0.1:8080/gp/pages/login.xhtml -->
+            <echo if:true="${verbose}" message="checking status, url=@{url}" />
             <curl head="${check-url.head}" 
                 insecure="${check-url.insecure}" 
                 silent="${check-url.silent}" 
@@ -432,10 +541,10 @@
                 <classpath refid="gpunit.classpath" />
                 <sysproperty key="gpunit.testcase.dirs" value="@{testcases}" />
 
-                <sysproperty key="genePatternUrl" value="${gp.url}" />
-                <sysproperty key="username" value="${gp.user}" />
-                <sysproperty key="password" value="${gp.password}" />
-                
+                <sysproperty key="gp.url" value="${gp.url}" />
+                <sysproperty key="gp.user" value="${gp.user}" />
+                <sysproperty key="gp.password" value="${gp.password}" />
+
                 <sysproperty key="gpunit.client" value="${gpunit.client}" />
                 <sysproperty key="gpunit.outputdir" value="${gpunit.outputdir}" />
                 <sysproperty key="gpunit.batch.name" value="${gpunit.batch.name}" />
@@ -455,6 +564,8 @@
                 <syspropertyset>
                     <propertyref builtin="commandline"/>
                 </syspropertyset>
+
+                <syspropertyset refid="org.apache.commons.props" />
 
                 <jvmarg if:set="gpunit.trustStore.has_value" 
                     value="-Djavax.net.ssl.trustStore=${gpunit.trustStore}" />
@@ -528,9 +639,7 @@
                 <fileset dir="${gpunit.dir}/src/test/lib" >
                     <include name="**/*.jar"/>
                 </fileset>
-                <fileset dir="./lib">
-                    <include name="**/*.jar"/>
-                </fileset>
+                <path refid="dependencies.classpath" />
                 <pathelement location="${client.lib.dir}/GenePattern.jar" />
             </classpath>
             <test name="org.genepattern.gpunit.yaml.PropertyExpansionTests" outfile="gpunit-junit" todir="${junit.results.dir}" >
@@ -540,6 +649,6 @@
     </target>
 
     <!-- Import module test suite targets and fileset definitions -->
-	<import file="buildsuites.xml" />
+    <import file="buildsuites.xml" />
 
 </project>

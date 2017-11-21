@@ -2,7 +2,7 @@
 # Job: 16232    server:  http://gpdev.broadinstitute.org/gp/
 module: ConsensusClustering
 params: 
-    input.filename: ftp://gpftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct
+    input.filename: https://software.broadinstitute.org/cancer/software/genepattern/data/protocols/all_aml_test.preprocessed.gct
     kmax: 5
     resampling.iterations: 20
     seed.value: 12345

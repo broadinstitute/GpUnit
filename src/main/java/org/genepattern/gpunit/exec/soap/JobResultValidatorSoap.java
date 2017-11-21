@@ -15,7 +15,7 @@ import org.junit.Assert;
 public class JobResultValidatorSoap extends JobResultValidatorGeneric {
     private JobResult jobResult=null;
     private JobResultDownloader downloader=null;
-    private ModuleRunner moduleRunner;
+    private ModuleRunnerSoap moduleRunnerSoap;
 
     public JobResultValidatorSoap(final BatchProperties props, final BatchModuleTestObject batchTestObject, final File downloadDir) {
         super(props, batchTestObject, downloadDir);
@@ -29,8 +29,8 @@ public class JobResultValidatorSoap extends JobResultValidatorGeneric {
         setJobId(""+jobResult.getJobNumber());
     }
     
-    public void setModuleRunner(final ModuleRunner moduleRunner) {
-        this.moduleRunner=moduleRunner;
+    public void setModuleRunner(final ModuleRunnerSoap moduleRunnerSoap) {
+        this.moduleRunnerSoap=moduleRunnerSoap;
     }
 
     @Override
@@ -57,10 +57,10 @@ public class JobResultValidatorSoap extends JobResultValidatorGeneric {
 
     @Override
     public void deleteJob() throws GpUnitException {
-        if (moduleRunner==null) {
+        if (moduleRunnerSoap==null) {
             throw new GpUnitException("moduleRunner==null");
         }
-        moduleRunner.deleteJob(jobResult.getJobNumber());
+        moduleRunnerSoap.deleteJob(jobResult.getJobNumber());
     }
 
 }

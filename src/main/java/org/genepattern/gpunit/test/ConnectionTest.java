@@ -12,18 +12,22 @@ import org.junit.Test;
 import com.google.gson.JsonObject;
 
 /**
- * junit tests to validate the connection to the server.
+ * validate the connection to the server.
  * @author pcarr
  *
  */
 public class ConnectionTest {
-    
-    @Test
-    public void restApiConnection() throws GpUnitException, URISyntaxException {
-        final BatchProperties batchProps = BatchProperties.Factory.initFromProps();
+
+    public static void doConnectionTest(final BatchProperties batchProps) throws URISyntaxException, GpUnitException {
         RestClient restClient=new RestClient(batchProps);
         JsonObject json=restClient.getJson("/rest/v1/config/gp-version");
         assertNotNull("Expecting json response", json);
+    }
+    
+    @Test
+    public void restApiConnection_initFromProps() throws GpUnitException, URISyntaxException {
+        final BatchProperties batchProps = BatchProperties.initFromProps();
+        doConnectionTest(batchProps);
     }
 
 }

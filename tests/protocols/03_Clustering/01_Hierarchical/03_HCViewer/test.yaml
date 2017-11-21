@@ -1,6 +1,6 @@
 module: HierarchicalClusteringViewer
 params:
-    cdt.file: "ftp://gpftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.cdt"
-    gtr.file: "ftp://gpftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gtr"
-    atr.file: "ftp://gpftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.atr"
+    cdt.file: "https://software.broadinstitute.org/cancer/software/genepattern/data/protocols/all_aml_test.preprocessed.cdt"
+    gtr.file: "https://software.broadinstitute.org/cancer/software/genepattern/data/protocols/all_aml_test.preprocessed.gtr"
+    atr.file: "https://software.broadinstitute.org/cancer/software/genepattern/data/protocols/all_aml_test.preprocessed.atr"
 

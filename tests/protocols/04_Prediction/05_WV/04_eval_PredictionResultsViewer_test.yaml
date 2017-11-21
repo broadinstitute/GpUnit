@@ -1,5 +1,5 @@
 #04_Prediction_wv_evaluate.html
 module: PredictionResultsViewer
 params:
-    prediction.results.file: ftp://gpftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.pred.wv.eval.odf
+    prediction.results.file: https://software.broadinstitute.org/cancer/software/genepattern/data/protocols/all_aml_test.pred.wv.eval.odf
 

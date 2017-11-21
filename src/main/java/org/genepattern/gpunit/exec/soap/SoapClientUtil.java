@@ -2,7 +2,6 @@ package org.genepattern.gpunit.exec.soap;
 
 import java.io.File;
 
-import org.genepattern.client.GPClient;
 import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.BatchModuleTestObject;
 import org.genepattern.gpunit.BatchProperties;
@@ -27,14 +26,8 @@ public class SoapClientUtil {
             throw new GpUnitException("testObject.testCase is null");
         }
         
-        //initialize gpClient
-        GPClient gpClient = ModuleRunner.initGpClient(batchProps);
-
-        ModuleRunner runner = new ModuleRunner(testObject.getTestCase());
-        runner.setGpClient(gpClient);
-        runner.setBatchProperties(batchProps);
-        runner.runJobAndWait();
-        JobResult jobResult = runner.getJobResult();
+        ModuleRunnerSoap runner = new ModuleRunnerSoap(batchProps, testObject.getTestCase());
+        JobResult jobResult = runner.runJobAndWait();
         
         File jobResultDir=testObject.getJobResultDir(batchProps.getBatchOutputDir(), jobResult);
         

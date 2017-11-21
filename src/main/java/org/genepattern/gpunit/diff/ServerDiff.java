@@ -114,7 +114,7 @@ public class ServerDiff extends AbstractDiffTest {
             ModuleTestObject testCase = ModuleTestParserYaml.parse(is);
             BatchModuleTestObject batchTestObj = new BatchModuleTestObject();
             batchTestObj.setTestCase(testCase);
-            BatchProperties bp = BatchProperties.Factory.initFromProps();
+            BatchProperties bp = BatchProperties.initFromProps();
             try {
                 if (bp.getClient().equals(BatchProperties.GpUnitClient.REST)) {
                     RestClientUtil.runTest(bp, batchTestObj, parentJobValidator);

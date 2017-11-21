@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.genepattern.gpunit.GpUnitException;
-import org.genepattern.gpunit.BatchProperties;
 
 /**
  * Updated job result downloader, with bug fix for special characters in job result filenames.
@@ -57,7 +56,7 @@ abstract public class JobResultDownloaderGeneric implements JobResultDownloader 
     }
     
     private String jobId="";
-    final private BatchProperties props;
+
     /**
      * The job result files, each item is a pathname, relative to the 
      * job result directory on the GP server. Usually just a file name.
@@ -71,9 +70,8 @@ abstract public class JobResultDownloaderGeneric implements JobResultDownloader 
     final private Map<String,OutputFileCache> outputFileMap = new LinkedHashMap<String, OutputFileCache>();
     final private File downloadDir;
 
-    public JobResultDownloaderGeneric(final File downloadDir, final BatchProperties props) {
+    public JobResultDownloaderGeneric(final File downloadDir) {
         this.downloadDir=downloadDir;
-        this.props=props;
     }
     
     public void setJobId(final String jobId) {
