@@ -9,15 +9,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.genepattern.client.GPClient;
+import org.genepattern.gpunit.BatchProperties;
 import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.ModuleTestObject;
-import org.genepattern.gpunit.BatchProperties;
-
 import org.genepattern.webservice.Parameter;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
-import org.genepattern.webservice.WebServiceException;
 
 /**
  * Helper class for initializing input file parameters.
@@ -65,9 +62,9 @@ public class InputFileUtil {
     final private TaskInfo taskInfo;
     final private Map<String, ParameterInfo> pinfoMap;
 
-    public InputFileUtil(final GPClient gpClient, final BatchProperties props, final String moduleNameOrLsid) throws WebServiceException {
+    public InputFileUtil(final BatchProperties props, final TaskInfo taskInfo) {
         this.props=props;
-        taskInfo=gpClient.getModule(moduleNameOrLsid);
+        this.taskInfo=taskInfo;
         //initialize parameter map
         pinfoMap=new HashMap<String,ParameterInfo>();
         final ParameterInfo[] formalParameters = taskInfo.getParameterInfoArray();
