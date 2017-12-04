@@ -39,6 +39,7 @@
         <clone-repo git.repo.name="ComparativeMarkerSelection" />
         <clone-repo git.repo.name="CoxRegression" /> <!-- tests '<R>' substitution -->
         <clone-repo git.repo.name="ExpressionFileCreator" />
+        <clone-repo git.repo.name="HeatMapImage" />
         <clone-repo git.repo.name="HeatMapViewer" />
         <clone-repo git.repo.name="HierarchicalClustering" />
         <clone-repo git.repo.name="MergeHTSeqCounts" />
@@ -111,9 +112,23 @@
         />
     </target>
 
+    <!-- HeatMapImage -->
+    <fileset id="ShortHeatMapImageTests" dir="${gpunit.dir}/${module.tests.dir}/HeatMapImage/gpunit" >
+        <!-- HeatMapImage - latest -->
+        <include name="smoke*.yml" />
+    </fileset>
+
+    <target name="short-hmi-tests" depends="package, clone-test-repos">
+        <pathconvert property="short.nightly.tests" refid="ShortHeatMapImageTests" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
     <!-- HeatMapViewer -->
     <fileset id="ShortHeatMapViewerTests" dir="${gpunit.dir}/${module.tests.dir}/HeatMapViewer/gpunit" >
-        <!-- HierarchicalClustering - latest -->
         <include name="smoke*.yml" />
     </fileset>
 
@@ -209,6 +224,7 @@
             <resources refid="ShortComparativeMarkerSelectionTests" />
             <resources refid="ShortCoxRegressionTests" />
             <resources refid="ShortExpressionFileCreatorTests" />
+            <resources refid="ShortHeatMapImageTests" />
             <resources refid="ShortHeatMapViewerTests" />
             <resources refid="ShortHierarchicalClusteringTests" />
             <resources refid="ShortTopHatTests" />
@@ -234,6 +250,7 @@
             <resources refid="ShortComparativeMarkerSelectionTests" />
             <!-- resources refid="ShortCoxRegressionTests" / -->
             <resources refid="ShortExpressionFileCreatorTests" />
+            <resources refid="HeatMapImage" />
             <resources refid="ShortHeatMapViewerTests" />
             <resources refid="ShortHierarchicalClusteringTests" />
             <resources refid="ShortTopHatTests" />
