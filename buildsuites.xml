@@ -115,7 +115,7 @@
     <!-- HeatMapImage -->
     <fileset id="ShortHeatMapImageTests" dir="${gpunit.dir}/${module.tests.dir}/HeatMapImage/gpunit" >
         <!-- HeatMapImage - latest -->
-        <include name="smoke*.yml" />
+        <include name="smoke*.yaml" />
     </fileset>
 
     <target name="short-hmi-tests" depends="package, clone-test-repos">
@@ -158,7 +158,7 @@
 
     <!-- MergeHTSeqCounts -->
     <fileset id="nightlyMergeHTSeqCountsTests" dir="${gpunit.dir}/${module.tests.dir}/MergeHTSeqCounts/gpunit" >
-        <include name="weekly_test_paper_data_66524.yml" />
+        <include name="nightly*.yml" />
     </fileset>
 
     <target name="nightly-mergehtseq-tests" depends="package, clone-test-repos" >
@@ -250,7 +250,7 @@
             <resources refid="ShortComparativeMarkerSelectionTests" />
             <!-- resources refid="ShortCoxRegressionTests" / -->
             <resources refid="ShortExpressionFileCreatorTests" />
-            <resources refid="HeatMapImage" />
+            <resources refid="ShortHeatMapImageTests" />
             <resources refid="ShortHeatMapViewerTests" />
             <resources refid="ShortHierarchicalClusteringTests" />
             <resources refid="ShortTopHatTests" />
