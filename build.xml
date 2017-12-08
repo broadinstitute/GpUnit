@@ -153,16 +153,54 @@
     <target name="help" depends="init"
         description="init and print gpunit.properties"
     >
+        <!-- retrieve environment variables -->
+        <property environment="env" />
+
+        
+        <echo-value pname="env.ANT_HOME" />
+        <echo-value pname="ant.version" />
+        
+        <echo-value pname="env.GPUNIT_HOME" />
+        <echo-value pname="gpunit.dir" />
+        <echo-value pname="basedir" />
+        <echo-value pname="project.basedir" />
+        <echo-value pname="user.dir" />
+        <echo></echo>
         <echo-value pname="gpunit.properties" />
-        <echo-value pname="gp.user" />
+        
+        <echo-value pname="client.lib.dir" />
+        <echo></echo>
+        <echo-value pname="connection-test.skip" />
+        <echo-value pname="check-url.skip" />
+        <echo-value pname="gpunit.numThreads" />
+        <echo-value pname="gpunit.jobCompletionTimeout" />
+        <echo-value pname="gpunit.testTimeout" />
+        <echo-value pname="gpunit.shutdownTimeout" />
+        <echo></echo>
+        <echo-value pname="gpunit.outputdir" />
+        <echo-value pname="gpunit.save.downloads" />
+        <echo-value pname="gpunit.delete.jobs" />
+        <echo></echo>
+        <echo-value pname="report.dir" />
+        <echo-value pname="gpunit.batch.name" />
+        <echo-value pname="report.run.dir" />
+        <echo></echo>
+        <echo-value pname="gpunit.localAssertions" />
+        <echo-value pname="gpunit.upload.dir" />
+        <echo-value pname="gpunit.server.dir" />
+        <!-- Data set locations -->
+        <echo-value pname="gpunit.testData" />
+        <echo-value pname="gpunit.gpData" />
+        <echo-value pname="gpunit.diffStripTrailingCR" />
+        <echo></echo>
         <echo-value pname="gp.url" />
         <echo-value pname="gp.path" />
-        <echo-value pname="gpunit.testfolder" />
+        <echo-value pname="gp.user" />
+        <!-- echo-value pname="gp.password" / -->
         <echo-value pname="gpunit.client" />
-        <echo-value pname="gpunit.numThreads" />
-        
-        <echo-value pname="gpunit.dir" />
-        <echo-value pname="client.lib.dir" />
+        <echo-value pname="gpunit.testfolder" />
+        <!-- echo-value pname="gpunit.testcase.dirs" / -->
+
     </target>
 
     <!-- 
