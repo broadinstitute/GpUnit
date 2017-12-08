@@ -632,7 +632,6 @@
         <run-tests 
             testcases="${all-protocols.testcases}" 
             numThreads="5" 
-            shutdownTimeout="${gpunit.shutdownTimeout}"
         />
     </target>
 
@@ -653,9 +652,7 @@
             <pathelement location="${gpunit.testfolder}" />
         </path>
         <property name="testcases" refid="testfolder.path" /> 
-        <run-tests testcases="${testcases}"
-            numThreads="${gpunit.numThreads}" 
-            shutdownTimeout="${gpunit.shutdownTimeout}" />
+        <run-tests testcases="${testcases}" />
     </target>
     
     <target name="compile-automatrix" depends="package"
