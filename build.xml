@@ -199,8 +199,6 @@
         <!-- echo-value pname="gp.password" / -->
         <echo-value pname="gpunit.client" />
         <echo-value pname="gpunit.testfolder" />
-        <!-- echo-value pname="gpunit.testcase.dirs" / -->
-
     </target>
 
     <!-- 
@@ -623,30 +621,25 @@
     </macrodef>
     
     <target name="gpunit-all-protocols" depends="package"
-        description="Run all GpUnit tests in the './tests/protocols' folder" >
-        <path id="all-protocols.path">
-            <pathelement location="./tests/protocols" />
-        </path>
-        <property name="all-protocols.testcases" refid="all-protocols.path" /> 
-        <!-- the max amount of time to wait, in seconds, before terminating the unit test -->
+        description="Run all GpUnit tests in the '${gpunit.dir}/tests/protocols' folder" 
+    >
+        <property name="protocols.dir" location="${gpunit.dir}/tests/protocols" />
         <run-tests 
-            testcases="${all-protocols.testcases}" 
+            testcases="${protocols.dir}" 
             numThreads="5" 
         />
     </target>
 
     <target name="gpunit-all-saved-jobs" depends="package"
-        description="Run all GpUnit tests in the './tests/saved_jobs' folder" >
-        <path id="saved-jobs.path">
-            <pathelement location="./tests/saved_jobs" />
-        </path>
-        <property name="saved-jobs.testcases" refid="saved-jobs.path" /> 
-        <run-tests testcases="${saved-jobs.testcases}" />
+        description="Run all GpUnit tests in the '${gpunit.dir}/tests/saved_jobs' folder" 
+    >
+        <property name="saved-jobs.dir" location="{gpunit.dir}/tests/saved_jobs" />
+        <run-tests testcases="${saved-jobs.dir}" />
     </target>
 
     <target name="gpunit" depends="package, connection-test"
         description="Run all GpUnit tests in the '${gpunit.testfolder}' (default=./tests)"
-        >
+    >
         <property name="gpunit.testfolder" location="./tests" />
         <path id="testfolder.path">
             <pathelement location="${gpunit.testfolder}" />
