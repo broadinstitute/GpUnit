@@ -342,21 +342,30 @@
     </target>
 
     <!-- location for maven dependencies copied into this project -->
-    <property name="dependency.dir" location="target/dependency" />
-
+    <property name="dependency.dir" location="${gpunit.dir}/target/dependency" />
     <target name="download-deps" depends="init"
         description="install maven dependencies"
     >
-        <path id="maven-ant-tasks.classpath" path="lib/maven-ant-tasks-2.1.3.jar" />
+        <!--  
+          Maven Ant Tasks > Dependencies 
+            See: http://maven.apache.org/ant-tasks/reference.html#dependencies
+            See: http://maven.apache.org/ant-tasks/examples/dependencies.html
+
+          Note: must set custom 'dependencyRefsBuildFile'
+            default: ./target/build-dependencies.xml
+        -->
+        <path id="maven-ant-tasks.classpath" path="${gpunit.dir}/lib/maven-ant-tasks-2.1.3.jar" />
         <typedef resource="org/apache/maven/artifact/ant/antlib.xml"
             uri="antlib:org.apache.maven.artifact.ant"
             classpathref="maven-ant-tasks.classpath" />
 
-        <artifact:dependencies pathId="dependencies.classpath" cacheDependencyRefs="true" 
+        <artifact:dependencies pathId="dependencies.classpath" 
             filesetId="dependency.fileset"
             sourcesFilesetId="sources.dependency.fileset"
             javadocFilesetId="javadoc.dependency.fileset"
             versionsId="dependency.versions"
+            cacheDependencyRefs="true"
+            dependencyRefsBuildFile="${gpunit.dir}/target/build-dependencies.xml"
         >
 
             <dependency groupId="commons-codec" artifactId="commons-codec" version="1.3" />
@@ -385,7 +394,7 @@
 
         <path id="gpunit.classpath">
             <pathelement location="${gpunit.dir}/classes" />
-            <pathelement location="lib/gp-modules-updated.jar" />
+            <pathelement location="${gpunit.dir}/lib/gp-modules-updated.jar" />
             <path refid="gp.client.classpath" />
             <path refid="dependencies.classpath" />
         </path>
