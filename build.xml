@@ -150,12 +150,30 @@
         <has-value pname="gpunit.trustStorePassword" />
     </target>
 
-    <target name="help" depends="init"
+    <!--
+      set 'gpunit.testcases' from the 'gpunit.testfolder' property
+      when 'gpunit.testfolder' is not set, use 
+        '${user.dir}/gpunit' if it exists
+        '${user.dir}' otherwise
+    -->
+    <target name="init-gpunit.testcases"> 
+        <condition property="gpunit.testfolder" value="${user.dir}/gpunit" else="${user.dir}">
+          <available file="${user.dir}/gpunit" type="dir" />
+        </condition>
+        <path id="testfolder.path">
+            <pathelement location="${gpunit.testfolder}" />
+        </path>
+        <property name="gpunit.testcases" refid="testfolder.path" /> 
+        
+        <!-- fail if property not set -->
+        <fail unless="gpunit.testcases" message="Missing required property 'gpunit.testcases'" />
+    </target>
+
+    <target name="help" depends="init, init-gpunit.testcases"
         description="init and print gpunit.properties"
     >
         <!-- retrieve environment variables -->
         <property environment="env" />
-
         
         <echo-value pname="env.ANT_HOME" />
         <echo-value pname="ant.version" />
@@ -199,6 +217,7 @@
         <!-- echo-value pname="gp.password" / -->
         <echo-value pname="gpunit.client" />
         <echo-value pname="gpunit.testfolder" />
+        <echo-value pname="gpunit.testcases" />
     </target>
 
     <!-- 
@@ -646,17 +665,90 @@
         <run-tests testcases="${saved-jobs.dir}" />
     </target>
 
-    <target name="gpunit" depends="package, connection-test"
+    <target name="gpunit" depends="package, connection-test, init-gpunit.testcases"
         description="Run all GpUnit tests in the '${gpunit.testfolder}' (default=./tests)"
     >
-        <property name="gpunit.testfolder" location="./tests" />
-        <path id="testfolder.path">
-            <pathelement location="${gpunit.testfolder}" />
-        </path>
-        <property name="testcases" refid="testfolder.path" /> 
-        <run-tests testcases="${testcases}" />
+        <!-- fail if property not set -->
+        <fail unless="gpunit.testcases" message="Missing required property 'gpunit.testcases'" />
+        <run-tests testcases="${gpunit.testcases}" />
     </target>
-    
+
+    <!--
+      Helper target for debugging the initialization of the 'gpunit.testcases'
+      property from the 'gpunit.testfolder' property,
+      from a file, a directory, a fileset dirset, etc.
+      
+      for best results, use <pathconvert /> when converting path-like structures
+      into a list of paths
+    -->
+    <target name="debug-init-testcases" depends="init-gpunit.testcases"
+        description="for debugging 'init-gpunit.testcases' for the gpunit target"
+    >
+        <!-- example: init from 'gpunit.testfolder' -->
+        <echo-value pname="gpunit.testcases" />
+
+        <!-- 
+          example: a single test from a yaml file
+        -->
+        <property name="testcases.from_file" location="${gpunit.dir}/tests/protocols/01_Run/01_PreprocessDataset/test.yaml" />
+        <echo-value pname="testcases.from_file" />
+
+        <!--
+          example: a set (aka suite) of tests from a parent directory
+        -->
+        <property name="testcases.from_dir" location="${gpunit.dir}/tests/protocols/01_Run" />
+        <echo-value pname="testcases.from_dir" />
+
+        <!-- 
+          example: a list of tests from a fileset
+        -->
+        <fileset id="example.fileset" dir="${gpunit.dir}/tests/protocols/02_Differential">
+            <include name="**/*.yaml" />
+            <include name="**/*.yml" />
+        </fileset>
+        <!-- property name="testcases.from_fileset" refid="example.fileset" / --> 
+        <pathconvert property="testcases.from_fileset" refid="example.fileset" /> 
+        <echo-value pname="testcases.from_fileset" />
+        
+        <!--
+          example: a list of directories from a dirset
+          must use pathconvert
+        -->
+        <dirset id="example.dirset" dir="${gpunit.dir}/tests">
+            <include name="protocols/03_*" />
+            <include name="protocols/04_*" />
+        </dirset>
+        <pathconvert property="testcases.from_dirset" refid="example.dirset" />
+        <echo-value pname="testcases.from_dirset" />
+
+        <!-- 
+          example: a path-like structure
+          see: http://ant.apache.org/manual/using.html#path
+        -->
+        <path id="example.path">
+            <pathelement location="${gpunit.dir}/tests/protocols/01_Run/02_HeatMapViewer/test.yaml" />
+            <pathelement location="${gpunit.dir}/tests/protocols/03_Clustering" />
+        </path>
+        <!-- property name="testcases.from_path" refid="example.path" / --> 
+        <pathconvert property="testcases.from_path" refid="example.path" /> 
+        <echo-value pname="testcases.from_path" />
+
+        <!-- 
+          example: 'all-protocols' from parent directory
+        -->
+        <property name="testcases.from_protocols.dir" location="${gpunit.dir}/tests/protocols" />
+        <echo-value pname="testcases.from_protocols.dir" />
+
+        <!-- example: 'all-protocols' from fileset -->
+        <fileset id="protocols.fileset" dir="${gpunit.dir}/tests/protocols">
+            <include name="**/*.yaml" />
+            <include name="**/*.yml" />
+        </fileset>
+        <!-- property name="testcases.from_protocols.fileset" refid="protocols.fileset" / --> 
+        <pathconvert property="testcases.from_protocols.fileset" refid="protocols.fileset" /> 
+        <echo-value pname="testcases.from_protocols.fileset" />
+    </target>
+
     <target name="compile-automatrix" depends="package"
         description="compile automatrix, see ./automatrix/build.xml"
         >
