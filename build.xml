@@ -760,7 +760,7 @@
 
     <target name="gpunit-junit-tests" depends="init, package"
         description="run junit test of the GpUnit source code">
-        <property name="junit.results.dir" location="./junit" />
+        <property name="junit.results.dir" location="${gpunit.dir}/junit" />
         <mkdir dir="${junit.results.dir}" />
         <junit showoutput="true" printsummary="true" >
             <classpath>
