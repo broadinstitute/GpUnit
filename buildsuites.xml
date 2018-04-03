@@ -46,6 +46,7 @@
         <clone-repo git.repo.name="PreprocessDataset" />
         <clone-repo git.repo.name="PreprocessReadCounts" />
         <clone-repo git.repo.name="TopHat" />
+        <clone-repo git.repo.name="txt2odf" />
     </target>
 
     <target name="clean-test-repos"
@@ -214,6 +215,21 @@
         />
     </target>
 
+    <!-- txt2odf -->
+    <fileset id="Shorttxt2odfTests" dir="${gpunit.dir}/${module.tests.dir}/txt2odf/gpunit" >
+        <!-- txt2odf - v2 -->
+        <include name="*.yml" />
+    </fileset>
+
+    <target name="short-txt2odf-tests" depends="package, clone-test-repos">
+        <pathconvert property="short.nightly.tests" refid="Shorttxt2odfTests" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
     <!--******************************************************************************************-->
     <!-- Aggregate test suite target definitions. Set "noclonetests" to skip the git phase. -->
     <!--******************************************************************************************-->
@@ -228,6 +244,7 @@
             <resources refid="ShortHeatMapViewerTests" />
             <resources refid="ShortHierarchicalClusteringTests" />
             <resources refid="ShortTopHatTests" />
+            <resources refid="Shorttxt2odfTests" />
             <resources refid="nightlyMergeHTSeqCountsTests" />
             <resources refid="nightlyPreprocessDatasetTests" />
             <resources refid="nightlyPreprocessReadCountsTests" />
@@ -254,6 +271,7 @@
             <resources refid="ShortHeatMapViewerTests" />
             <resources refid="ShortHierarchicalClusteringTests" />
             <resources refid="ShortTopHatTests" />
+            <resources refid="Shorttxt2odfTests" />
             <resources refid="nightlyMergeHTSeqCountsTests" />
             <resources refid="nightlyPreprocessDatasetTests" />
             <resources refid="nightlyPreprocessReadCountsTests" />
