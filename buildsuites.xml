@@ -39,12 +39,14 @@
         <clone-repo git.repo.name="ComparativeMarkerSelection" />
         <clone-repo git.repo.name="CoxRegression" /> <!-- tests '<R>' substitution -->
         <clone-repo git.repo.name="ExpressionFileCreator" />
+        <clone-repo git.repo.name="HeatMapImage" />
         <clone-repo git.repo.name="HeatMapViewer" />
         <clone-repo git.repo.name="HierarchicalClustering" />
         <clone-repo git.repo.name="MergeHTSeqCounts" />
         <clone-repo git.repo.name="PreprocessDataset" />
         <clone-repo git.repo.name="PreprocessReadCounts" />
         <clone-repo git.repo.name="TopHat" />
+        <clone-repo git.repo.name="txt2odf" />
     </target>
 
     <target name="clean-test-repos"
@@ -111,9 +113,23 @@
         />
     </target>
 
+    <!-- HeatMapImage -->
+    <fileset id="ShortHeatMapImageTests" dir="${gpunit.dir}/${module.tests.dir}/HeatMapImage/gpunit" >
+        <!-- HeatMapImage - latest -->
+        <include name="smoke*.yaml" />
+    </fileset>
+
+    <target name="short-hmi-tests" depends="package, clone-test-repos">
+        <pathconvert property="short.nightly.tests" refid="ShortHeatMapImageTests" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
     <!-- HeatMapViewer -->
     <fileset id="ShortHeatMapViewerTests" dir="${gpunit.dir}/${module.tests.dir}/HeatMapViewer/gpunit" >
-        <!-- HierarchicalClustering - latest -->
         <include name="smoke*.yml" />
     </fileset>
 
@@ -143,7 +159,7 @@
 
     <!-- MergeHTSeqCounts -->
     <fileset id="nightlyMergeHTSeqCountsTests" dir="${gpunit.dir}/${module.tests.dir}/MergeHTSeqCounts/gpunit" >
-        <include name="weekly_test_paper_data_66524.yml" />
+        <include name="nightly*.yml" />
     </fileset>
 
     <target name="nightly-mergehtseq-tests" depends="package, clone-test-repos" >
@@ -199,6 +215,21 @@
         />
     </target>
 
+    <!-- txt2odf -->
+    <fileset id="Shorttxt2odfTests" dir="${gpunit.dir}/${module.tests.dir}/txt2odf/gpunit" >
+        <!-- txt2odf - v2 -->
+        <include name="*.yml" />
+    </fileset>
+
+    <target name="short-txt2odf-tests" depends="package, clone-test-repos">
+        <pathconvert property="short.nightly.tests" refid="Shorttxt2odfTests" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
     <!--******************************************************************************************-->
     <!-- Aggregate test suite target definitions. Set "noclonetests" to skip the git phase. -->
     <!--******************************************************************************************-->
@@ -209,9 +240,11 @@
             <resources refid="ShortComparativeMarkerSelectionTests" />
             <resources refid="ShortCoxRegressionTests" />
             <resources refid="ShortExpressionFileCreatorTests" />
+            <resources refid="ShortHeatMapImageTests" />
             <resources refid="ShortHeatMapViewerTests" />
             <resources refid="ShortHierarchicalClusteringTests" />
             <resources refid="ShortTopHatTests" />
+            <resources refid="Shorttxt2odfTests" />
             <resources refid="nightlyMergeHTSeqCountsTests" />
             <resources refid="nightlyPreprocessDatasetTests" />
             <resources refid="nightlyPreprocessReadCountsTests" />
@@ -234,9 +267,11 @@
             <resources refid="ShortComparativeMarkerSelectionTests" />
             <!-- resources refid="ShortCoxRegressionTests" / -->
             <resources refid="ShortExpressionFileCreatorTests" />
+            <resources refid="ShortHeatMapImageTests" />
             <resources refid="ShortHeatMapViewerTests" />
             <resources refid="ShortHierarchicalClusteringTests" />
             <resources refid="ShortTopHatTests" />
+            <resources refid="Shorttxt2odfTests" />
             <resources refid="nightlyMergeHTSeqCountsTests" />
             <resources refid="nightlyPreprocessDatasetTests" />
             <resources refid="nightlyPreprocessReadCountsTests" />
