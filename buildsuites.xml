@@ -234,7 +234,11 @@
     <!-- Aggregate test suite target definitions. Set "noclonetests" to skip the git phase. -->
     <!--******************************************************************************************-->
 
-    <!-- Regression tests in Jenkins -->
+    <!--******************************************************************************************-->
+    <!-- Begin of: Three groups of nighly tests -->
+    <!--******************************************************************************************-->
+
+    <!-- Regression tests in gp-beta-ami -->
     <target name="short-nightly-tests" depends="package, clone-test-repos">
         <union id="short.tests">
             <resources refid="ShortComparativeMarkerSelectionTests" />
@@ -271,7 +275,6 @@
             <resources refid="ShortHeatMapViewerTests" />
             <resources refid="ShortHierarchicalClusteringTests" />
             <resources refid="ShortTopHatTests" />
-            <resources refid="Shorttxt2odfTests" />
             <resources refid="nightlyMergeHTSeqCountsTests" />
             <resources refid="nightlyPreprocessDatasetTests" />
             <resources refid="nightlyPreprocessReadCountsTests" />
@@ -287,6 +290,37 @@
             shutdownTimeout="${gpunit.shutdownTimeout}"
         />
     </target>
+
+    <!-- Regression tests in broad servers -->
+    <target name="short-nightly-tests-broad" depends="package, clone-test-repos">
+        <union id="short.tests.beta.ami">
+            <resources refid="ShortComparativeMarkerSelectionTests" />
+            <resources refid="ShortCoxRegressionTests" />
+            <resources refid="ShortExpressionFileCreatorTests" />
+            <resources refid="ShortHeatMapImageTests" />
+            <resources refid="ShortHeatMapViewerTests" />
+            <resources refid="ShortHierarchicalClusteringTests" />
+            <resources refid="ShortTopHatTests" />
+            <resources refid="nightlyMergeHTSeqCountsTests" />
+            <resources refid="nightlyPreprocessDatasetTests" />
+            <resources refid="nightlyPreprocessReadCountsTests" />
+        </union>
+        <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
+    	<!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
+    	<!-- with ";" as the separator on both platforms (!). The pathconvert task transforms the fileset -->
+    	<!-- to one with a delimiter that properly matches what the code expects. -->
+        <pathconvert property="short.nightly.tests" refid="short.tests.broad" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
+    <!--******************************************************************************************-->
+    <!-- End of: Three groups of nighly tests -->
+    <!--******************************************************************************************-->
+
 
     <target name="nightly-smoke-tests" depends="package, clone-test-repos">
         <union id="smoke.tests">
