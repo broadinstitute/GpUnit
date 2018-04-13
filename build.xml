@@ -198,6 +198,7 @@
         <echo-value pname="gpunit.testTimeout" />
         <echo-value pname="gpunit.shutdownTimeout" />
         <echo></echo>
+        <echo-value pname="local.dir" />
         <echo-value pname="gpunit.outputdir" />
         <echo-value pname="gpunit.save.downloads" />
         <echo-value pname="gpunit.delete.jobs" />
