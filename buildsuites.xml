@@ -275,7 +275,6 @@
             <resources refid="ShortHeatMapViewerTests" />
             <resources refid="ShortHierarchicalClusteringTests" />
             <resources refid="ShortTopHatTests" />
-            <!-- <resources refid="Shorttxt2odfTests" /> --> <!-- Removing this from IU. Assuming it is not installed there either -->
             <resources refid="nightlyMergeHTSeqCountsTests" />
             <resources refid="nightlyPreprocessDatasetTests" />
             <resources refid="nightlyPreprocessReadCountsTests" />
@@ -302,7 +301,6 @@
             <resources refid="ShortHeatMapViewerTests" />
             <resources refid="ShortHierarchicalClusteringTests" />
             <resources refid="ShortTopHatTests" />
-            <!-- <resources refid="Shorttxt2odfTests" /> --> <!-- Removing this from Broad, we are not putting new modules on old servers-->
             <resources refid="nightlyMergeHTSeqCountsTests" />
             <resources refid="nightlyPreprocessDatasetTests" />
             <resources refid="nightlyPreprocessReadCountsTests" />
@@ -311,7 +309,7 @@
     	<!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
     	<!-- with ";" as the separator on both platforms (!). The pathconvert task transforms the fileset -->
     	<!-- to one with a delimiter that properly matches what the code expects. -->
-        <pathconvert property="short.nightly.tests" refid="short.tests" />
+        <pathconvert property="short.nightly.tests" refid="short.tests.broad" />
         <run-tests
             testcases="${short.nightly.tests}"
             numThreads="5"
