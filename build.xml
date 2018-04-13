@@ -482,15 +482,17 @@
     </target>
 
     <target name="clean-gpunit-outputdir"
-        description="clean the ${gpunit.outputdir}, which includes all downloaded job results"
+        description="delete the '${gpunit.outputdir}', which includes all downloaded job results"
     >
+        <fail unless="gpunit.outputdir" />
         <delete dir="${gpunit.outputdir}" />
         <delete file="System.out" />
     </target>
 
     <target name="clean-report-dir"
-        description="clean the ${report.dir} and the ${gpunit.outputdir}"
+        description="delete the '${report.dir}'"
     >
+        <fail unless="report.dir" />
         <delete dir="${report.dir}" />
     </target>
 
