@@ -17,7 +17,7 @@
       - whatever other file is specified). Any change to the sequence
       - made here should be reflected there as well.
      -->
-    <property name="gpunit.properties" value="gpunit.properties" />
+    <property name="gpunit.properties" value="${project.basedir}/gpunit.properties" />
     <property file="${gpunit.properties}" />
 
     <property name="gp.scheme" value="http" />
