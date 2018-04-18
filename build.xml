@@ -304,6 +304,111 @@
         </sequential>
     </macrodef>
 
+    <!-- 
+      Macrodef: fq-path, to convert a relative to an absolute file path;
+        by default, paths are converted to fully qualified paths
+          relative to the 'user.dir' instead of the 'basedir'.
+      Usage:
+        <property name="my_path" value="a/relative/dir" />
+        <fq-path pname="my_path" />
+        <echo>my_path.fq_name: ${my_path.fq_name}</echo>
+      Output:
+        '@{pname}.is_set'      "true" when pname references an actual property 
+        '@{pname}.is_relative' "true" when the path is relative
+        '@{pname}.fq_path'     the fully qualified path relative to the custom basedir.
+        
+      Note: All of this is a workaround because I would like to treat relative paths as
+        being relative to the working directory instead of the ant basedir.
+    -->
+    <macrodef name="fq-path">
+        <attribute name="pname" 
+            description="the name of a property to convert" />
+        <attribute name="path-prefix" default="${user.dir}" 
+            description="(optional) path prefix to append to relative paths" />
+        <attribute name="debug" default="" />
+        <sequential>
+            <!-- set 'is_set' -->
+            <property name="@{pname}.is_set" value="true" if:set="@{pname}" />
+
+            <!-- set 'is_relative', by comparing property by 'location' with relative='true' and 'false'
+                   See: https://ant.apache.org/manual/Tasks/property.html
+            -->
+            <local name="tmp.location" />
+            <local name="tmp.relative" />
+            <property name="tmp.location" location="${@{pname}}" relative="false" />
+            <property name="tmp.relative" location="${tmp.location}" relative="true" />
+            <condition property="@{pname}.is_relative" value="true">
+                <not><equals arg1="${@{pname}}" arg2="${tmp.location}" /></not>
+            </condition>
+
+            <!-- set 'fq_path', conditionally by 'is_relative'
+                   See: https://ant.apache.org/manual/ifunless.html
+            -->
+            <property name="@{pname}.fq_path"     if:true="${@{pname}.is_relative}"
+                location="@{path-prefix}/${tmp.relative}" />
+            <property name="@{pname}.fq_path" unless:true="${@{pname}.is_relative}" 
+                location="${tmp.location}" />
+            
+            <!-- set 'dir_exists' -->
+            <available property="@{pname}.dir_exists" file="${@{pname}.fq_path}" type="dir" />
+
+            <!-- debug output -->
+            <echo       if:true="@{debug}" message="fq-path, @{pname}='${@{pname}}', ..." /> 
+            <echo-value if:true="@{debug}"   pname="@{pname}.fq_path"  pad="    " /> 
+            <echo-value if:true="${verbose}" pname="@{pname}.is_set" pad="    " /> 
+            <echo-value if:true="${verbose}" pname="@{pname}.dir_exists" pad="    " /> 
+            <echo-value if:true="${verbose}" pname="@{pname}.is_relative" pad="    " /> 
+            <echo-value if:true="${verbose}" pname="tmp.value" pad="    " /> 
+            <echo-value if:true="${verbose}" pname="tmp.location" pad="    " /> 
+            <echo-value if:true="${verbose}" pname="tmp.relative" pad="    " /> 
+        </sequential>
+    </macrodef>
+
+    <target name="debug-fq-path"
+        description="debug 'fq-path' macro (interactive)"
+    >
+        <property name="debug" value="true" />
+        <input message="set -Dtest.dir=" addProperty="test.dir" defaultValue="gpunit" />
+        <input message="set -Dtest.basedir=" addProperty="test.basedir" defaultValue="${user.dir}" />
+        <input message="set -Ddebug=" addProperty="debug" validArgs=",true" defaultValue="" />
+        <fq-path pname="test.dir" path-prefix="${test.basedir}" debug="${debug}" />
+    </target>
+
+    <target name="debug-fq-path-suite"
+        description="debug 'fq-path' macro (examples)"
+    >
+        <property name="debug" value="true" />
+        
+        <!-- example: ${user.dir} -->
+        <fq-path pname="user.dir" debug="${debug}" />
+        <!-- example: ${basedir"} -->
+        <fq-path pname="basedir"  debug="${debug}" />
+        <!-- example: relative path -->
+        <property name="test.default.01" value="tests/protocols" />
+        <fq-path pname="test.default.01" debug="${debug}" />
+        <!-- example: relative path with parent -->
+        <property name="test.default.02" value="tests/protocols/../testGpUnit" />
+        <fq-path pname="test.default.02" debug="${debug}" />
+        <!-- example: relative to alt.basedir -->
+        <property name="alt.basedir" location="tests/protocols" />
+        <property name="test.alt.basedir.01" value="" />
+        <fq-path pname="test.alt.basedir.01" path-prefix="${alt.basedir}" debug="${debug}" />
+        <!-- example: relative to alt.basedir -->
+        <property name="test.alt.basedir.02" value="05_SNP" />
+        <fq-path pname="test.alt.basedir.02" path-prefix="${alt.basedir}" debug="${debug}" />
+        <!-- example: relative to alt.basedir with parent -->
+        <property name="test.alt.basedir.03" value="../testGpUnit" />
+        <fq-path pname="test.alt.basedir.03" path-prefix="${alt.basedir}" debug="${debug}" />
+
+        <!-- example: value not set -->
+        <fq-path pname="test.not_set" debug="${debug}" />
+        
+        <!-- example: with 'test.dir' and 'test.basedir' properties -->
+        <property name="test.dir" value="gpunit" />
+        <property name="test.basedir" value="${user.dir}" />
+        <fq-path pname="test.dir" path-prefix="${test.basedir}" debug="${debug}" />
+    </target>
+
     <!--                                                                                                                                                               
       Test 'gpunit.trustStore' and 'gpunit.trustStorePassword' flags
       Usage: 
