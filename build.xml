@@ -59,6 +59,32 @@
         <path refid="gp.client.classpath" />
     </path>
 
+    <!-- 
+      Convenience target to set the dry-run flag from the command line
+      Usage:
+          ant dry-run actual-target
+    -->
+    <target name="dry-run" description="set dry-run flag, e.g. ant dry-run upload-files">
+        <property name="dry-run" value="true" />
+    </target>
+
+    <!--
+      debug 'dry-run' target
+      Usage:
+        ant dry-run         test-dry-run
+        ant -Ddry-run=true  test-dry-run
+        ant -Ddry-run=false test-dry-run
+        ant -Ddry-run=""    test-dry-run
+    -->
+    <target name="debug-dry-run"
+        description="debug 'dry-run' target"
+    >
+        <echo     if:set="dry-run"     >'dry-run' is set, dry-run='${dry-run}'</echo>
+        <echo unless:set="dry-run"     >'dry-run' is not set</echo>
+        <echo     if:true="${dry-run}" >'dry-run' is true</echo>
+        <echo unless:true="${dry-run}" >'dry-run' is not true</echo>
+    </target>
+
     <!--
       Set 'verbose' flag as an ant target
       Usage:
