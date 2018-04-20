@@ -349,7 +349,7 @@
     <macrodef name="fq-path">
         <attribute name="pname" 
             description="the name of a property to convert" />
-        <attribute name="path-prefix" default="${user.dir}" 
+        <attribute name="prefix" default="${user.dir}" 
             description="(optional) path prefix to append to relative paths" />
         <attribute name="debug" default="" />
         <sequential>
@@ -371,7 +371,7 @@
                    See: https://ant.apache.org/manual/ifunless.html
             -->
             <property name="@{pname}.fq_path"     if:true="${@{pname}.is_relative}"
-                location="@{path-prefix}/${tmp.relative}" />
+                location="@{prefix}/${tmp.relative}" />
             <property name="@{pname}.fq_path" unless:true="${@{pname}.is_relative}" 
                 location="${tmp.location}" />
             
@@ -397,10 +397,10 @@
         <input message="set -Dtest.dir=" addProperty="test.dir" defaultValue="gpunit" />
         <input message="set -Dtest.basedir=" addProperty="test.basedir" defaultValue="${user.dir}" />
         <input message="set -Ddebug=" addProperty="debug" validArgs=",true" defaultValue="" />
-        <fq-path pname="test.dir" path-prefix="${test.basedir}" debug="${debug}" />
+        <fq-path pname="test.dir" prefix="${test.basedir}" debug="${debug}" />
     </target>
 
-    <target name="debug-fq-path-suite"
+    <target name="debug-fq-path-examples"
         description="debug 'fq-path' macro (examples)"
     >
         <property name="debug" value="true" />
@@ -418,13 +418,13 @@
         <!-- example: relative to alt.basedir -->
         <property name="alt.basedir" location="tests/protocols" />
         <property name="test.alt.basedir.01" value="" />
-        <fq-path pname="test.alt.basedir.01" path-prefix="${alt.basedir}" debug="${debug}" />
+        <fq-path pname="test.alt.basedir.01" prefix="${alt.basedir}" debug="${debug}" />
         <!-- example: relative to alt.basedir -->
         <property name="test.alt.basedir.02" value="05_SNP" />
-        <fq-path pname="test.alt.basedir.02" path-prefix="${alt.basedir}" debug="${debug}" />
+        <fq-path pname="test.alt.basedir.02" prefix="${alt.basedir}" debug="${debug}" />
         <!-- example: relative to alt.basedir with parent -->
         <property name="test.alt.basedir.03" value="../testGpUnit" />
-        <fq-path pname="test.alt.basedir.03" path-prefix="${alt.basedir}" debug="${debug}" />
+        <fq-path pname="test.alt.basedir.03" prefix="${alt.basedir}" debug="${debug}" />
 
         <!-- example: value not set -->
         <fq-path pname="test.not_set" debug="${debug}" />
@@ -432,7 +432,7 @@
         <!-- example: with 'test.dir' and 'test.basedir' properties -->
         <property name="test.dir" value="gpunit" />
         <property name="test.basedir" value="${user.dir}" />
-        <fq-path pname="test.dir" path-prefix="${test.basedir}" debug="${debug}" />
+        <fq-path pname="test.dir" prefix="${test.basedir}" debug="${debug}" />
     </target>
 
     <!--                                                                                                                                                               
@@ -806,7 +806,7 @@
     </target>
 
     <target name="gpunit" depends="package, connection-test, init-gpunit.testcases"
-        description="Run all GpUnit tests in the '${gpunit.testfolder}' (default=./tests)"
+        description="Run all declared GpUnit 'gpunit.testcases', (default=tests/**/*.y*ml)"
     >
         <!-- fail if property not set -->
         <fail unless="gpunit.testcases" message="Missing required property 'gpunit.testcases'" />
@@ -869,7 +869,6 @@
             <pathelement location="${gpunit.dir}/tests/protocols/01_Run/02_HeatMapViewer/test.yaml" />
             <pathelement location="${gpunit.dir}/tests/protocols/03_Clustering" />
         </path>
-        <!-- property name="testcases.from_path" refid="example.path" / --> 
         <pathconvert property="testcases.from_path" refid="example.path" /> 
         <echo-value pname="testcases.from_path" />
 
