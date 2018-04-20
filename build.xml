@@ -435,6 +435,55 @@
         <fq-path pname="test.dir" prefix="${test.basedir}" debug="${debug}" />
     </target>
 
+    <!--
+      Macrodef: set-testcases
+      Usage:
+      Output:
+        '@{pname}.dir'
+        '@{pname}.dir.is_set'
+        '@{pname}.dir.is_relative'
+        '@{pname}.dir.fq_path'
+        '@{pname}.fileset'
+        '@{pname}.fileset.formatted'
+        
+      Note: All of this is a workaround because I would like to treat relative paths as
+        being relative to the working directory instead of the ant basedir.
+    -->
+    <macrodef name="set-testcases">
+        <!-- the name of the property to set, default: testcases -->
+        <attribute name="pname" default="testcases" />
+        <attribute name="dirprefix" default="${user.dir}" />
+        <attribute name="dir" default="" /> <!-- the testcases.dir -->
+        <attribute name="includes" default="**/*" />
+        <attribute name="debug" default="" />
+
+        <sequential>
+            <property name="@{pname}.dir" value="@{dir}" />
+            <fq-path pname="@{pname}.dir" prefix="@{dirprefix}" debug="${debug}" />
+            <property name="regex.suffix" value=".*(\.ya?ml|gp_execution_log\.txt)" />
+            <fileset id="@{pname}.fileset" dir="${@{pname}.dir.fq_path}">
+                <filename regex="${regex.suffix}" />
+                <filename name="@{includes}" />
+            </fileset>
+            <!-- set '@{pname}.fileset', for input to the gpunit macro -->
+            <pathconvert property="@{pname}" refid="@{pname}.fileset" />
+            <!-- set '@{pname}.fileset.formatted' for human readable display on the terminal -->
+            <!-- property name="pathsep" value="${line.separator}|   |\-\- " /-->
+            <property name="pathsep" value="${line.separator}    " />
+            <pathconvert property="@{pname}.fileset.formatted" refid="@{pname}.fileset"
+                pathsep="${pathsep}" 
+            >
+                <map from="${@{pname}.dir.fq_path}" to=""/>
+            </pathconvert>
+            
+            <!-- debugging -->
+            <echo-value if:true="@{debug}" pname="@{pname}.dir" />
+            <echo-value if:true="@{debug}" pname="@{pname}.dir.fq_path" />
+            <echo>@{pname}.fileset=${pathsep}${@{pname}.fileset.formatted}</echo>
+            <!-- echo-value if:true="@{debug}" pname="@{pname}" / -->
+        </sequential>
+    </macrodef>
+
     <!--                                                                                                                                                               
       Test 'gpunit.trustStore' and 'gpunit.trustStorePassword' flags
       Usage: 
