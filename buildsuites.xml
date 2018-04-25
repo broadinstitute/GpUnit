@@ -10,6 +10,7 @@
     <!--******************************************************************************************-->
 
     <property name="module.tests.dir" value="ModuleTests" />
+    <property name="module.git.branch.name" value="master" />
 
     <!-- We need to do a clone first for the case where we're starting clean (this will fail if -->
     <!-- the local repo already exists), and then pull to update for the case where the local -->
@@ -17,7 +18,7 @@
     <macrodef name="clone-repo">
         <attribute name="git.organization.url" default="https://github.com/genepattern" />
         <attribute name="git.repo.name" />
-        <attribute name="git.branch.name" default="master" />
+        <attribute name="git.branch.name" default="${module.git.branch.name}" />
         <sequential>
             <echo>Pulling tests from remote repository: '@{git.organization.url}/@{git.repo.name}' (branch '@{git.branch.name}')</echo>
             <exec executable="git" dir="${module.tests.dir}" failonerror="false" >
