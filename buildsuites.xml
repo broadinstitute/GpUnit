@@ -268,7 +268,6 @@
             <resources refid="nightlyMergeHTSeqCountsTests" />
             <resources refid="nightlyPreprocessDatasetTests" />
             <resources refid="nightlyPreprocessReadCountsTests" />
-            <resources refid="Shortdownload_from_gdcTests" />
         </union>
         <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
     	<!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
@@ -310,7 +309,7 @@
 
     <!-- Regression tests in broad servers -->
     <target name="short-nightly-tests-broad" depends="package, clone-test-repos">
-        <union id="short.tests.beta.ami">
+        <union id="short.tests.broad">
             <resources refid="ShortComparativeMarkerSelectionTests" />
             <resources refid="ShortCoxRegressionTests" />
             <resources refid="ShortExpressionFileCreatorTests" />
