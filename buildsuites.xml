@@ -39,11 +39,10 @@
 
     <!-- 
       Alterernative 'clone-repo' macro with shallow clone
-      
-      Example:
-          Clone repo
+      Example git commands:
+      # if necessary, clone the repo
           git clone \-\-no-single-branch \-\-depth 1 -b master https://github.com/genepattern/txt2odf txt2odf
-          Update
+      # update
           git -C txt2odf fetch \-\-depth 1
           git -C txt2odf reset \-\-hard origin/develop
           git -C txt2odf clean -dfx
@@ -52,6 +51,7 @@
         <attribute name="git.organization.url" default="https://github.com/genepattern" />
         <attribute name="git.repo.name" />
         <attribute name="git.branch.name" default="${module.git.branch.name}" />
+        <attribute name="git.origin.name" default="origin" />
         <sequential>
             <local name="local.repo.dir" />
             <local name="local.repo.dir.exists" />
@@ -66,24 +66,24 @@
                 <arg line="clone" />
                 <!-- shallow clone -->
                 <arg line="--no-single-branch" /> <arg line="--depth" /> <arg line="1" /> 
-                <arg line="-b" /> <arg line="@{git.branch.name}" />
+                <arg line="--branch" /> <arg line="@{git.branch.name}" />
                 <arg line="@{git.organization.url}/@{git.repo.name}.git"/>
                 <arg line="@{git.repo.name}" />
             </exec>
-            
-            <echo>git fetch '@{git.organization.url}/@{git.repo.name}' (branch '@{git.branch.name}')</echo>
+
+            <echo>git fetch '@{git.organization.url}/@{git.repo.name}' --branch '@{git.origin.name}/@{git.branch.name}')</echo>
             <exec 
                 executable="git" dir="${module.tests.dir}" failonerror="false">
                 <arg line="-C" /> <arg line="@{git.repo.name}" />
                 <arg line="fetch" />
                 <arg line="--depth" /> <arg line="1" />
             </exec>
-            <echo>git reset --hard 'origin/@{git.branch.name}'</echo>
+            <echo>git reset --hard '@{git.origin.name}/@{git.branch.name}'</echo>
             <exec 
                 executable="git" dir="${module.tests.dir}" failonerror="false">
                 <arg line="-C" /> <arg line="@{git.repo.name}" />
                 <arg line="reset" />
-                <arg line="--hard" /> <arg line="origin/@{git.branch.name}" />
+                <arg line="--hard" /> <arg line="@{git.origin.name}/@{git.branch.name}" />
             </exec>
             <echo>git clean -dfx</echo>
             <exec 
@@ -119,6 +119,18 @@
         <clone-repo git.repo.name="TopHat" />
         <clone-repo git.repo.name="txt2odf" />
         <clone-repo git.repo.name="download_from_gdc" /> <!-- Starting to add chronologically rather than alphabetically -->
+    </target>
+
+    <!--
+      special-case for Broad hosted (non-containerized) servers:
+      pin to older version of the gpunit tests, HierarchicalClustering v6
+    -->
+    <target name="clone-hcl_v6" unless="noclonetests" depends="package"
+        description="pull HierarchicalClustering v6 tests from GitHub" 
+     >
+        <mkdir dir="${module.tests.dir}" />
+        <!-- Example git command: git reset \-\-hard tags/v6 -->
+        <clone-repo git.repo.name="HierarchicalClustering" git.origin.name="tags" git.branch.name="v6" />
     </target>
 
     <target name="clean-test-repos"
@@ -379,13 +391,14 @@
     </target>
 
     <!-- Regression tests in broad servers -->
-    <target name="short-nightly-tests-broad" depends="package, clone-test-repos">
+    <target name="short-nightly-tests-broad" depends="package, clone-test-repos, clone-hcl_v6">
         <union id="short.tests.broad">
             <resources refid="ShortComparativeMarkerSelectionTests" />
             <resources refid="ShortCoxRegressionTests" />
             <resources refid="ShortExpressionFileCreatorTests" />
             <resources refid="ShortHeatMapImageTests" />
             <resources refid="ShortHeatMapViewerTests" />
+            <!-- pinned to v6 by 'clone-hcl_v6' dependency -->
             <resources refid="ShortHierarchicalClusteringTests" />
             <resources refid="ShortTopHatTests" />
             <resources refid="nightlyMergeHTSeqCountsTests" />
