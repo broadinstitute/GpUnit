@@ -484,6 +484,74 @@
         </sequential>
     </macrodef>
 
+    <!-- 
+      Alterernative 'clone-repo' macro with shallow clone
+      Example git commands:
+      # if necessary, clone the repo
+          git clone \-\-no-single-branch \-\-depth 1 -b master https://github.com/genepattern/txt2odf txt2odf
+      # update
+          git -C txt2odf fetch \-\-depth 1
+          git -C txt2odf reset \-\-hard origin/develop
+          git -C txt2odf clean -dfx
+    -->
+    <property name="module.tests.dir" value="ModuleTests" />
+    <property name="module.git.branch.name" value="master" />
+    <macrodef name="clone-repo">
+        <attribute name="git.organization.url" default="https://github.com/genepattern" />
+        <attribute name="git.repo.name" />
+        <attribute name="git.branch.name" default="${module.git.branch.name}" />
+        <attribute name="git.origin.name" default="origin" />
+        <sequential>
+            <local name="local.repo.dir" />
+            <local name="local.repo.dir.exists" />
+            <property name="local.repo.dir" location="${module.tests.dir}/@{git.repo.name}" />
+            <available property="local.repo.dir.exists" file="${local.repo.dir}" />
+
+            <!-- clone if the local repo does not exist -->
+            <echo unless:set="local.repo.dir.exists">Cloning git repository: '@{git.organization.url}/@{git.repo.name}' (branch '@{git.branch.name}')</echo>
+            <exec unless:set="local.repo.dir.exists"
+                executable="git" dir="${module.tests.dir}" failonerror="false" 
+            >
+                <arg line="clone" />
+                <!-- shallow clone -->
+                <arg line="--no-single-branch" /> <arg line="--depth" /> <arg line="1" /> 
+                <arg line="--branch" /> <arg line="@{git.branch.name}" />
+                <arg line="@{git.organization.url}/@{git.repo.name}.git"/>
+                <arg line="@{git.repo.name}" />
+            </exec>
+
+            <echo>git fetch '@{git.organization.url}/@{git.repo.name}' --branch '@{git.origin.name}/@{git.branch.name}')</echo>
+            <exec 
+                executable="git" dir="${module.tests.dir}" failonerror="false">
+                <arg line="-C" /> <arg line="@{git.repo.name}" />
+                <arg line="fetch" />
+                <arg line="--depth" /> <arg line="1" />
+            </exec>
+            <echo>git reset --hard '@{git.origin.name}/@{git.branch.name}'</echo>
+            <exec 
+                executable="git" dir="${module.tests.dir}" failonerror="false">
+                <arg line="-C" /> <arg line="@{git.repo.name}" />
+                <arg line="reset" />
+                <arg line="--hard" /> <arg line="@{git.origin.name}/@{git.branch.name}" />
+            </exec>
+            <echo>git clean -dfx</echo>
+            <exec 
+                executable="git" dir="${module.tests.dir}" failonerror="false">
+                <arg line="-C" /> <arg line="@{git.repo.name}" />
+                <arg line="clean" /> <arg line="-dfx" />
+            </exec>
+        </sequential>
+    </macrodef>
+
+    <target name="debug-clone-repo"
+        description="debug the 'clone-repo' macro"
+    >
+        <property name="module.tests.dir" location="${user.dir}/ModuleTests" />
+        <mkdir dir="${module.tests.dir}" />
+        <property name="repo.name" value="txt2odf" />
+        <clone-repo git.repo.name="${repo.name}" />
+    </target>
+
     <!--                                                                                                                                                               
       Test 'gpunit.trustStore' and 'gpunit.trustStorePassword' flags
       Usage: 
