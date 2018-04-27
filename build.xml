@@ -484,15 +484,121 @@
         </sequential>
     </macrodef>
 
-    <!-- 
-      Alterernative 'clone-repo' macro with shallow clone
-      Example git commands:
-      # if necessary, clone the repo
-          git clone \-\-no-single-branch \-\-depth 1 -b master https://github.com/genepattern/txt2odf txt2odf
-      # update
-          git -C txt2odf fetch \-\-depth 1
-          git -C txt2odf reset \-\-hard origin/develop
+    <!--
+      Macrodef: git-shallow-clone
+        Makes a shallow clone of the remote repository into a target directory
+      on the local file system.
+      Target directory: 
+        {parentdir}/{repo-name}
+      Command Template: --><?code
+        # (initialize) shallow clone into a new target directory
+          cd {parentdir}
+          git clone --no-single-branch --depth 1 [--branch {branch}] {repo} {repo-name}
+        # reset to a specific commit
+          cd {parentdir}
+          git -C {repo.name} fetch --depth 1
+          git -C {repo.name} reset --hard {commit}
           git -C txt2odf clean -dfx
+    ?><!--
+    Example:  --><?code 
+          git clone --no-single-branch --depth 1 --branch master https://github.com/genepattern/txt2odf txt2odf
+          git -C txt2odf fetch --depth 1
+          git -C txt2odf reset --hard origin/develop
+          git -C txt2odf clean -dfx
+    
+    Example commits 
+          origin/master
+          origin/develop
+          tags/v2
+          tags/v0.3
+    ?>
+    <property name="git-shallow-clone.failonerror" value="false" />
+    <macrodef name="git-shallow-clone">
+        <attribute name="repo" 
+            description="the full url to a github repository, including the trailing '.git'" />
+        <attribute name="parentdir" default="${user.dir}" 
+            description="the git working directory is created as a child of the parentdir"
+        />
+        <attribute name="branch" default="master" 
+            description="the argument to the git clone --branch command, e.g. 'develop' or 'v0.1'"
+        />
+        <attribute name="commit" default="origin/@{branch}" 
+            description="the argment to the git reset --hard command, e.g. 'origin/develop' or 'tags/v0.1'" 
+        />
+        <attribute name="failonerror" default="${git-shallow-clone.failonerror}" />
+
+        <sequential>
+            <echo message="repo='@{repo}'" />
+            <echo message="branch='@{branch}'" />
+            <echo message="commit='@{commit}'" />
+            
+            <local name="reponame" />
+            <basename property="reponame" file="@{repo}" suffix=".git" />
+            <local name="local.repo.dir" />
+            <local name="local.repo.dir.exists" />
+            <property name="local.repo.dir" location="@{parentdir}/${reponame}" />
+            <available property="local.repo.dir.exists" file="${local.repo.dir}" />
+
+            <echo message="reponame='${reponame}'" />
+
+            <!-- shallow clone if the local repo does not exist -->
+            <echo unless:set="local.repo.dir.exists">Cloning git repository: '@{repo}' (branch '@{branch}')</echo>
+            <exec unless:set="local.repo.dir.exists" executable="git" dir="@{parentdir}" failonerror="@{failonerror}">
+                <arg value="clone" />
+                <!-- shallow clone -->
+                <arg value="--no-single-branch" />
+                <arg value="--depth" />
+                <arg value="1" />
+                <arg value="--branch" />
+                <arg value="@{branch}" />
+                <arg value="@{repo}" />
+                <arg value="${reponame}" />
+            </exec>
+
+            <!-- shallow update: fetch -->
+            <echo>git -C '${reponame}' fetch --depth 1</echo>
+            <exec executable="git" dir="@{parentdir}" failonerror="@{failonerror}">
+                <arg value="-C" /> <arg value="${reponame}" />
+                <arg value="fetch" />
+                <arg value="--depth" />
+                <arg value= "1" />
+            </exec>
+
+            <!-- shallow update: reset -->
+            <echo>git -C '${reponame}' reset --hard '@{commit}'</echo>
+            <exec executable="git" dir="@{parentdir}" failonerror="@{failonerror}">
+                <arg value="-C" /> <arg value="${reponame}" />
+                <arg value="reset" />
+                <arg value="--hard" /> 
+                <arg value="@{commit}" />
+            </exec>
+
+            <!-- shallow update: clear -->
+            <echo>git clean -dfx</echo>
+            <exec executable="git" dir="@{parentdir}" failonerror="@{failonerror}">
+                <arg line="-C" /> <arg line="${reponame}" />
+                <arg line="clean" /> <arg line="-dfx" />
+            </exec>
+        </sequential>
+    </macrodef>
+
+    <target name="debug-git-clone"
+        description="debug the 'git-shallow-clone' macro"
+    >
+        <property name="module.tests.dir" location="${user.dir}/ModuleTests" />
+        <mkdir dir="${module.tests.dir}" />
+        
+        <property name="git.organization.url" value="https://github.com/genepattern" />
+        <property name="repo.name" value="txt2odf" />
+        <property name="git.repo" value="${git.organization.url}/${repo.name}.git" />
+        <property name="git.branch" value="master" />
+        <property name="git.commit" value="origin/${git.branch}" />
+
+        <git-shallow-clone parentdir="${module.tests.dir}" repo="${git.repo}" branch="${git.branch}" commit="${git.commit}" />
+    </target>
+
+    <!-- 
+      clone module test case
     -->
     <property name="module.tests.dir" value="ModuleTests" />
     <property name="module.git.branch.name" value="master" />
@@ -501,45 +607,11 @@
         <attribute name="git.repo.name" />
         <attribute name="git.branch.name" default="${module.git.branch.name}" />
         <attribute name="git.origin.name" default="origin" />
-        <sequential>
-            <local name="local.repo.dir" />
-            <local name="local.repo.dir.exists" />
-            <property name="local.repo.dir" location="${module.tests.dir}/@{git.repo.name}" />
-            <available property="local.repo.dir.exists" file="${local.repo.dir}" />
-
-            <!-- clone if the local repo does not exist -->
-            <echo unless:set="local.repo.dir.exists">Cloning git repository: '@{git.organization.url}/@{git.repo.name}' (branch '@{git.branch.name}')</echo>
-            <exec unless:set="local.repo.dir.exists"
-                executable="git" dir="${module.tests.dir}" failonerror="false" 
-            >
-                <arg line="clone" />
-                <!-- shallow clone -->
-                <arg line="--no-single-branch" /> <arg line="--depth" /> <arg line="1" /> 
-                <arg line="--branch" /> <arg line="@{git.branch.name}" />
-                <arg line="@{git.organization.url}/@{git.repo.name}.git"/>
-                <arg line="@{git.repo.name}" />
-            </exec>
-
-            <echo>git fetch '@{git.organization.url}/@{git.repo.name}' --branch '@{git.origin.name}/@{git.branch.name}')</echo>
-            <exec 
-                executable="git" dir="${module.tests.dir}" failonerror="false">
-                <arg line="-C" /> <arg line="@{git.repo.name}" />
-                <arg line="fetch" />
-                <arg line="--depth" /> <arg line="1" />
-            </exec>
-            <echo>git reset --hard '@{git.origin.name}/@{git.branch.name}'</echo>
-            <exec 
-                executable="git" dir="${module.tests.dir}" failonerror="false">
-                <arg line="-C" /> <arg line="@{git.repo.name}" />
-                <arg line="reset" />
-                <arg line="--hard" /> <arg line="@{git.origin.name}/@{git.branch.name}" />
-            </exec>
-            <echo>git clean -dfx</echo>
-            <exec 
-                executable="git" dir="${module.tests.dir}" failonerror="false">
-                <arg line="-C" /> <arg line="@{git.repo.name}" />
-                <arg line="clean" /> <arg line="-dfx" />
-            </exec>
+        <sequential> 
+            <git-shallow-clone parentdir="${module.tests.dir}" 
+                repo="@{git.organization.url}/@{git.repo.name}.git" 
+                branch="@{git.branch.name}" 
+                commit="@{git.origin.name}/@{git.branch.name}" />
         </sequential>
     </macrodef>
 
@@ -549,7 +621,8 @@
         <property name="module.tests.dir" location="${user.dir}/ModuleTests" />
         <mkdir dir="${module.tests.dir}" />
         <property name="repo.name" value="txt2odf" />
-        <clone-repo git.repo.name="${repo.name}" />
+        <property name="git.origin.name" value="origin" />
+        <clone-repo git.repo.name="${repo.name}" git.origin.name="${git.origin.name}" />
     </target>
 
     <!--                                                                                                                                                               
