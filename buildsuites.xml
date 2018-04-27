@@ -365,7 +365,7 @@
     </target>
 
     <!-- Regression tests in Jenkins for IU -->
-    <target name="short-nightly-tests-iu" depends="package, clone-test-repos">
+    <target name="short-nightly-tests-iu" depends="package, clone-test-repos, clone-hcl_v6">
         <union id="short.tests.iu">
             <resources refid="ShortComparativeMarkerSelectionTests" />
             <!-- resources refid="ShortCoxRegressionTests" / -->
