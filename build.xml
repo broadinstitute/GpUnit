@@ -995,6 +995,42 @@
         <run-tests testcases="${saved-jobs.dir}" />
     </target>
 
+    <!--
+      gpunit-single-module
+          step 1: Clone the module git repository to get the gpunit tests at a particular 'git.commit'
+          step 2: Run tests on all matching yaml files in the ${repo.name}/gpunit folder          
+      Usage:
+          ant [dry-run] -Drepo.name=repo-name [-Dgit.branch=branch-name] [-Dgit.commit=commit-ref]
+      Examples:
+          # run latest from 'master' branch
+          ant -Drepo.name=txt2odf
+          # run latest from 'develop' branch
+          ant -Drepo.name=txt2odf -Dgit.branch=develop
+          # run a tagged version of the tests
+          ant -Drepo.name=txt2odf -Dgit.commit=tags/v2
+    -->
+    <target name="gpunit-single-module" depends="package"
+        description="Run all gpunit tests in the ${repo.name}/gpunit folder"
+    >  
+        <property name="module.tests.dir" location="${user.dir}/ModuleTests" />
+        <mkdir dir="${module.tests.dir}" />
+        
+        <property name="git.organization.url" value="https://github.com/genepattern" />
+        <property name="repo.name" value="txt2odf" />
+        <property name="git.repo" value="${git.organization.url}/${repo.name}.git" />
+        <property name="git.branch" value="master" />
+        <property name="git.commit" value="origin/${git.branch}" />
+        <property name="dry-run" value="false" />
+
+        <git-shallow-clone parentdir="${module.tests.dir}" repo="${git.repo}" branch="${git.branch}" commit="${git.commit}" />
+
+        <!-- 'pname', 'dirprefix', 'dir', 'includes', 'debug' -->
+        <set-testcases pname="module.testcases" dirprefix="${module.tests.dir}" dir="${repo.name}/gpunit" />
+        
+        <fail unless="module.testcases" message="Missing required property 'module.testcases'" />
+        <run-tests unless:true="${dry-run}" testcases="${module.testcases}" />
+    </target>
+
     <target name="gpunit" depends="package, connection-test, init-gpunit.testcases"
         description="Run all declared GpUnit 'gpunit.testcases', (default=tests/**/*.y*ml)"
     >
