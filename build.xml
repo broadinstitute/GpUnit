@@ -995,6 +995,23 @@
         <run-tests testcases="${saved-jobs.dir}" />
     </target>
 
+    <!-- set 'testcases' by scanning all *.y?ml files relative to the current working directory -->
+    <target name="gpunit-default" depends="package"
+        description="Run 'testcases' by scanning all .yml files in the current directory tree"
+    > 
+        <!--
+        <condition property="gpunit.testfolder" value="${user.dir}/gpunit" else="${user.dir}">
+          <available file="${user.dir}/gpunit" type="dir" />
+        </condition>
+        -->
+
+        <!-- 'pname', 'dirprefix', 'dir', 'includes', 'debug' -->
+        <!-- set-testcases pname="module.testcases" dirprefix="${module.tests.dir}" dir="${repo.name}/${test.dir}" includes="**/*" / -->
+        <set-testcases pname="module.testcases" /> 
+        <fail unless="module.testcases" message="Missing required property 'module.testcases'" />
+        <run-tests unless:true="${dry-run}" testcases="${module.testcases}" />
+    </target>
+
     <!--
       gpunit-single-module
           step 1: Clone the module git repository to get the gpunit tests at a particular 'git.commit'
