@@ -479,7 +479,7 @@
             <!-- debugging -->
             <echo-value if:true="@{debug}" pname="@{pname}.dir" />
             <echo-value if:true="@{debug}" pname="@{pname}.dir.fq_path" />
-            <echo>@{pname}.fileset=${pathsep}${@{pname}.fileset.formatted}</echo>
+            <echo if:true="@{debug}">@{pname}.fileset=${pathsep}${@{pname}.fileset.formatted}</echo>
             <!-- echo-value if:true="@{debug}" pname="@{pname}" / -->
         </sequential>
     </macrodef>
@@ -907,7 +907,7 @@
         </sequential>
     </macrodef>
 
-    <!-- run a batch of gp-unit tests via SOAP client requests 
+    <!-- run a batch of gp-unit tests via REST client requests 
          use a single parameterized jUnit test to submit the jobs and validate the results.
          
          To run the tests, create a path, give it a refid, then create a property from that refid.
