@@ -1141,8 +1141,9 @@
     </target>
 
     <target name="gpunit-junit-tests" depends="init, package"
-        description="run junit test of the GpUnit source code">
-        <property name="junit.results.dir" location="${gpunit.dir}/junit" />
+        description="run junit test of the GpUnit source code"
+    >
+        <property name="junit.results.dir" location="${gpunit.dir}/target/junit" />
         <mkdir dir="${junit.results.dir}" />
         <junit showoutput="true" printsummary="true" >
             <classpath>
@@ -1153,9 +1154,20 @@
                 <path refid="dependencies.classpath" />
                 <pathelement location="${client.lib.dir}/GenePattern.jar" />
             </classpath>
+            <!-- example single test-case -->
+            <!--
             <test name="org.genepattern.gpunit.yaml.PropertyExpansionTests" outfile="gpunit-junit" todir="${junit.results.dir}" >
                 <formatter type="xml"/>
             </test>
+            -->
+            <!-- run all tests -->
+            <batchtest fork="yes" todir="${junit.results.dir}">
+                <formatter type="xml"/>
+                <fileset dir="${gpunit.dir}/src/test/java">
+                    <include name="**/*Test*.java"/>
+                    <exclude name="**/AllTests.java"/>
+                </fileset>
+            </batchtest>
         </junit>
     </target>
 
