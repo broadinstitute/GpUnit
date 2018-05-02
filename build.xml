@@ -342,6 +342,9 @@
         '@{pname}.is_set'      "true" when pname references an actual property 
         '@{pname}.is_relative' "true" when the path is relative
         '@{pname}.fq_path'     the fully qualified path relative to the custom basedir.
+        '@{pname}.is_file'     "true" when the path is to a file
+        '@{pname}.is_dir'      "true" when the path is to a directory
+        '@{pname}.exists'      "true" when the file or directory exists
         
       Note: All of this is a workaround because I would like to treat relative paths as
         being relative to the working directory instead of the ant basedir.
@@ -374,19 +377,27 @@
                 location="@{prefix}/${tmp.relative}" />
             <property name="@{pname}.fq_path" unless:true="${@{pname}.is_relative}" 
                 location="${tmp.location}" />
+
+            <!-- set 'exists' -->
+            <available property="@{pname}.exists" file="${@{pname}.fq_path}" />
+
+            <!-- set 'is_dir' -->
+            <available property="@{pname}.is_dir" file="${@{pname}.fq_path}" type="dir" />
             
-            <!-- set 'dir_exists' -->
-            <available property="@{pname}.dir_exists" file="${@{pname}.fq_path}" type="dir" />
+            <!-- set 'is_file' -->
+            <available property="@{pname}.is_file" file="${@{pname}.fq_path}" type="file" />
 
             <!-- debug output -->
             <echo       if:true="@{debug}" message="fq-path, @{pname}='${@{pname}}', ..." /> 
-            <echo-value if:true="@{debug}"   pname="@{pname}.fq_path"  pad="    " /> 
-            <echo-value if:true="${verbose}" pname="@{pname}.is_set" pad="    " /> 
-            <echo-value if:true="${verbose}" pname="@{pname}.dir_exists" pad="    " /> 
-            <echo-value if:true="${verbose}" pname="@{pname}.is_relative" pad="    " /> 
-            <echo-value if:true="${verbose}" pname="tmp.value" pad="    " /> 
-            <echo-value if:true="${verbose}" pname="tmp.location" pad="    " /> 
-            <echo-value if:true="${verbose}" pname="tmp.relative" pad="    " /> 
+            <echo-value if:true="@{debug}" pname="@{pname}.fq_path"  pad="    " /> 
+            <echo-value if:true="${debug}" pname="@{pname}.is_set" pad="    " /> 
+            <echo-value if:true="${debug}" pname="@{pname}.exists" pad="    " /> 
+            <echo-value if:true="${debug}" pname="@{pname}.is_file" pad="    " /> 
+            <echo-value if:true="${debug}" pname="@{pname}.is_dir" pad="    " /> 
+            <echo-value if:true="${debug}" pname="@{pname}.is_relative" pad="    " /> 
+            <echo-value if:true="${debug}" pname="tmp.value" pad="    " /> 
+            <echo-value if:true="${debug}" pname="tmp.location" pad="    " /> 
+            <echo-value if:true="${debug}" pname="tmp.relative" pad="    " /> 
         </sequential>
     </macrodef>
 
@@ -409,6 +420,12 @@
         <fq-path pname="user.dir" debug="${debug}" />
         <!-- example: ${basedir"} -->
         <fq-path pname="basedir"  debug="${debug}" />
+        <!-- example: path to file -->
+        <property name="test.filepath.abs" location="${gpunit.dir}/tests/protocols/01_Run/01_PreprocessDataset/test.yaml" />
+        <fq-path pname="test.filepath.abs" debug="${debug}" />
+        <!-- example: relative path to file -->
+        <property name="test.filepath.rel" value="tests/protocols/01_Run/01_PreprocessDataset/test.yaml" />
+        <fq-path pname="test.filepath.rel" debug="${debug}" />
         <!-- example: relative path -->
         <property name="test.default.01" value="tests/protocols" />
         <fq-path pname="test.default.01" debug="${debug}" />
@@ -460,17 +477,20 @@
         <sequential>
             <property name="@{pname}.dir" value="@{dir}" />
             <fq-path pname="@{pname}.dir" prefix="@{dirprefix}" debug="${debug}" />
+            <!-- special-case, it's not a directory -->
+            <fileset id="@{pname}.fileset" file="${@{pname}.dir.fq_path}" if:set="@{pname}.dir.is_file" />
             <property name="regex.suffix" value=".*(\.ya?ml|gp_execution_log\.txt)" />
-            <fileset id="@{pname}.fileset" dir="${@{pname}.dir.fq_path}">
+            <fileset id="@{pname}.fileset" dir="${@{pname}.dir.fq_path}" if:set="@{pname}.dir.is_dir">
                 <filename regex="${regex.suffix}" />
                 <filename name="@{includes}" />
             </fileset>
             <!-- set '@{pname}.fileset', for input to the gpunit macro -->
             <pathconvert property="@{pname}" refid="@{pname}.fileset" />
             <!-- set '@{pname}.fileset.formatted' for human readable display on the terminal -->
-            <!-- property name="pathsep" value="${line.separator}|   |\-\- " /-->
+            <property name="@{pname}.fileset.formatted" if:set="@{pname}.dir.is_file" value="${@{pname}.dir.fq_path}" />
             <property name="pathsep" value="${line.separator}    " />
-            <pathconvert property="@{pname}.fileset.formatted" refid="@{pname}.fileset"
+            <pathconvert property="@{pname}.fileset.formatted" if:set="@{pname}.dir.is_dir"
+                refid="@{pname}.fileset"
                 pathsep="${pathsep}" 
             >
                 <map from="${@{pname}.dir.fq_path}" to=""/>
@@ -1054,6 +1074,16 @@
         <!-- fail if property not set -->
         <fail unless="gpunit.testcases" message="Missing required property 'gpunit.testcases'" />
         <run-tests testcases="${gpunit.testcases}" />
+    </target>
+
+    <target name="echo-testcases">
+        <echo-value if:set="testcases.is_dir" 
+            pname="testcases.dir" />
+        <echo-value if:set="testcases.is_dir" 
+            pname="testcases.dir.fq_path" />
+        <echo if:set="testcases.dir.is_dir"
+            >testcases.fileset=${pathsep}${testcases.fileset.formatted}</echo>
+        <echo-value pname="testcases" />
     </target>
 
     <!--
