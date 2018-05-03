@@ -454,23 +454,39 @@
 
     <!--
       Macrodef: set-testcases
+        Helper method to initialize the 'testcases' property to be used as 
+      input to the 'run-tests' macro. 
+        Scan for all *.yml, *.yaml, and 'gp_execution_log.txt' files
+      in the current working directory.
+      Can be customized to scan from a different base directory 
+      with different file filters.
+
+      Options:
+        pname, the name of the property to set
+          Default: 'testcases'
+        dirprefix, the path prefix for relative paths
+           Default: ${user.dir}
+        dir, the base directory relative to 'dirprefix'
+           Default: ''
+        includes, the include filter
+           Default: '**/*', match all
+        regex.suffix, by default only *.yaml, *.yml, and 'gp_execution_log.txt' files are included
+           Default: '.*(\.ya?ml|gp_execution_log\.txt)'
       Usage:
+        <set-testcases pname="my.testcases" ... />
+        <run-tests testcases="${my.testcases}" ... />
       Output:
-        '@{pname}.dir'
-        '@{pname}.dir.is_set'
-        '@{pname}.dir.is_relative'
-        '@{pname}.dir.fq_path'
+        '@{pname}'
         '@{pname}.fileset'
         '@{pname}.fileset.formatted'
-        
-      Note: All of this is a workaround because I would like to treat relative paths as
-        being relative to the working directory instead of the ant basedir.
+        '@{pname}.dir.[fq_path | is_dir | ...] ', same as set-fq-path
     -->
     <macrodef name="set-testcases">
         <!-- the name of the property to set, default: testcases -->
         <attribute name="pname" default="testcases" />
         <attribute name="dirprefix" default="${user.dir}" />
         <attribute name="dir" default="" /> <!-- the testcases.dir -->
+        <attribute name="regex.suffix" default=".*(\.ya?ml|gp_execution_log\.txt)" />
         <attribute name="includes" default="**/*" />
         <attribute name="debug" default="" />
 
@@ -479,10 +495,8 @@
             <fq-path pname="@{pname}.dir" prefix="@{dirprefix}" debug="${debug}" />
             <!-- special-case, it's not a directory -->
             <fileset id="@{pname}.fileset" file="${@{pname}.dir.fq_path}" if:set="@{pname}.dir.is_file" />
-            <property name="regex.suffix" value=".*(\.ya?ml|gp_execution_log\.txt)" />
-            <fileset id="@{pname}.fileset" dir="${@{pname}.dir.fq_path}" if:set="@{pname}.dir.is_dir">
-                <filename regex="${regex.suffix}" />
-                <filename name="@{includes}" />
+            <fileset id="@{pname}.fileset" dir="${@{pname}.dir.fq_path}" includes="@{includes}" if:set="@{pname}.dir.is_dir">
+                <filename regex="@{regex.suffix}" />
             </fileset>
             <!-- set '@{pname}.fileset', for input to the gpunit macro -->
             <pathconvert property="@{pname}" refid="@{pname}.fileset" />
@@ -503,6 +517,209 @@
             <!-- echo-value if:true="@{debug}" pname="@{pname}" / -->
         </sequential>
     </macrodef>
+
+    <!--
+      Macrodef: echo-testcases
+        formatted output of the 'testcases' property
+    -->
+    <macrodef name="echo-testcases">
+        <attribute name="pname" default="testcases" />
+        <sequential>
+            <echo-value if:set="@{pname}.dir.is_dir"  pname="@{pname}.dir" />
+            <echo-value if:set="@{pname}.dir.is_dir"  pname="@{pname}.dir.fq_path" />
+            <echo       if:set="@{pname}.dir.is_dir"
+                >testcases.fileset=${pathsep}${@{pname}.fileset.formatted}</echo>
+            <echo-value if:true="@{debug}" pname="@{pname}" />
+        </sequential>
+    </macrodef>
+
+    <target name="echo-testcases"
+        description="for debugging, echo the 'testcases' property">
+        <echo-testcases />
+    </target>
+
+    <!--
+      debug-set-testcases
+    -->
+    <target name="debug-set-testcases"
+        description="debug 'set-testcases' macro (interactive)"
+    >
+        <property name="debug" value="true" />
+        <input message="set 'pname'"        addProperty="pname"         defaultValue="testcases" />
+        <input message="set 'dirprefix'"    addProperty="dirprefix"     defaultValue="${gpunit.dir}" />
+        <input message="set 'dir'"          addProperty="dir"           defaultValue="tests/protocols" />
+        <input message="set 'includes'"     addProperty="includes"      defaultValue="**/*" />
+        <input message="set 'regex.suffix'" addProperty="regex.suffix"  defaultValue=".*(\.ya?ml|gp_execution_log\.txt)" />
+        
+        <set-testcases pname="${pname}" dirprefix="${dirprefix}" dir="${dir}" includes="${includes}" regex.suffix="${regex.suffix}" />
+        <echo-testcases pname="${pname}" />
+    </target>
+
+    <!--
+      debug-set-testcases-examples
+        example 'set-testcases' usage.
+    -->
+    <target name="debug-set-testcases-examples" 
+        description="for debugging 'set-testcases' macro"
+    >
+        <!-- example: a single test from a yaml file -->
+        <set-testcases pname="testcases.from_file" dirprefix="${gpunit.dir}" dir="tests/protocols/01_Run/01_PreprocessDataset/test.yaml" />
+        <echo-value pname="testcases.from_file" />
+
+        <!-- example:  a list (aka suite) of tests from a parent directory -->
+        <set-testcases pname="testcases.from_dir" dirprefix="${gpunit.dir}" dir="tests/protocols/01_Run" />
+        <echo-value pname="testcases.from_dir" />
+
+        <!-- example: includes filter -->
+        <set-testcases pname="testcases.includes_01" dirprefix="${gpunit.dir}" dir="tests/protocols" includes="**/01_PreprocessDataset/**" />
+        <echo-value pname="testcases.includes_01" />
+
+        <!-- example: space separated includes -->
+        <set-testcases pname="testcases.includes_02" dirprefix="${gpunit.dir}" dir="tests/protocols/02_Differential" includes="**/*.yaml **/*.yml" />
+        <echo-value pname="testcases.includes_02" />
+
+        <!-- example: comma separated includes -->
+        <set-testcases pname="testcases.includes_03" dirprefix="${gpunit.dir}" dir="tests/protocols/02_Differential" includes="**/*.yml,**/*.yaml" />
+        <echo-value pname="testcases.includes_03" />
+    </target>
+
+    <!--
+      debug-fileset-examples
+        for debugging only, this target shows a bunch of different ways
+      to create a 'testcases' property directly (without the 'set-testcases' macrodef).
+            The 'testcases' property can be ...
+        ... a direct path to a test.yaml file
+        ... a direct path to a test directory
+        ... a list of one or more file paths, separated by the system java.io.File.pathSeparatorChar.
+            See: https://docs.oracle.com/javase/7/docs/api/java/io/File.html#pathSeparatorChar
+
+      Bash command to generate the -Dtestcases arg ...
+        See: https://stackoverflow.com/questions/2915556/unix-replace-newline-w-colon-preserving-newline-before-eof
+        
+        # (linux)
+        $ cd ./gpunit
+        # take 1
+        $ find "$(cd ..; pwd)" -regextype posix-extended -regex '.*\.(yml|yaml)' | tr '\n' ':' | sed '$s/.$//'
+        # take 2
+        $ echo $(find "$(cd ..; pwd)" -regex '.*\.ya?ml' | tr '\n' ':' | head -c -1)
+        # take 3
+        $ find "$(cd ..; pwd)" -regex '.*\.ya?ml' | tr '\n' ':' | sed 's/:$/\n/'
+        
+        # (mac os x) 
+        #   note: workaround for '\n' with sed on mac os x
+        $ cd ./gpunit
+        $ find -E `pwd` -regex '.*\.ya?ml' | tr '\n' ':' | sed -e 's/\(.*\):/\1/'
+        
+        # Example regex, skip child directories
+        # (mac os x)
+        $ find -E `pwd` -regex `pwd`'/[^/]*'
+      
+    -->
+    <target name="demo-testcases-from-fileset" 
+        description="for debugging, example ant filesets"
+    > 
+        <!-- example: a single testcase file -->
+        <property name="testcases.file" location="${gpunit.dir}/tests/protocols/01_Run/01_PreprocessDataset/test.yaml" />
+        <echo-value pname="testcases.file" />
+
+        <!-- example: a single testcase directory -->
+        <property name="testcases.dir" location="${gpunit.dir}/tests/protocols" />
+        <echo-value pname="testcases.dir" />
+
+        <!--
+          example: a list of directories from a dirset
+          must use pathconvert
+        -->
+        <dirset id="example.dirset" dir="${gpunit.dir}/tests">
+            <include name="protocols/03_*" />
+            <include name="protocols/04_*" />
+        </dirset>
+        <pathconvert property="testcases.from_dirset" refid="example.dirset" />
+        <echo-value pname="testcases.from_dirset" />
+
+        <!-- 
+          example: a path-like structure
+          see: http://ant.apache.org/manual/using.html#path
+        -->
+        <path id="example.path">
+            <pathelement location="${gpunit.dir}/tests/protocols/01_Run/02_HeatMapViewer/test.yaml" />
+            <pathelement location="${gpunit.dir}/tests/protocols/03_Clustering" />
+        </path>
+        <pathconvert property="testcases.from_path" refid="example.path" /> 
+        <echo-value pname="testcases.from_path" />
+
+        <!-- example: a fileset -->
+        <fileset id="example.fileset" dir="${gpunit.dir}/tests/protocols/01_Run">
+            <include name="**/*.yaml" />
+            <include name="**/*.yml" />
+        </fileset>
+        <pathconvert property="testcases.from_fileset" refid="example.fileset" /> 
+        <echo-value pname="testcases.from_fileset" />
+
+        <!-- example: 'saved_jobs' fileset -->
+        <fileset id="saved_jobs.fileset" dir="${gpunit.dir}/tests/saved_jobs">
+            <include name="**/*.yaml" />
+            <include name="**/*.yml" />
+            <include name="**/gp_execution_log.txt" />
+        </fileset>
+        <pathconvert property="testcases.saved_jobs" refid="saved_jobs.fileset" /> 
+        <echo-value pname="testcases.saved_jobs" />
+    </target>
+
+    <!--
+      init-testcases
+        set 'testcases' by scanning all *.y?ml files relative to the current working directory
+      
+      Options:
+        gpunit.testfolder, optionally, scan for files from the 'gpunit.testfolder'
+           when ...
+           ... not set,         relative to ${user.dir}
+           ... a relative path, relative to ${user.dir}/${gpunit.testfolder}
+           ... absolute,        relative to ${gpunit.testfolder}
+    -->
+    <target name="init-testcases">
+        <property name="gpunit.testfolder" value="" />
+        <set-testcases pname="testcases" dirprefix="${user.dir}" dir="${gpunit.testfolder}" debug="${dry-run}" /> 
+    </target>
+
+    <!-- set 'testcases' by pulling from the Git repository before scanning for matching yaml files -->
+    <target name="init-testcases-git">
+        <property name="module.tests.dir" location="${user.dir}/ModuleTests" />
+        <mkdir dir="${module.tests.dir}" />
+        
+        <property name="git.organization.url" value="https://github.com/genepattern" />
+        <property name="repo.name" value="txt2odf" />
+        <property name="git.repo" value="${git.organization.url}/${repo.name}.git" />
+        <property name="git.branch" value="master" />
+        <property name="git.commit" value="origin/${git.branch}" />
+        <property name="dry-run" value="false" />
+
+        <git-shallow-clone parentdir="${module.tests.dir}" repo="${git.repo}" branch="${git.branch}" commit="${git.commit}" />
+
+        <!-- 'pname', 'dirprefix', 'dir', 'includes', 'debug' -->
+        <set-testcases pname="testcases" dirprefix="${module.tests.dir}" dir="${repo.name}/gpunit" />
+    </target>
+
+    <!--
+      init-gpunit.testfolder
+          Demo target which sets the 'gpunit.testfolder'. This is not in use.
+      set 'gpunit.testcases' from the 'gpunit.testfolder' property
+      when 'gpunit.testfolder' is not set, use 
+        '${user.dir}/gpunit' if it exists
+        '${user.dir}' otherwise
+    -->
+    <target name="init-gpunit.testfolder"> 
+        <condition property="gpunit.testfolder" value="${user.dir}/gpunit" else="${user.dir}">
+          <available file="${user.dir}/gpunit" type="dir" />
+        </condition>
+        <path id="testfolder.path">
+            <pathelement location="${gpunit.testfolder}" />
+        </path>
+        <property name="gpunit.testcases" refid="testfolder.path" /> 
+        
+        <!-- fail if property not set -->
+        <fail unless="gpunit.testcases" message="Missing required property 'gpunit.testcases'" />
+    </target>
 
     <!--
       Macrodef: git-shallow-clone
@@ -1074,91 +1291,6 @@
         <!-- fail if property not set -->
         <fail unless="gpunit.testcases" message="Missing required property 'gpunit.testcases'" />
         <run-tests testcases="${gpunit.testcases}" />
-    </target>
-
-    <target name="echo-testcases">
-        <echo-value if:set="testcases.is_dir" 
-            pname="testcases.dir" />
-        <echo-value if:set="testcases.is_dir" 
-            pname="testcases.dir.fq_path" />
-        <echo if:set="testcases.dir.is_dir"
-            >testcases.fileset=${pathsep}${testcases.fileset.formatted}</echo>
-        <echo-value pname="testcases" />
-    </target>
-
-    <!--
-      Helper target for debugging the initialization of the 'gpunit.testcases'
-      property from the 'gpunit.testfolder' property,
-      from a file, a directory, a fileset dirset, etc.
-      
-      for best results, use <pathconvert /> when converting path-like structures
-      into a list of paths
-    -->
-    <target name="debug-init-testcases" depends="init-gpunit.testcases"
-        description="for debugging 'init-gpunit.testcases' for the gpunit target"
-    >
-        <!-- example: init from 'gpunit.testfolder' -->
-        <echo-value pname="gpunit.testcases" />
-
-        <!-- 
-          example: a single test from a yaml file
-        -->
-        <property name="testcases.from_file" location="${gpunit.dir}/tests/protocols/01_Run/01_PreprocessDataset/test.yaml" />
-        <echo-value pname="testcases.from_file" />
-
-        <!--
-          example: a set (aka suite) of tests from a parent directory
-        -->
-        <property name="testcases.from_dir" location="${gpunit.dir}/tests/protocols/01_Run" />
-        <echo-value pname="testcases.from_dir" />
-
-        <!-- 
-          example: a list of tests from a fileset
-        -->
-        <fileset id="example.fileset" dir="${gpunit.dir}/tests/protocols/02_Differential">
-            <include name="**/*.yaml" />
-            <include name="**/*.yml" />
-        </fileset>
-        <!-- property name="testcases.from_fileset" refid="example.fileset" / --> 
-        <pathconvert property="testcases.from_fileset" refid="example.fileset" /> 
-        <echo-value pname="testcases.from_fileset" />
-        
-        <!--
-          example: a list of directories from a dirset
-          must use pathconvert
-        -->
-        <dirset id="example.dirset" dir="${gpunit.dir}/tests">
-            <include name="protocols/03_*" />
-            <include name="protocols/04_*" />
-        </dirset>
-        <pathconvert property="testcases.from_dirset" refid="example.dirset" />
-        <echo-value pname="testcases.from_dirset" />
-
-        <!-- 
-          example: a path-like structure
-          see: http://ant.apache.org/manual/using.html#path
-        -->
-        <path id="example.path">
-            <pathelement location="${gpunit.dir}/tests/protocols/01_Run/02_HeatMapViewer/test.yaml" />
-            <pathelement location="${gpunit.dir}/tests/protocols/03_Clustering" />
-        </path>
-        <pathconvert property="testcases.from_path" refid="example.path" /> 
-        <echo-value pname="testcases.from_path" />
-
-        <!-- 
-          example: 'all-protocols' from parent directory
-        -->
-        <property name="testcases.from_protocols.dir" location="${gpunit.dir}/tests/protocols" />
-        <echo-value pname="testcases.from_protocols.dir" />
-
-        <!-- example: 'all-protocols' from fileset -->
-        <fileset id="protocols.fileset" dir="${gpunit.dir}/tests/protocols">
-            <include name="**/*.yaml" />
-            <include name="**/*.yml" />
-        </fileset>
-        <!-- property name="testcases.from_protocols.fileset" refid="protocols.fileset" / --> 
-        <pathconvert property="testcases.from_protocols.fileset" refid="protocols.fileset" /> 
-        <echo-value pname="testcases.from_protocols.fileset" />
     </target>
 
     <target name="compile-automatrix" depends="package"
