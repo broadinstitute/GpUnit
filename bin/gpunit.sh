@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ############################################################
-# gpunit.sh (experimental)
+# gpunit.sh
 #   GpUnit wrapper script as a convenience for invoking
 # ant directly from the command line.
 #
@@ -40,5 +40,4 @@ if [[ $# -ge 1 ]]; then
   _ant_args=( "$@" )
 fi
 
-#ant -Dbasedir=`pwd` -f ${GPUNIT_HOME}/build.xml "${@:-}"
 ant -f ${GPUNIT_HOME}/build.xml "${@:-}"
