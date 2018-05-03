@@ -179,26 +179,7 @@
         <property name="gpunit.gpData" value="ftp://ftp.broadinstitute.org/pub/genepattern/datasets" />
     </target>
 
-    <!--
-      set 'gpunit.testcases' from the 'gpunit.testfolder' property
-      when 'gpunit.testfolder' is not set, use 
-        '${user.dir}/gpunit' if it exists
-        '${user.dir}' otherwise
-    -->
-    <target name="init-gpunit.testcases"> 
-        <condition property="gpunit.testfolder" value="${user.dir}/gpunit" else="${user.dir}">
-          <available file="${user.dir}/gpunit" type="dir" />
-        </condition>
-        <path id="testfolder.path">
-            <pathelement location="${gpunit.testfolder}" />
-        </path>
-        <property name="gpunit.testcases" refid="testfolder.path" /> 
-        
-        <!-- fail if property not set -->
-        <fail unless="gpunit.testcases" message="Missing required property 'gpunit.testcases'" />
-    </target>
-
-    <target name="help" depends="init, init-gpunit.testcases"
+    <target name="help" depends="init"
         description="init and print gpunit.properties"
     >
         <!-- retrieve environment variables -->
@@ -668,20 +649,49 @@
 
     <!--
       init-testcases
-        set 'testcases' by scanning all *.y?ml files relative to the current working directory
-      
-      Options:
-        gpunit.testfolder, optionally, scan for files from the 'gpunit.testfolder'
-           when ...
-           ... not set,         relative to ${user.dir}
-           ... a relative path, relative to ${user.dir}/${gpunit.testfolder}
-           ... absolute,        relative to ${gpunit.testfolder}
+        set 'testcases' by scanning all *.y?ml files relative to a base directory ('gpunit.dirprefix').
+      The basedir is determined from these rules:
+          ${gpunit.dirprefix}              if 'gpunit.dirprefix' is set
+          ${gpunit.testfolder}             if 'gpunit.testfolder' is set to an absolute path
+          ${user.dir}/${gpunit.testfolder} if 'gpunit.testfolder' is set to a relative path
+          ${user.dir}/${gpunit.dirname}    if ${user.dir}/${gpunit.dirname} exists
+          ${user.dir}                      by default if no other rules apply
     -->
-    <target name="init-testcases">
+    <target name="init-testcases" depends="init-gpunit.dirprefix">
         <property name="gpunit.testfolder" value="" />
-        <set-testcases pname="testcases" dirprefix="${user.dir}" dir="${gpunit.testfolder}" debug="${dry-run}" /> 
+        <property name="gpunit.includes" value="**/*" />
+        <!-- fail if property not set -->
+        <fail unless="gpunit.dirprefix" message="Missing required property 'gpunit.dirprefix'" />
+        <set-testcases pname="gpunit.testcases" dirprefix="${gpunit.dirprefix}" dir="${gpunit.testfolder}" includes="${gpunit.includes}" debug="${dry-run}" /> 
     </target>
 
+    <!--
+      Set the 'gpunit.dirprefix' to match the rules described in the 'init-testcases' target. 
+      Options:
+        gpunit.dirname, set an alternate name for the test directory
+          Default: 'gpunit'
+    -->
+    <target name="init-gpunit.dirprefix">
+        <!-- set default 'gpunit.dirname' -->
+        <property name="gpunit.dirname" value="gpunit" />
+        
+        <!-- special-case: if gpunit folder exists -->
+        <condition property="gpunit.dirprefix" value="${user.dir}/${gpunit.dirname}" else="${user.dir}">
+            <and>
+                <!-- ${user.dir}/gpunit exists -->
+                <available file="${user.dir}/${gpunit.dirname}" type="dir" />
+                <!-- and gpunit.testfolder is not set -->
+                <or>
+                    <not><isset property="gpunit.testfolder" /></not>
+                    <equals arg1="" arg2="${gpunit.testfolder}" />
+                </or>
+            </and>
+        </condition>
+        <echo-value if:true="${debug}" pname="gpunit.testfolder" />
+        <echo-value if:true="${debug}" pname="gpunit.dirname" />
+        <echo-value if:true="${debug}" pname="gpunit.dirprefix" />
+    </target>
+ 
     <!-- set 'testcases' by pulling from the Git repository before scanning for matching yaml files -->
     <target name="init-testcases-git">
         <property name="module.tests.dir" location="${user.dir}/ModuleTests" />
@@ -698,27 +708,6 @@
 
         <!-- 'pname', 'dirprefix', 'dir', 'includes', 'debug' -->
         <set-testcases pname="testcases" dirprefix="${module.tests.dir}" dir="${repo.name}/gpunit" />
-    </target>
-
-    <!--
-      init-gpunit.testfolder
-          Demo target which sets the 'gpunit.testfolder'. This is not in use.
-      set 'gpunit.testcases' from the 'gpunit.testfolder' property
-      when 'gpunit.testfolder' is not set, use 
-        '${user.dir}/gpunit' if it exists
-        '${user.dir}' otherwise
-    -->
-    <target name="init-gpunit.testfolder"> 
-        <condition property="gpunit.testfolder" value="${user.dir}/gpunit" else="${user.dir}">
-          <available file="${user.dir}/gpunit" type="dir" />
-        </condition>
-        <path id="testfolder.path">
-            <pathelement location="${gpunit.testfolder}" />
-        </path>
-        <property name="gpunit.testcases" refid="testfolder.path" /> 
-        
-        <!-- fail if property not set -->
-        <fail unless="gpunit.testcases" message="Missing required property 'gpunit.testcases'" />
     </target>
 
     <!--
@@ -1285,7 +1274,7 @@
         <run-tests unless:true="${dry-run}" testcases="${module.testcases}" />
     </target>
 
-    <target name="gpunit" depends="package, connection-test, init-gpunit.testcases"
+    <target name="gpunit" depends="package, connection-test, init-testcases"
         description="Run all declared GpUnit 'gpunit.testcases', (default=tests/**/*.y*ml)"
     >
         <!-- fail if property not set -->
