@@ -227,6 +227,9 @@
         <echo-value pname="gp.user" />
         <!-- echo-value pname="gp.password" / -->
         <echo-value pname="gpunit.client" />
+        <echo></echo>
+        <echo-value pname="git.parentdir" />
+        <echo></echo>
         <echo-value pname="gpunit.testfolder" />
         <echo-value pname="gpunit.includes" />
         <echo-value pname="gpunit.regexsuffix" />
@@ -702,11 +705,23 @@
         <echo-value if:true="${debug}" pname="gpunit.dirprefix" />
     </target>
  
+    <!-- set the 'git.parentdir' property, to use as input to the git-shallow-clone macro -->
+    <property name="git.parentdir.default" location="${gpunit.dir}/target/ModuleTests" />
+    <target name="init-git.parentdir">
+        <!-- replacing 'module.tests.dir' with 'git.parentdir' -->
+        <echo if:set="module.tests.dir">WARNING: 'module.tests.dir' is deprecated, use 'git.parentdir' instead</echo>
+        <property name="git.parentdir" value="${module.tests.dir}" if:set="module.tests.dir" />
+        <property name="git.parentdir" location="${gpunit.dir}/target/ModuleTests" />        
+        <property name="git.parentdir" location="${user.dir}/ModuleTests" />
+
+        <property name="debug" value="true" />
+        <echo-value if:true="${debug}" pname="module.tests.dir" />
+        <echo-value if:true="${debug}" pname="git.parentdir" />
+        <mkdir dir="${git.parentdir}" />
+    </target>
+
     <!-- set 'testcases' by pulling from the Git repository before scanning for matching yaml files -->
-    <target name="init-testcases-git">
-        <property name="module.tests.dir" location="${user.dir}/ModuleTests" />
-        <mkdir dir="${module.tests.dir}" />
-        
+    <target name="init-testcases-git" depends="init-git.parentdir">
         <property name="git.organization.url" value="https://github.com/genepattern" />
         <property name="repo.name" value="txt2odf" />
         <property name="git.repo" value="${git.organization.url}/${repo.name}.git" />
@@ -714,10 +729,8 @@
         <property name="git.commit" value="origin/${git.branch}" />
         <property name="dry-run" value="false" />
 
-        <git-shallow-clone parentdir="${module.tests.dir}" repo="${git.repo}" branch="${git.branch}" commit="${git.commit}" />
-
-        <!-- 'pname', 'dirprefix', 'dir', 'includes', 'debug' -->
-        <set-testcases pname="gpunit.testcases" dirprefix="${module.tests.dir}" dir="${repo.name}/gpunit" />
+        <git-shallow-clone repo="${git.repo}" branch="${git.branch}" commit="${git.commit}"  parentdir="${git.parentdir}" />
+        <set-testcases pname="gpunit.testcases" dirprefix="${git.parentdir}" dir="${repo.name}/gpunit" />
     </target>
 
     <!--
@@ -818,47 +831,43 @@
         </sequential>
     </macrodef>
 
-    <target name="debug-git-clone"
+    <target name="debug-git-clone" depends="init-git.parentdir"
         description="debug the 'git-shallow-clone' macro"
     >
-        <property name="module.tests.dir" location="${user.dir}/ModuleTests" />
-        <mkdir dir="${module.tests.dir}" />
-        
         <property name="git.organization.url" value="https://github.com/genepattern" />
         <property name="repo.name" value="txt2odf" />
         <property name="git.repo" value="${git.organization.url}/${repo.name}.git" />
         <property name="git.branch" value="master" />
         <property name="git.commit" value="origin/${git.branch}" />
 
-        <git-shallow-clone parentdir="${module.tests.dir}" repo="${git.repo}" branch="${git.branch}" commit="${git.commit}" />
+        <git-shallow-clone repo="${git.repo}" branch="${git.branch}" commit="${git.commit}" parentdir="${git.parentdir}" />
     </target>
 
     <!-- 
       clone module test case
     -->
-    <property name="module.tests.dir" value="ModuleTests" />
     <property name="module.git.branch.name" value="master" />
     <macrodef name="clone-repo">
         <attribute name="git.organization.url" default="https://github.com/genepattern" />
         <attribute name="git.repo.name" />
         <attribute name="git.branch.name" default="${module.git.branch.name}" />
         <attribute name="git.origin.name" default="origin" />
+        <attribute name="git.parentdir" default="${git.parentdir}" />
+        
         <sequential> 
-            <git-shallow-clone parentdir="${module.tests.dir}" 
+            <git-shallow-clone parentdir="@{git.parentdir}" 
                 repo="@{git.organization.url}/@{git.repo.name}.git" 
                 branch="@{git.branch.name}" 
                 commit="@{git.origin.name}/@{git.branch.name}" />
         </sequential>
     </macrodef>
 
-    <target name="debug-clone-repo"
+    <target name="debug-clone-repo" depends="init-git.parentdir"
         description="debug the 'clone-repo' macro"
     >
-        <property name="module.tests.dir" location="${user.dir}/ModuleTests" />
-        <mkdir dir="${module.tests.dir}" />
         <property name="repo.name" value="txt2odf" />
         <property name="git.origin.name" value="origin" />
-        <clone-repo git.repo.name="${repo.name}" git.origin.name="${git.origin.name}" />
+        <clone-repo git.repo.name="${repo.name}" git.origin.name="${git.origin.name}" git.parentdir="${git.parentdir}" />
     </target>
 
     <!--                                                                                                                                                               

@@ -13,9 +13,8 @@
     <!-- Test repository management -->
     <!--******************************************************************************************-->
 
-    <target name="clone-test-repos" unless="noclonetests" depends="package"
+    <target name="clone-test-repos" unless="noclonetests" depends="package, init-git.parentdir"
         description="make a local copy (git clone) of each GenePattern module GitHub repository" >
-        <mkdir dir="${module.tests.dir}" />
         <clone-repo git.repo.name="ABSOLUTE" />
         <clone-repo git.repo.name="ComparativeMarkerSelection" />
         <clone-repo git.repo.name="CoxRegression" /> <!-- tests '<R>' substitution -->
@@ -35,18 +34,17 @@
       special-case for Broad hosted (non-containerized) servers:
       pin to older version of the gpunit tests, HierarchicalClustering v6
     -->
-    <target name="clone-hcl_v6" unless="noclonetests" depends="package"
+    <target name="clone-hcl_v6" unless="noclonetests" depends="package, init-git.parentdir"
         description="pull HierarchicalClustering v6 tests from GitHub" 
      >
-        <mkdir dir="${module.tests.dir}" />
-        <!-- Example git command: git reset \-\-hard tags/v6 -->
+        <!-- Example git command: --><?code git reset --hard tags/v6 ?>
         <clone-repo git.repo.name="HierarchicalClustering" git.origin.name="tags" git.branch.name="v6" />
     </target>
 
-    <target name="clean-test-repos"
-        description="clean the module.tests.dir, which is a clone of all the module GitHub repositories"
+    <target name="clean-test-repos" depends="init-git.parentdir"
+        description="clean the git.parentdir, which is a clone of all the module GitHub repositories"
     >
-        <delete dir="${module.tests.dir}" />
+        <delete dir="${git.parentdir}" />
     </target>
 
     <!--******************************************************************************************-->
@@ -56,7 +54,7 @@
     <!--******************************************************************************************-->
 
     <!-- ABSOLUTE -->
-    <fileset id="weeklyABSOLUTETests" dir="${gpunit.dir}/${module.tests.dir}/ABSOLUTE/gpunit" >
+    <fileset id="weeklyABSOLUTETests" dir="${git.parentdir.default}/ABSOLUTE/gpunit" >
         <!--ABSOLUTE v2 -->
         <include name="v2/Weekly/*.yml" />
     </fileset>
@@ -71,7 +69,7 @@
     </target>
 
     <!-- ComparativeMarkerSelection -->
-    <fileset id="ShortComparativeMarkerSelectionTests" dir="${gpunit.dir}/${module.tests.dir}/ComparativeMarkerSelection/gpunit" >
+    <fileset id="ShortComparativeMarkerSelectionTests" dir="${git.parentdir.default}/ComparativeMarkerSelection/gpunit" >
         <!-- ComparativeMarkerSelection v10 -->
         <include name="DefaultSmokeTest_Protocol/*.yml" />
     </fileset>
@@ -86,14 +84,14 @@
     </target>
 
     <!-- CoxRegression -->
-    <fileset id="ShortCoxRegressionTests" dir="${gpunit.dir}/${module.tests.dir}/CoxRegression/gpunit" >
+    <fileset id="ShortCoxRegressionTests" dir="${git.parentdir.default}/CoxRegression/gpunit" >
         <!-- include all top-level tests. Hint: to add a long running test put it in a sub folder -->
         <include name="*.yml" />
         <include name="*.yaml" />
     </fileset>
 
     <!-- ExpressionFileCreator -->
-    <fileset id="ShortExpressionFileCreatorTests" dir="${gpunit.dir}/${module.tests.dir}/ExpressionFileCreator/gpunit" >
+    <fileset id="ShortExpressionFileCreatorTests" dir="${git.parentdir.default}/ExpressionFileCreator/gpunit" >
         <!-- ExpressionFileCreator - v13 smoke tests only -->
         <include name="smoke*.yml" />
     </fileset>
@@ -108,7 +106,7 @@
     </target>
 
     <!-- HeatMapImage -->
-    <fileset id="ShortHeatMapImageTests" dir="${gpunit.dir}/${module.tests.dir}/HeatMapImage/gpunit" >
+    <fileset id="ShortHeatMapImageTests" dir="${git.parentdir.default}/HeatMapImage/gpunit" >
         <!-- HeatMapImage - latest -->
         <include name="smoke*.yaml" />
     </fileset>
@@ -123,7 +121,7 @@
     </target>
 
     <!-- HeatMapViewer -->
-    <fileset id="ShortHeatMapViewerTests" dir="${gpunit.dir}/${module.tests.dir}/HeatMapViewer/gpunit" >
+    <fileset id="ShortHeatMapViewerTests" dir="${git.parentdir.default}/HeatMapViewer/gpunit" >
         <include name="smoke*.yml" />
     </fileset>
 
@@ -137,7 +135,7 @@
     </target>
 
     <!-- HierarchicalClustering -->
-    <fileset id="ShortHierarchicalClusteringTests" dir="${gpunit.dir}/${module.tests.dir}/HierarchicalClustering/gpunit" >
+    <fileset id="ShortHierarchicalClusteringTests" dir="${git.parentdir.default}/HierarchicalClustering/gpunit" >
         <!-- HierarchicalClustering - v6 -->
         <include name="*.yml" />
     </fileset>
@@ -152,7 +150,7 @@
     </target>
 
     <!-- MergeHTSeqCounts -->
-    <fileset id="nightlyMergeHTSeqCountsTests" dir="${gpunit.dir}/${module.tests.dir}/MergeHTSeqCounts/gpunit" >
+    <fileset id="nightlyMergeHTSeqCountsTests" dir="${git.parentdir.default}/MergeHTSeqCounts/gpunit" >
         <include name="nightly*.yml" />
     </fileset>
 
@@ -166,7 +164,7 @@
     </target>
 
 <!-- PreprocessDataset -->
-    <fileset id="nightlyPreprocessDatasetTests" dir="${gpunit.dir}/${module.tests.dir}/PreprocessDataset/gpunit" >
+    <fileset id="nightlyPreprocessDatasetTests" dir="${git.parentdir.default}/PreprocessDataset/gpunit" >
         <include name="smoke*.yml" />
     </fileset>
 
@@ -180,7 +178,7 @@
     </target>
 
 <!-- PreprocessReadCounts -->
-    <fileset id="nightlyPreprocessReadCountsTests" dir="${gpunit.dir}/${module.tests.dir}/PreprocessReadCounts/gpunit" >
+    <fileset id="nightlyPreprocessReadCountsTests" dir="${git.parentdir.default}/PreprocessReadCounts/gpunit" >
         <include name="smoke*.yml" />
     </fileset>
 
@@ -194,7 +192,7 @@
     </target>
 
     <!-- TopHat -->
-    <fileset id="ShortTopHatTests" dir="${gpunit.dir}/${module.tests.dir}/TopHat/gpunit/" >
+    <fileset id="ShortTopHatTests" dir="${git.parentdir.default}/TopHat/gpunit/" >
         <!-- TopHat v9 -->
         <!-- this test has the smallest output folder -->
         <include name="smoke_valid_pset_13_test.yml" />
@@ -210,7 +208,7 @@
     </target>
 
     <!-- txt2odf -->
-    <fileset id="Shorttxt2odfTests" dir="${gpunit.dir}/${module.tests.dir}/txt2odf/gpunit" >
+    <fileset id="Shorttxt2odfTests" dir="${git.parentdir.default}/txt2odf/gpunit" >
         <!-- txt2odf - v2 -->
         <include name="*.yml" />
     </fileset>
@@ -225,7 +223,7 @@
     </target>
 
     <!-- download_from_gdc -->
-    <fileset id="Shortdownload_from_gdcTests" dir="${gpunit.dir}/${module.tests.dir}/download_from_gdc/gpunit" >
+    <fileset id="Shortdownload_from_gdcTests" dir="${git.parentdir.default}/download_from_gdc/gpunit" >
         <!-- download_from_gdc - v2.x -->
         <include name="*.yml" />
     </fileset>
