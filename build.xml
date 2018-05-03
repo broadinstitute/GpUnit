@@ -179,7 +179,7 @@
         <property name="gpunit.gpData" value="ftp://ftp.broadinstitute.org/pub/genepattern/datasets" />
     </target>
 
-    <target name="help" depends="init"
+    <target name="help" depends="init, init-testcases"
         description="init and print gpunit.properties"
     >
         <!-- retrieve environment variables -->
@@ -228,6 +228,9 @@
         <!-- echo-value pname="gp.password" / -->
         <echo-value pname="gpunit.client" />
         <echo-value pname="gpunit.testfolder" />
+        <echo-value pname="gpunit.includes" />
+        <echo-value pname="gpunit.regexsuffix" />
+        <echo-value pname="gpunit.dirprefix" />
         <echo-value pname="gpunit.testcases" />
     </target>
 
@@ -451,7 +454,7 @@
            Default: ''
         includes, the include filter
            Default: '**/*', match all
-        regex.suffix, by default only *.yaml, *.yml, and 'gp_execution_log.txt' files are included
+        regexsuffix, by default only *.yaml, *.yml, and 'gp_execution_log.txt' files are included
            Default: '.*(\.ya?ml|gp_execution_log\.txt)'
       Usage:
         <set-testcases pname="my.testcases" ... />
@@ -467,7 +470,7 @@
         <attribute name="pname" default="testcases" />
         <attribute name="dirprefix" default="${user.dir}" />
         <attribute name="dir" default="" /> <!-- the testcases.dir -->
-        <attribute name="regex.suffix" default=".*(\.ya?ml|gp_execution_log\.txt)" />
+        <attribute name="regexsuffix" default=".*(\.ya?ml|gp_execution_log\.txt)" />
         <attribute name="includes" default="**/*" />
         <attribute name="debug" default="" />
 
@@ -477,7 +480,7 @@
             <!-- special-case, it's not a directory -->
             <fileset id="@{pname}.fileset" file="${@{pname}.dir.fq_path}" if:set="@{pname}.dir.is_file" />
             <fileset id="@{pname}.fileset" dir="${@{pname}.dir.fq_path}" includes="@{includes}" if:set="@{pname}.dir.is_dir">
-                <filename regex="@{regex.suffix}" />
+                <filename regex="@{regexsuffix}" />
             </fileset>
             <!-- set '@{pname}.fileset', for input to the gpunit macro -->
             <pathconvert property="@{pname}" refid="@{pname}.fileset" />
@@ -516,7 +519,7 @@
 
     <target name="echo-testcases"
         description="for debugging, echo the 'testcases' property">
-        <echo-testcases />
+        <echo-testcases pname="gpunit.testcases" />
     </target>
 
     <!--
@@ -526,13 +529,13 @@
         description="debug 'set-testcases' macro (interactive)"
     >
         <property name="debug" value="true" />
-        <input message="set 'pname'"        addProperty="pname"         defaultValue="testcases" />
-        <input message="set 'dirprefix'"    addProperty="dirprefix"     defaultValue="${gpunit.dir}" />
-        <input message="set 'dir'"          addProperty="dir"           defaultValue="tests/protocols" />
-        <input message="set 'includes'"     addProperty="includes"      defaultValue="**/*" />
-        <input message="set 'regex.suffix'" addProperty="regex.suffix"  defaultValue=".*(\.ya?ml|gp_execution_log\.txt)" />
+        <input message="set 'pname'"       addProperty="pname"         defaultValue="testcases" />
+        <input message="set 'dirprefix'"   addProperty="dirprefix"     defaultValue="${gpunit.dir}" />
+        <input message="set 'dir'"         addProperty="dir"           defaultValue="tests/protocols" />
+        <input message="set 'includes'"    addProperty="includes"      defaultValue="**/*" />
+        <input message="set 'regexsuffix'" addProperty="regexsuffix"   defaultValue=".*(\.ya?ml|gp_execution_log\.txt)" />
         
-        <set-testcases pname="${pname}" dirprefix="${dirprefix}" dir="${dir}" includes="${includes}" regex.suffix="${regex.suffix}" />
+        <set-testcases pname="${pname}" dirprefix="${dirprefix}" dir="${dir}" includes="${includes}" regexsuffix="${regexsuffix}" />
         <echo-testcases pname="${pname}" />
     </target>
 
@@ -658,11 +661,18 @@
           ${user.dir}                      by default if no other rules apply
     -->
     <target name="init-testcases" depends="init-gpunit.dirprefix">
-        <property name="gpunit.testfolder" value="" />
-        <property name="gpunit.includes" value="**/*" />
+        <property name="gpunit.testfolder"   value="" />
+        <property name="gpunit.includes"     value="**/*" />
+        <property name="gpunit.regexsuffix" value=".*(\.ya?ml|gp_execution_log\.txt)" />
         <!-- fail if property not set -->
         <fail unless="gpunit.dirprefix" message="Missing required property 'gpunit.dirprefix'" />
-        <set-testcases pname="gpunit.testcases" dirprefix="${gpunit.dirprefix}" dir="${gpunit.testfolder}" includes="${gpunit.includes}" debug="${dry-run}" /> 
+        <set-testcases pname="gpunit.testcases" 
+            dirprefix="${gpunit.dirprefix}" 
+            dir="${gpunit.testfolder}" 
+            includes="${gpunit.includes}" 
+            regexsuffix="${gpunit.regexsuffix}" 
+            debug="${dry-run}" 
+        />
     </target>
 
     <!--
@@ -707,7 +717,7 @@
         <git-shallow-clone parentdir="${module.tests.dir}" repo="${git.repo}" branch="${git.branch}" commit="${git.commit}" />
 
         <!-- 'pname', 'dirprefix', 'dir', 'includes', 'debug' -->
-        <set-testcases pname="testcases" dirprefix="${module.tests.dir}" dir="${repo.name}/gpunit" />
+        <set-testcases pname="gpunit.testcases" dirprefix="${module.tests.dir}" dir="${repo.name}/gpunit" />
     </target>
 
     <!--
@@ -1221,66 +1231,47 @@
         <run-tests testcases="${saved-jobs.dir}" />
     </target>
 
-    <!-- set 'testcases' by scanning all *.y?ml files relative to the current working directory -->
-    <target name="gpunit-default" depends="package"
-        description="Run 'testcases' by scanning all .yml files in the current directory tree"
+    <!--
+      Usage:
+        # run all tests in the 'gpunit' sub directory
+        gpunit -Dtestcases=`pwd`/gpunit gpunit
+        # run a single test in a sub directory
+        gpunit -Dtestcases=`pwd`/gpunit/basic_test.yml gpunit
+        # run a single test in the current working directory
+        gpunit -Dtestcases=`pwd`/basic_test.yml gpunit
+    -->
+    <target name="gpunit-testcases" depends="package, connection-test"
+        description="Run gpunit on all declared 'testcases'"
     > 
-        <!--
-        <condition property="gpunit.testfolder" value="${user.dir}/gpunit" else="${user.dir}">
-          <available file="${user.dir}/gpunit" type="dir" />
-        </condition>
-        -->
-
-        <!-- 'pname', 'dirprefix', 'dir', 'includes', 'debug' -->
-        <!-- set-testcases pname="module.testcases" dirprefix="${module.tests.dir}" dir="${repo.name}/${test.dir}" includes="**/*" / -->
-        <set-testcases pname="module.testcases" /> 
-        <fail unless="module.testcases" message="Missing required property 'module.testcases'" />
-        <run-tests unless:true="${dry-run}" testcases="${module.testcases}" />
+        <fail unless="gpunit.testcases" message="Missing required property 'testcases'" />
+        <run-tests unless:true="${dry-run}" testcases="${gpunit.testcases}" />
     </target>
 
     <!--
-      gpunit-single-module
-          step 1: Clone the module git repository to get the gpunit tests at a particular 'git.commit'
-          step 2: Run tests on all matching yaml files in the ${repo.name}/gpunit folder          
+      gpunit-git
+          run the gpunit tests checked out from a module git repository
+    
       Usage:
-          ant [dry-run] -Drepo.name=repo-name [-Dgit.branch=branch-name] [-Dgit.commit=commit-ref]
+          gpunit [dry-run] -Drepo.name=repo-name [-Dgit.branch=branch-name] [-Dgit.commit=commit-ref]
       Examples:
           # run latest from 'master' branch
-          ant -Drepo.name=txt2odf
+          gpunit -Drepo.name=txt2odf gpunit-git
           # run latest from 'develop' branch
-          ant -Drepo.name=txt2odf -Dgit.branch=develop
+          gpunit -Drepo.name=txt2odf -Dgit.branch=develop gpunit-git
           # run a tagged version of the tests
-          ant -Drepo.name=txt2odf -Dgit.commit=tags/v2
+          gpunit -Drepo.name=txt2odf -Dgit.commit=tags/v2 gpunit-git
     -->
-    <target name="gpunit-single-module" depends="package"
+    <target name="gpunit-git" depends="init-testcases-git, gpunit-testcases"
+        description="Run 'testcases' checked out from the git 'repo.name', 'git.branch', and 'git.commit'"
+    /> 
+
+    <target name="gpunit-single-module" depends="gpunit-git"
         description="Run all gpunit tests in the ${repo.name}/gpunit folder"
-    >  
-        <property name="module.tests.dir" location="${user.dir}/ModuleTests" />
-        <mkdir dir="${module.tests.dir}" />
-        
-        <property name="git.organization.url" value="https://github.com/genepattern" />
-        <property name="repo.name" value="txt2odf" />
-        <property name="git.repo" value="${git.organization.url}/${repo.name}.git" />
-        <property name="git.branch" value="master" />
-        <property name="git.commit" value="origin/${git.branch}" />
-        <property name="dry-run" value="false" />
+    />
 
-        <git-shallow-clone parentdir="${module.tests.dir}" repo="${git.repo}" branch="${git.branch}" commit="${git.commit}" />
-
-        <!-- 'pname', 'dirprefix', 'dir', 'includes', 'debug' -->
-        <set-testcases pname="module.testcases" dirprefix="${module.tests.dir}" dir="${repo.name}/gpunit" />
-        
-        <fail unless="module.testcases" message="Missing required property 'module.testcases'" />
-        <run-tests unless:true="${dry-run}" testcases="${module.testcases}" />
-    </target>
-
-    <target name="gpunit" depends="package, connection-test, init-testcases"
+    <target name="gpunit" depends="init-testcases, gpunit-testcases"
         description="Run all declared GpUnit 'gpunit.testcases', (default=tests/**/*.y*ml)"
-    >
-        <!-- fail if property not set -->
-        <fail unless="gpunit.testcases" message="Missing required property 'gpunit.testcases'" />
-        <run-tests testcases="${gpunit.testcases}" />
-    </target>
+    />
 
     <target name="compile-automatrix" depends="package"
         description="compile automatrix, see ./automatrix/build.xml"
