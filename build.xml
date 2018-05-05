@@ -730,7 +730,17 @@
         <property name="dry-run" value="false" />
 
         <git-shallow-clone repo="${git.repo}" branch="${git.branch}" commit="${git.commit}"  parentdir="${git.parentdir}" />
-        <set-testcases pname="gpunit.testcases" dirprefix="${git.parentdir}" dir="${repo.name}/gpunit" />
+        <!-- set-testcases pname="gpunit.testcases" dirprefix="${git.parentdir}" dir="${repo.name}/gpunit" / -->
+        <property name="gpunit.testfolder"   value="" />
+        <property name="gpunit.includes"     value="**/*" />
+        <property name="gpunit.regexsuffix" value=".*(\.ya?ml|gp_execution_log\.txt)" />
+        <!-- fail if property not set -->
+        <!-- fail unless="gpunit.dirprefix" message="Missing required property 'gpunit.dirprefix'" / -->
+        <set-testcases pname="gpunit.testcases" dirprefix="${git.parentdir}" dir="${repo.name}/gpunit" 
+            includes="${gpunit.includes}" 
+            regexsuffix="${gpunit.regexsuffix}" 
+            debug="${dry-run}" 
+        /> 
     </target>
 
     <!--
