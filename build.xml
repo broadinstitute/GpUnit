@@ -654,96 +654,6 @@
     </target>
 
     <!--
-      init-testcases
-        set 'testcases' by scanning all *.y?ml files relative to a base directory ('gpunit.dirprefix').
-      The basedir is determined from these rules:
-          ${gpunit.dirprefix}              if 'gpunit.dirprefix' is set
-          ${gpunit.testfolder}             if 'gpunit.testfolder' is set to an absolute path
-          ${user.dir}/${gpunit.testfolder} if 'gpunit.testfolder' is set to a relative path
-          ${user.dir}/${gpunit.dirname}    if ${user.dir}/${gpunit.dirname} exists
-          ${user.dir}                      by default if no other rules apply
-    -->
-    <target name="init-testcases" depends="init-gpunit.dirprefix">
-        <property name="gpunit.testfolder"   value="" />
-        <property name="gpunit.includes"     value="**/*" />
-        <property name="gpunit.regexsuffix" value=".*(\.ya?ml|gp_execution_log\.txt)" />
-        <!-- fail if property not set -->
-        <fail unless="gpunit.dirprefix" message="Missing required property 'gpunit.dirprefix'" />
-        <set-testcases pname="gpunit.testcases" 
-            dirprefix="${gpunit.dirprefix}" 
-            dir="${gpunit.testfolder}" 
-            includes="${gpunit.includes}" 
-            regexsuffix="${gpunit.regexsuffix}" 
-            debug="${dry-run}" 
-        />
-    </target>
-
-    <!--
-      Set the 'gpunit.dirprefix' to match the rules described in the 'init-testcases' target. 
-      Options:
-        gpunit.dirname, set an alternate name for the test directory
-          Default: 'gpunit'
-    -->
-    <target name="init-gpunit.dirprefix">
-        <!-- set default 'gpunit.dirname' -->
-        <property name="gpunit.dirname" value="gpunit" />
-        
-        <!-- special-case: if gpunit folder exists -->
-        <condition property="gpunit.dirprefix" value="${user.dir}/${gpunit.dirname}" else="${user.dir}">
-            <and>
-                <!-- ${user.dir}/gpunit exists -->
-                <available file="${user.dir}/${gpunit.dirname}" type="dir" />
-                <!-- and gpunit.testfolder is not set -->
-                <or>
-                    <not><isset property="gpunit.testfolder" /></not>
-                    <equals arg1="" arg2="${gpunit.testfolder}" />
-                </or>
-            </and>
-        </condition>
-        <echo-value if:true="${debug}" pname="gpunit.testfolder" />
-        <echo-value if:true="${debug}" pname="gpunit.dirname" />
-        <echo-value if:true="${debug}" pname="gpunit.dirprefix" />
-    </target>
- 
-    <!-- set the 'git.parentdir' property, to use as input to the git-shallow-clone macro -->
-    <property name="git.parentdir.default" location="${gpunit.dir}/target/ModuleTests" />
-    <target name="init-git.parentdir">
-        <!-- replacing 'module.tests.dir' with 'git.parentdir' -->
-        <echo if:set="module.tests.dir">WARNING: 'module.tests.dir' is deprecated, use 'git.parentdir' instead</echo>
-        <property name="git.parentdir" value="${module.tests.dir}" if:set="module.tests.dir" />
-        <property name="git.parentdir" location="${gpunit.dir}/target/ModuleTests" />        
-        <property name="git.parentdir" location="${user.dir}/ModuleTests" />
-
-        <property name="debug" value="true" />
-        <echo-value if:true="${debug}" pname="module.tests.dir" />
-        <echo-value if:true="${debug}" pname="git.parentdir" />
-        <mkdir dir="${git.parentdir}" />
-    </target>
-
-    <!-- set 'testcases' by pulling from the Git repository before scanning for matching yaml files -->
-    <target name="init-testcases-git" depends="init-git.parentdir">
-        <property name="git.organization.url" value="https://github.com/genepattern" />
-        <property name="repo.name" value="txt2odf" />
-        <property name="git.repo" value="${git.organization.url}/${repo.name}.git" />
-        <property name="git.branch" value="master" />
-        <property name="git.commit" value="origin/${git.branch}" />
-        <property name="dry-run" value="false" />
-
-        <git-shallow-clone repo="${git.repo}" branch="${git.branch}" commit="${git.commit}"  parentdir="${git.parentdir}" />
-        <!-- set-testcases pname="gpunit.testcases" dirprefix="${git.parentdir}" dir="${repo.name}/gpunit" / -->
-        <property name="gpunit.testfolder"   value="" />
-        <property name="gpunit.includes"     value="**/*" />
-        <property name="gpunit.regexsuffix" value=".*(\.ya?ml|gp_execution_log\.txt)" />
-        <!-- fail if property not set -->
-        <!-- fail unless="gpunit.dirprefix" message="Missing required property 'gpunit.dirprefix'" / -->
-        <set-testcases pname="gpunit.testcases" dirprefix="${git.parentdir}" dir="${repo.name}/gpunit" 
-            includes="${gpunit.includes}" 
-            regexsuffix="${gpunit.regexsuffix}" 
-            debug="${dry-run}" 
-        /> 
-    </target>
-
-    <!--
       Macrodef: git-shallow-clone
         Makes a shallow clone of the remote repository into a target directory
       on the local file system.
@@ -878,6 +788,94 @@
         <property name="repo.name" value="txt2odf" />
         <property name="git.origin.name" value="origin" />
         <clone-repo git.repo.name="${repo.name}" git.origin.name="${git.origin.name}" git.parentdir="${git.parentdir}" />
+    </target>
+
+    <!--
+      init-testcases
+        set 'testcases' by scanning all *.y?ml files relative to a base directory ('gpunit.dirprefix').
+      The basedir is determined from these rules:
+          ${gpunit.dirprefix}              if 'gpunit.dirprefix' is set
+          ${gpunit.testfolder}             if 'gpunit.testfolder' is set to an absolute path
+          ${user.dir}/${gpunit.testfolder} if 'gpunit.testfolder' is set to a relative path
+          ${user.dir}/${gpunit.dirname}    if ${user.dir}/${gpunit.dirname} exists
+          ${user.dir}                      by default if no other rules apply
+    -->
+    <target name="init-testcases" depends="init-gpunit.dirprefix">
+        <property name="gpunit.testfolder"   value="" />
+        <property name="gpunit.includes"     value="**/*" />
+        <property name="gpunit.regexsuffix" value=".*(\.ya?ml|gp_execution_log\.txt)" />
+        <!-- fail if property not set -->
+        <fail unless="gpunit.dirprefix" message="Missing required property 'gpunit.dirprefix'" />
+        <set-testcases pname="gpunit.testcases" 
+            dirprefix="${gpunit.dirprefix}" 
+            dir="${gpunit.testfolder}" 
+            includes="${gpunit.includes}" 
+            regexsuffix="${gpunit.regexsuffix}" 
+            debug="${dry-run}" 
+        />
+    </target>
+
+    <!--
+      Set the 'gpunit.dirprefix' to match the rules described in the 'init-testcases' target. 
+      Options:
+        gpunit.dirname, set an alternate name for the test directory
+          Default: 'gpunit'
+    -->
+    <target name="init-gpunit.dirprefix">
+        <!-- set default 'gpunit.dirname' -->
+        <property name="gpunit.dirname" value="gpunit" />
+        
+        <!-- special-case: if gpunit folder exists -->
+        <condition property="gpunit.dirprefix" value="${user.dir}/${gpunit.dirname}" else="${user.dir}">
+            <and>
+                <!-- ${user.dir}/gpunit exists -->
+                <available file="${user.dir}/${gpunit.dirname}" type="dir" />
+                <!-- and gpunit.testfolder is not set -->
+                <or>
+                    <not><isset property="gpunit.testfolder" /></not>
+                    <equals arg1="" arg2="${gpunit.testfolder}" />
+                </or>
+            </and>
+        </condition>
+        <echo-value if:true="${debug}" pname="gpunit.testfolder" />
+        <echo-value if:true="${debug}" pname="gpunit.dirname" />
+        <echo-value if:true="${debug}" pname="gpunit.dirprefix" />
+    </target>
+ 
+    <!-- set the 'git.parentdir' property, to use as input to the git-shallow-clone macro -->
+    <property name="git.parentdir.default" location="${gpunit.dir}/target/ModuleTests" />
+    <target name="init-git.parentdir">
+        <!-- replacing 'module.tests.dir' with 'git.parentdir' -->
+        <echo if:set="module.tests.dir">WARNING: 'module.tests.dir' is deprecated, use 'git.parentdir' instead</echo>
+        <property name="git.parentdir" value="${module.tests.dir}" if:set="module.tests.dir" />
+        <property name="git.parentdir" location="${gpunit.dir}/target/ModuleTests" />        
+        <property name="git.parentdir" location="${user.dir}/ModuleTests" />
+
+        <property name="debug" value="true" />
+        <echo-value if:true="${debug}" pname="module.tests.dir" />
+        <echo-value if:true="${debug}" pname="git.parentdir" />
+        <mkdir dir="${git.parentdir}" />
+    </target>
+
+    <!-- set 'testcases' by pulling from the Git repository before scanning for matching yaml files -->
+    <target name="init-testcases-git" depends="init-git.parentdir">
+        <property name="git.organization.url" value="https://github.com/genepattern" />
+        <property name="repo.name" value="txt2odf" />
+        <property name="git.repo" value="${git.organization.url}/${repo.name}.git" />
+        <property name="git.branch" value="master" />
+        <property name="git.commit" value="origin/${git.branch}" />
+        <property name="dry-run" value="false" />
+
+        <git-shallow-clone repo="${git.repo}" branch="${git.branch}" commit="${git.commit}"  parentdir="${git.parentdir}" />
+
+        <property name="gpunit.testfolder"   value="" />
+        <property name="gpunit.includes"     value="**/*" />
+        <property name="gpunit.regexsuffix" value=".*(\.ya?ml|gp_execution_log\.txt)" />
+        <set-testcases pname="gpunit.testcases" dirprefix="${git.parentdir}" dir="${repo.name}/gpunit" 
+            includes="${gpunit.includes}" 
+            regexsuffix="${gpunit.regexsuffix}" 
+            debug="${dry-run}" 
+        /> 
     </target>
 
     <!--                                                                                                                                                               
