@@ -759,8 +759,11 @@
         <property name="git.repo" value="${git.organization.url}/${repo.name}.git" />
         <property name="git.branch" value="master" />
         <property name="git.commit" value="origin/${git.branch}" />
+        <property name="git.failonerror" value="true" />
 
-        <git-shallow-clone repo="${git.repo}" branch="${git.branch}" commit="${git.commit}" parentdir="${git.parentdir}" />
+        <git-shallow-clone repo="${git.repo}" branch="${git.branch}" commit="${git.commit}" parentdir="${git.parentdir}" 
+            failonerror="${git.failonerror}" 
+        />
     </target>
 
     <!-- 
@@ -773,12 +776,14 @@
         <attribute name="git.branch.name" default="${module.git.branch.name}" />
         <attribute name="git.origin.name" default="origin" />
         <attribute name="git.parentdir" default="${git.parentdir}" />
-        
+        <attribute name="git.failonerror" default="false" />
+
         <sequential> 
             <git-shallow-clone parentdir="@{git.parentdir}" 
                 repo="@{git.organization.url}/@{git.repo.name}.git" 
                 branch="@{git.branch.name}" 
-                commit="@{git.origin.name}/@{git.branch.name}" />
+                commit="@{git.origin.name}/@{git.branch.name}"
+                failonerror="@{git.failonerror}" />
         </sequential>
     </macrodef>
 
@@ -864,9 +869,10 @@
         <property name="git.repo" value="${git.organization.url}/${repo.name}.git" />
         <property name="git.branch" value="master" />
         <property name="git.commit" value="origin/${git.branch}" />
+        <property name="git.failonerror" value="false" />
         <property name="dry-run" value="false" />
 
-        <git-shallow-clone repo="${git.repo}" branch="${git.branch}" commit="${git.commit}"  parentdir="${git.parentdir}" />
+        <git-shallow-clone repo="${git.repo}" branch="${git.branch}" commit="${git.commit}"  parentdir="${git.parentdir}" failonerror="${git.failonerror}" />
 
         <property name="gpunit.testfolder"   value="" />
         <property name="gpunit.includes"     value="**/*" />
