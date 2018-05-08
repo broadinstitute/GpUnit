@@ -949,9 +949,11 @@
 
     <!-- location for maven dependencies copied into this project -->
     <property name="dependency.dir" location="${gpunit.dir}/target/dependency" />
-    <target name="download-deps" depends="init"
+    <target name="download-deps" depends="init" unless="download-deps.called"
         description="install maven dependencies"
     >
+        <!-- workaround for java.lang.ClassCastException: org.codehaus.plexus.DefaultPlexusContainer -->
+        <property name="download-deps.called" value="true" />
         <!--  
           Maven Ant Tasks > Dependencies 
             See: http://maven.apache.org/ant-tasks/reference.html#dependencies
