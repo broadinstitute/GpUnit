@@ -236,6 +236,12 @@
         <echo-value pname="gpunit.dirprefix" />
         <echo-value pname="gpunit.testcases" />
     </target>
+    
+    <target name="debug-java.version">
+        <echo-value pname="java.version" />
+        <echo-value pname="ant.java.version" />
+        <echo-value pname="env.JAVA_HOME" />
+    </target>
 
     <!-- 
       Macrodef: has-value, to check for empty values
@@ -656,9 +662,22 @@
     <!--
       Macrodef: git-shallow-clone
         Makes a shallow clone of the remote repository into a target directory
-      on the local file system.
-      Target directory: 
-        {parentdir}/{repo-name}
+        on the local file system.
+      Template:
+        cd {parentdir}
+        git clone [-b [{branch}] {urlPrefix}/{name}
+        
+      GitHub Url Template:
+        @see: https://help.github.com/articles/changing-a-remote-s-url/
+          origin  https://github.com/USERNAME/REPOSITORY.git (fetch)
+          origin  git@github.com:USERNAME/REPOSITORY.git (fetch)
+        urlPrefix := {github.url}/{github.organization}
+        name := {github.repository}
+        repository := {github.url}/{github.username}/{github.repository}
+        repository := {urlPrefix}/{name}
+        
+      Uses the '-C <path>' option,
+        Run as if git was started in <path> instead of the current working directory. 
       Command Template: --><?code
         # (initialize) shallow clone into a new target directory
           cd {parentdir}
@@ -670,6 +689,7 @@
           git -C txt2odf clean -dfx
     ?><!--
     Example:  --><?code 
+          cd target/ModuleTests
           git clone --no-single-branch --depth 1 --branch master https://github.com/genepattern/txt2odf txt2odf
           git -C txt2odf fetch --depth 1
           git -C txt2odf reset --hard origin/develop
@@ -766,10 +786,11 @@
         />
     </target>
 
-    <!-- 
-      clone module test case
-    -->
     <property name="module.git.branch.name" value="master" />
+    <!--
+      Macrodef: clone-repo
+        clone the remote repository into a target directory on the local file system.
+    -->
     <macrodef name="clone-repo">
         <attribute name="git.organization.url" default="https://github.com/genepattern" />
         <attribute name="git.repo.name" />
@@ -847,7 +868,16 @@
         <echo-value if:true="${debug}" pname="gpunit.dirprefix" />
     </target>
  
-    <!-- set the 'git.parentdir' property, to use as input to the git-shallow-clone macro -->
+    <!-- set the 'git.parentdir' property,
+       the local path from which to run the git clone command
+     to use as input to the git-shallow-clone macro 
+      Template:
+        cd {git.parentdir}
+        git clone {repository}
+      Example:
+        cd ./target/ModuleTests
+        git clone git@github.com:genepattern/txt2odf.git
+    -->
     <property name="git.parentdir.default" location="${gpunit.dir}/target/ModuleTests" />
     <target name="init-git.parentdir">
         <!-- replacing 'module.tests.dir' with 'git.parentdir' -->
