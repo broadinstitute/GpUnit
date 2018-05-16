@@ -28,6 +28,7 @@
         <clone-repo git.repo.name="TopHat" />
         <clone-repo git.repo.name="txt2odf" />
         <clone-repo git.repo.name="TCGAImporter" /> <!-- Starting to add chronologically rather than alphabetically -->
+        <clone-repo git.repo.name="ABasicModule" />
     </target>
 
     <!--
@@ -236,6 +237,22 @@
             shutdownTimeout="${gpunit.shutdownTimeout}"
         />
     </target>
+    
+    <!-- ABasicModule -->
+    <fileset id="ShortABasicModuleTests" dir="${gpunit.dir}/${module.tests.dir}/ABasicModule/gpunit" >
+        <!-- ABasicModule - v2.x -->
+        <include name="*.yml" />
+    </fileset>
+
+    <target name="short-ABasicModule-tests" depends="package, clone-test-repos">
+        <pathconvert property="short.nightly.tests" refid="ShortABasicModuleTests" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
 
     <!--******************************************************************************************-->
     <!-- Aggregate test suite target definitions. Set "noclonetests" to skip the git phase. -->
@@ -259,6 +276,8 @@
             <resources refid="nightlyMergeHTSeqCountsTests" />
             <resources refid="nightlyPreprocessDatasetTests" />
             <resources refid="nightlyPreprocessReadCountsTests" />
+            <!-- Should we have download_from_gdc here? -->
+            <resources refid="ShortABasicModuleTests" />
         </union>
         <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
     	<!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
