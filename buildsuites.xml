@@ -27,7 +27,7 @@
         <clone-repo git.repo.name="PreprocessReadCounts" />
         <clone-repo git.repo.name="TopHat" />
         <clone-repo git.repo.name="txt2odf" />
-        <clone-repo git.repo.name="download_from_gdc" /> <!-- Starting to add chronologically rather than alphabetically -->
+        <clone-repo git.repo.name="TCGAImporter" /> <!-- Starting to add chronologically rather than alphabetically -->
     </target>
 
     <!--
@@ -222,14 +222,14 @@
         />
     </target>
 
-    <!-- download_from_gdc -->
-    <fileset id="Shortdownload_from_gdcTests" dir="${git.parentdir.default}/download_from_gdc/gpunit" >
-        <!-- download_from_gdc - v2.x -->
+    <!-- download_from_gdc renamed to TCGAImporter-->
+    <fileset id="ShortTCGAImporterTests" dir="${git.parentdir.default}/TCGAImporter/gpunit" >
+        <!-- TCGAImporter - v2.x -->
         <include name="*.yml" />
     </fileset>
 
-    <target name="short-download_from_gdc-tests" depends="package, clone-test-repos">
-        <pathconvert property="short.nightly.tests" refid="Shortdownload_from_gdcTests" />
+    <target name="short-TCGAImporter-tests" depends="package, clone-test-repos">
+        <pathconvert property="short.nightly.tests" refid="ShortTCGAImporterTests" />
         <run-tests
             testcases="${short.nightly.tests}"
             numThreads="5"
