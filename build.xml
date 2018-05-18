@@ -268,60 +268,19 @@
     -->
     <macrodef name="echo-value">
         <attribute name="pname" />
-        <attribute name="suffix" default=".has_value" />
         <attribute name="pad" default="" />
         <sequential>
-            <has-value pname="@{pname}" suffix="@{suffix}" />
-            <echo-value-succint pname="@{pname}" pad="@{pad}" />
-            <echo-value-verbose if:set="verbose" pname="@{pname}" suffix="@{suffix}" pad="@{pad}" />
-        </sequential>
-    </macrodef>
-
-    <!-- don't call this directly, it is called from the 'echo-value' macrodef -->
-    <macrodef name="echo-value-succint">
-        <attribute name="pname" />
-        <attribute name="pad" default="" />
-        <sequential>
-            <echo if:set="@{pname}">@{pad}@{pname}='${@{pname}}'</echo>
+            <echo if:set="@{pname}">@{pad}@{pname}=${@{pname}}</echo>
             <echo unless:set="@{pname}">@{pad}@{pname}=(not set)</echo>
         </sequential>
     </macrodef>
-
-    <!-- 
-      don't call this directly, it is called from the 'echo-value' macrodef
-      when in verbose mode
-      -->
-    <macrodef name="echo-value-verbose">
-        <attribute name="pname" />
-        <attribute name="suffix" default=".has_value" />
-        <attribute name="pad" default="    " />
-        <sequential>
-            <echo       if:set="@{pname}"    >@{pad}if:set="@{pname}"</echo>
-            <echo   unless:set="@{pname}"    >@{pad}unless:set="@{pname}"</echo>
-            <echo      if:true="${@{pname}}" >@{pad}if:true="$${@{pname}}"</echo>
-            <echo  unless:true="${@{pname}}" >@{pad}unless:true="$${@{pname}}"</echo>
-            <echo     if:blank="${@{pname}}" >@{pad}if:blank="$${@{pname}}"</echo>
-            <echo unless:blank="${@{pname}}" >@{pad}unless:blank="$${@{pname}}"</echo>
-            <!-- for illustration only, incorrect use of if:blank ... 
-            <echo     if:blank="@{pname}"    >@{pad}if:blank="@{pname}"</echo>
-            <echo unless:blank="@{pname}"    >@{pad}unless:blank="@{pname}"</echo>
-            -->
-            
-            <!-- recommended, if:set="gpunit.trustStore.has_value" ... -->
-            <echo>@{pad}is '@{pname}' set ...</echo>
-            <!-- echo>@{pad}recommended ...</echo -->
-            <echo       if:set="@{pname}@{suffix}"    >@{pad}    (recommended) if:set="@{pname}@{suffix}"</echo>
-            <echo   unless:set="@{pname}@{suffix}"    >@{pad}    (recommended) unless:set="@{pname}@{suffix}"</echo>
-            <!-- alternative 1, if:true"${gpunit.trustStore.has_value}" ... -->
-            <!-- echo>@{pad}alternative 1 ...</echo -->
-            <echo      if:true="${@{pname}@{suffix}}" >@{pad}          (alt 1) if:true="$${@{pname}@{suffix}}"</echo>
-            <echo  unless:true="${@{pname}@{suffix}}" >@{pad}          (alt 1) unless:true="$${@{pname}@{suffix}}"</echo>
-            <!-- alternative 2, does not require 'has-value' macrodef
-                 if:set="gpunit.trustStore" unless:blank="${gpunit.trustStore}" ...  -->
-            <!-- echo>@{pad}alternative 2 ... </echo -->
-            <echo if:set="@{pname}" unless:blank="${@{pname}}">@{pad}          (alt 2) if:set="@{pname}" unless:blank="$${@{pname}}"</echo>
-        </sequential>
-    </macrodef>
+    
+    <target name="debug-echo-value"
+        description="debug 'echo-value' macrodef"
+    >
+        <input message="set -Dpname=user.dir" addProperty="pname" defaultValue="user.dir" />
+        <echo-value pname="${pname}" />
+    </target>
 
     <!-- 
       Macrodef: fq-path, to convert a relative to an absolute file path;
