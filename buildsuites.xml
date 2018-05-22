@@ -113,6 +113,7 @@
         <clone-repo git.repo.name="HeatMapImage" />
         <clone-repo git.repo.name="HeatMapViewer" />
         <clone-repo git.repo.name="HierarchicalClustering" />
+        <clone-repo git.repo.name="HierarchicalClusteringImage" />
         <clone-repo git.repo.name="MergeHTSeqCounts" />
         <clone-repo git.repo.name="PreprocessDataset" />
         <clone-repo git.repo.name="PreprocessReadCounts" />
@@ -241,6 +242,21 @@
         />
     </target>
 
+    <!-- HierarchicalClusteringImage -->
+    <fileset id="ShortHierarchicalClusteringImageTests" dir="${gpunit.dir}/${module.tests.dir}/HierarchicalClusteringImage/gpunit" >
+        <!-- HierarchicalClusteringImage - v4 -->
+        <include name="*.yaml" />
+    </fileset>
+
+    <target name="short-hcimg-tests" depends="package, clone-test-repos">
+        <pathconvert property="short.nightly.tests" refid="ShortHierarchicalClusteringImageTests" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
     <!-- MergeHTSeqCounts -->
     <fileset id="nightlyMergeHTSeqCountsTests" dir="${gpunit.dir}/${module.tests.dir}/MergeHTSeqCounts/gpunit" >
         <include name="nightly*.yml" />
@@ -346,6 +362,7 @@
             <resources refid="ShortHeatMapImageTests" />
             <resources refid="ShortHeatMapViewerTests" />
             <resources refid="ShortHierarchicalClusteringTests" />
+            <resources refid="ShortHierarchicalClusteringImageTests" />
             <resources refid="ShortTopHatTests" />
             <resources refid="Shorttxt2odfTests" />
             <resources refid="nightlyMergeHTSeqCountsTests" />
@@ -373,6 +390,7 @@
             <resources refid="ShortHeatMapImageTests" />
             <resources refid="ShortHeatMapViewerTests" />
             <resources refid="ShortHierarchicalClusteringTests" />
+            <resources refid="ShortHierarchicalClusteringImageTests" />
             <resources refid="ShortTopHatTests" />
             <resources refid="nightlyMergeHTSeqCountsTests" />
             <resources refid="nightlyPreprocessDatasetTests" />
@@ -400,6 +418,7 @@
             <resources refid="ShortHeatMapViewerTests" />
             <!-- pinned to v6 by 'clone-hcl_v6' dependency -->
             <resources refid="ShortHierarchicalClusteringTests" />
+            <resources refid="ShortHierarchicalClusteringImageTests" />
             <resources refid="ShortTopHatTests" />
             <resources refid="nightlyMergeHTSeqCountsTests" />
             <resources refid="nightlyPreprocessDatasetTests" />
