@@ -836,8 +836,7 @@
       Example:
         cd ./target/ModuleTests
         git clone git@github.com:genepattern/txt2odf.git
-    -->
-    <property name="git.parentdir.default" location="${gpunit.dir}/target/ModuleTests" />
+    --> 
     <target name="init-git.parentdir">
         <!-- replacing 'module.tests.dir' with 'git.parentdir' -->
         <echo if:set="module.tests.dir">WARNING: 'module.tests.dir' is deprecated, use 'git.parentdir' instead</echo>
@@ -851,8 +850,10 @@
         <mkdir dir="${git.parentdir}" />
     </target>
 
-    <!-- set 'testcases' by pulling from the Git repository before scanning for matching yaml files -->
-    <target name="init-testcases-git" depends="init-git.parentdir">
+    <!-- pull testcases from the Git repository -->
+    <target name="pull-testcases" depends="init-git.parentdir"
+        description="pull testcases from the 'git.repo', default=https://github.com/genepattern/'repo.name'"
+    >
         <property name="git.organization.url" value="https://github.com/genepattern" />
         <property name="repo.name" value="txt2odf" />
         <property name="git.repo" value="${git.organization.url}/${repo.name}.git" />
@@ -862,7 +863,10 @@
         <property name="dry-run" value="false" />
 
         <git-shallow-clone repo="${git.repo}" branch="${git.branch}" commit="${git.commit}"  parentdir="${git.parentdir}" failonerror="${git.failonerror}" />
+    </target>
 
+    <!-- calls 'pull-testcases' then sets the 'gpunit.testcases' property -->
+    <target name="init-testcases-git" depends="pull-testcases">
         <property name="gpunit.testfolder"   value="" />
         <property name="gpunit.includes"     value="**/*" />
         <property name="gpunit.regexsuffix" value=".*(\.ya?ml|gp_execution_log\.txt)" />
