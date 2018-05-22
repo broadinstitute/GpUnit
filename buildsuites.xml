@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <?xml version="1.0" encoding="UTF-8"?>
 <project>
 
@@ -42,10 +43,411 @@
         <clone-repo git.repo.name="HeatMapImage" />
         <clone-repo git.repo.name="HeatMapViewer" />
         <clone-repo git.repo.name="HierarchicalClustering" />
+        <clone-repo git.repo.name="HierarchicalClusteringImage" />
         <clone-repo git.repo.name="MergeHTSeqCounts" />
         <clone-repo git.repo.name="PreprocessDataset" />
         <clone-repo git.repo.name="PreprocessReadCounts" />
         <clone-repo git.repo.name="TopHat" />
+    </target>
+
+    <target name="clean-test-repos"
+        description="clean the module.tests.dir, which is a clone of all the module GitHub repositories"
+    >
+        <delete dir="${module.tests.dir}" />
+    </target>
+
+    <!--******************************************************************************************-->
+    <!-- Test targets for individual modules. Each module has a fileset definition and a run target -->
+    <!-- Ideally short running tests will be in the top level gpunit dir, and other will be in a sub dir -->
+    <!-- see below for examples -->
+    <!--******************************************************************************************-->
+
+    <!-- ABSOLUTE -->
+    <fileset id="weeklyABSOLUTETests" dir="${gpunit.dir}/${module.tests.dir}/ABSOLUTE/gpunit" >
+        <!--ABSOLUTE v2 -->
+        <include name="v2/Weekly/*.yml" />
+    </fileset>
+
+    <target name="weekly-absolute-tests" depends="package, clone-test-repos" >
+        <pathconvert property="weekly.tests" refid="weeklyABSOLUTETests" />
+        <run-tests
+                testcases="${weekly.tests}"
+                numThreads="5"
+                shutdownTimeout="${gpunit.shutdownTimeout}"
+                />
+    </target>
+
+    <!-- ComparativeMarkerSelection -->
+    <fileset id="ShortComparativeMarkerSelectionTests" dir="${gpunit.dir}/${module.tests.dir}/ComparativeMarkerSelection/gpunit" >
+        <!-- ComparativeMarkerSelection v10 -->
+        <include name="DefaultSmokeTest_Protocol/*.yml" />
+    </fileset>
+
+    <target name="short-cms-tests" depends="package, clone-test-repos">
+        <pathconvert property="short.nightly.tests" refid="ShortComparativeMarkerSelectionTests" />
+        <run-tests
+                testcases="${short.nightly.tests}"
+                numThreads="5"
+                shutdownTimeout="${gpunit.shutdownTimeout}"
+                />
+    </target>
+
+    <!-- CoxRegression -->
+    <fileset id="ShortCoxRegressionTests" dir="${gpunit.dir}/${module.tests.dir}/CoxRegression/gpunit" >
+        <!-- include all top-level tests. Hint: to add a long running test put it in a sub folder -->
+        <include name="*.yml" />
+        <include name="*.yaml" />
+    </fileset>
+
+    <!-- ExpressionFileCreator -->
+    <fileset id="ShortExpressionFileCreatorTests" dir="${gpunit.dir}/${module.tests.dir}/ExpressionFileCreator/gpunit" >
+        <!-- ExpressionFileCreator - v13 smoke tests only -->
+        <include name="smoke*.yml" />
+    </fileset>
+
+    <target name="short-efc-tests" depends="package, clone-test-repos">
+        <pathconvert property="short.nightly.tests" refid="ShortExpressionFileCreatorTests" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
+    <!-- HeatMapImage -->
+    <fileset id="ShortHeatMapImageTests" dir="${gpunit.dir}/${module.tests.dir}/HeatMapImage/gpunit" >
+        <!-- HeatMapImage - latest -->
+        <include name="smoke*.yaml" />
+    </fileset>
+
+    <target name="short-hmi-tests" depends="package, clone-test-repos">
+        <pathconvert property="short.nightly.tests" refid="ShortHeatMapImageTests" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
+    <!-- HeatMapViewer -->
+    <fileset id="ShortHeatMapViewerTests" dir="${gpunit.dir}/${module.tests.dir}/HeatMapViewer/gpunit" >
+        <include name="smoke*.yml" />
+    </fileset>
+
+    <target name="short-hmv-tests" depends="package, clone-test-repos">
+        <pathconvert property="short.nightly.tests" refid="ShortHeatMapViewerTests" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
+    <!-- HierarchicalClustering -->
+    <fileset id="ShortHierarchicalClusteringTests" dir="${gpunit.dir}/${module.tests.dir}/HierarchicalClustering/gpunit" >
+        <!-- HierarchicalClustering - v6 -->
+        <include name="*.yml" />
+    </fileset>
+
+    <target name="short-hc-tests" depends="package, clone-test-repos">
+        <pathconvert property="short.nightly.tests" refid="ShortHierarchicalClusteringTests" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
+     <!-- HierarchicalClusteringImage -->
+    <fileset id="HierarchicalClusteringImageTests" dir="${gpunit.dir}/${module.tests.dir}/HierarchicalClusteringImage/gpunit" >
+        <!-- HierarchicalClusteringImage - v4 -->
+        <include name="*.yaml" />
+    </fileset>
+
+    <target name="short-hcimg-tests" depends="package, clone-test-repos">
+        <pathconvert property="short.nightly.tests" refid="HierarchicalClusteringImageTests" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
+    <!-- MergeHTSeqCounts -->
+    <fileset id="nightlyMergeHTSeqCountsTests" dir="${gpunit.dir}/${module.tests.dir}/MergeHTSeqCounts/gpunit" >
+        <include name="nightly*.yml" />
+    </fileset>
+
+    <target name="nightly-mergehtseq-tests" depends="package, clone-test-repos" >
+        <pathconvert property="nightly.tests" refid="nightlyMergeHTSeqCountsTests" />
+        <run-tests
+                testcases="${short.nightly.tests}"
+                numThreads="5"
+                shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
+<!-- PreprocessDataset -->
+    <fileset id="nightlyPreprocessDatasetTests" dir="${gpunit.dir}/${module.tests.dir}/PreprocessDataset/gpunit" >
+        <include name="smoke*.yml" />
+    </fileset>
+
+    <target name="nightly-preprocessdataset-tests" depends="package, clone-test-repos" >
+        <pathconvert property="nightly.tests" refid="nightlyPreprocessDatasetTests" />
+        <run-tests
+                testcases="${short.nightly.tests}"
+                numThreads="5"
+                shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
+<!-- PreprocessReadCounts -->
+    <fileset id="nightlyPreprocessReadCountsTests" dir="${gpunit.dir}/${module.tests.dir}/PreprocessReadCounts/gpunit" >
+        <include name="smoke*.yml" />
+    </fileset>
+
+    <target name="nightly-preprocessreadcounts-tests" depends="package, clone-test-repos" >
+        <pathconvert property="nightly.tests" refid="nightlyPreprocessReadCountsTests" />
+        <run-tests
+                testcases="${short.nightly.tests}"
+                numThreads="5"
+                shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
+    <!-- TopHat -->
+    <fileset id="ShortTopHatTests" dir="${gpunit.dir}/${module.tests.dir}/TopHat/gpunit/" >
+        <!-- TopHat v9 -->
+        <!-- this test has the smallest output folder -->
+        <include name="smoke_valid_pset_13_test.yml" />
+    </fileset>
+
+    <target name="short-tophat-tests" depends="package, clone-test-repos">
+        <pathconvert property=":" refid="ShortTopHatTests" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
+    <!--******************************************************************************************-->
+    <!-- Aggregate test suite target definitions. Set "noclonetests" to skip the git phase. -->
+    <!--******************************************************************************************-->
+
+    <!-- Regression tests in Jenkins -->
+    <target name="short-nightly-tests" depends="package, clone-test-repos">
+        <union id="short.tests">
+            <resources refid="ShortComparativeMarkerSelectionTests" />
+            <resources refid="ShortCoxRegressionTests" />
+            <resources refid="ShortExpressionFileCreatorTests" />
+            <resources refid="ShortHeatMapImageTests" />
+            <resources refid="ShortHeatMapViewerTests" />
+            <resources refid="ShortHierarchicalClusteringTests" />
+            <resources refid="HierarchicalClusteringImageTests" />
+            <resources refid="ShortTopHatTests" />
+            <resources refid="nightlyMergeHTSeqCountsTests" />
+            <resources refid="nightlyPreprocessDatasetTests" />
+            <resources refid="nightlyPreprocessReadCountsTests" />
+        </union>
+        <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
+    	<!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
+    	<!-- with ";" as the separator on both platforms (!). The pathconvert task transforms the fileset -->
+    	<!-- to one with a delimiter that properly matches what the code expects. -->
+        <pathconvert property="short.nightly.tests" refid="short.tests" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
+    <!-- Regression tests in Jenkins for IU -->
+    <target name="short-nightly-tests-iu" depends="package, clone-test-repos">
+        <union id="short.tests.iu">
+            <resources refid="ShortComparativeMarkerSelectionTests" />
+            <!-- resources refid="ShortCoxRegressionTests" / -->
+            <resources refid="ShortExpressionFileCreatorTests" />
+            <resources refid="ShortHeatMapImageTests" />
+            <resources refid="ShortHeatMapViewerTests" />
+            <resources refid="ShortHierarchicalClusteringTests" />
+            <resources refid="HierarchicalClusteringImageTests" />
+            <resources refid="ShortTopHatTests" />
+            <resources refid="nightlyMergeHTSeqCountsTests" />
+            <resources refid="nightlyPreprocessDatasetTests" />
+            <resources refid="nightlyPreprocessReadCountsTests" />
+        </union>
+        <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
+        <!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
+        <!-- with ";" as the separator on both platforms (!). The pathconvert task transforms the fileset -->
+        <!-- to one with a delimiter that properly matches what the code expects. -->
+        <pathconvert property="short.nightly.tests" refid="short.tests.iu" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
+    <target name="nightly-smoke-tests" depends="package, clone-test-repos">
+        <union id="smoke.tests">
+            <!--resources refid="ShortABSOLUTETests" /-->
+        </union>
+        <pathconvert property="nightly.smoke.tests" refid="smoke.tests" />
+        <run-tests
+                testcases="${nightly.smoke.tests}"
+                numThreads="5"
+                shutdownTimeout="${gpunit.shutdownTimeout}"
+                />
+    </target>
+
+    <target name="weekly-tests" depends="package, clone-test-repos">
+        <union id="weekly.tests">
+            <resources refid="weeklyABSOLUTETests" />
+        </union>
+        <pathconvert property="weekly.tests" refid="weekly.tests" />
+        <run-tests
+                testcases="${weekly.tests}"
+                numThreads="5"
+                shutdownTimeout="${gpunit.shutdownTimeout}"
+                />
+    </target>
+
+</project>
+=======
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+    xmlns:if="ant:if"
+    xmlns:unless="ant:unless"
+    xmlns:artifact="antlib:org.apache.maven.artifact.ant"
+>
+
+    <!--******************************************************************************************-->
+    <!-- Module test targets -->
+    <!--******************************************************************************************-->
+
+    <!--******************************************************************************************-->
+    <!-- Test repository management -->
+    <!--******************************************************************************************-->
+
+    <property name="module.tests.dir" value="ModuleTests" />
+    <property name="module.git.branch.name" value="master" />
+
+    <!-- We need to do a clone first for the case where we're starting clean (this will fail if -->
+    <!-- the local repo already exists), and then pull to update for the case where the local -->
+    <!-- module repositories already exist -->
+    <macrodef name="clone-repo-orig">
+        <attribute name="git.organization.url" default="https://github.com/genepattern" />
+        <attribute name="git.repo.name" />
+        <attribute name="git.branch.name" default="${module.git.branch.name}" />
+        <sequential>
+            <echo>Pulling tests from remote repository: '@{git.organization.url}/@{git.repo.name}' (branch '@{git.branch.name}')</echo>
+            <exec executable="git" dir="${module.tests.dir}" failonerror="false" >
+                <arg line="clone" />
+                <arg line="-b @{git.branch.name}" />
+                <arg line="@{git.organization.url}/@{git.repo.name}.git"/>
+                <arg line="@{git.repo.name}" />
+            </exec>
+            <exec executable="git" dir="${module.tests.dir}/@{git.repo.name}">
+                <arg line="pull" />
+            </exec>
+        </sequential>
+    </macrodef>
+
+    <!-- 
+      Alterernative 'clone-repo' macro with shallow clone
+      Example git commands:
+      # if necessary, clone the repo
+          git clone \-\-no-single-branch \-\-depth 1 -b master https://github.com/genepattern/txt2odf txt2odf
+      # update
+          git -C txt2odf fetch \-\-depth 1
+          git -C txt2odf reset \-\-hard origin/develop
+          git -C txt2odf clean -dfx
+    -->
+    <macrodef name="clone-repo">
+        <attribute name="git.organization.url" default="https://github.com/genepattern" />
+        <attribute name="git.repo.name" />
+        <attribute name="git.branch.name" default="${module.git.branch.name}" />
+        <attribute name="git.origin.name" default="origin" />
+        <sequential>
+            <local name="local.repo.dir" />
+            <local name="local.repo.dir.exists" />
+            <property name="local.repo.dir" location="${module.tests.dir}/@{git.repo.name}" />
+            <available property="local.repo.dir.exists" file="${local.repo.dir}" />
+
+            <!-- clone if the local repo does not exist -->
+            <echo unless:set="local.repo.dir.exists">Cloning git repository: '@{git.organization.url}/@{git.repo.name}' (branch '@{git.branch.name}')</echo>
+            <exec unless:set="local.repo.dir.exists"
+                executable="git" dir="${module.tests.dir}" failonerror="false" 
+            >
+                <arg line="clone" />
+                <!-- shallow clone -->
+                <arg line="--no-single-branch" /> <arg line="--depth" /> <arg line="1" /> 
+                <arg line="--branch" /> <arg line="@{git.branch.name}" />
+                <arg line="@{git.organization.url}/@{git.repo.name}.git"/>
+                <arg line="@{git.repo.name}" />
+            </exec>
+
+            <echo>git fetch '@{git.organization.url}/@{git.repo.name}' --branch '@{git.origin.name}/@{git.branch.name}')</echo>
+            <exec 
+                executable="git" dir="${module.tests.dir}" failonerror="false">
+                <arg line="-C" /> <arg line="@{git.repo.name}" />
+                <arg line="fetch" />
+                <arg line="--depth" /> <arg line="1" />
+            </exec>
+            <echo>git reset --hard '@{git.origin.name}/@{git.branch.name}'</echo>
+            <exec 
+                executable="git" dir="${module.tests.dir}" failonerror="false">
+                <arg line="-C" /> <arg line="@{git.repo.name}" />
+                <arg line="reset" />
+                <arg line="--hard" /> <arg line="@{git.origin.name}/@{git.branch.name}" />
+            </exec>
+            <echo>git clean -dfx</echo>
+            <exec 
+                executable="git" dir="${module.tests.dir}" failonerror="false">
+                <arg line="-C" /> <arg line="@{git.repo.name}" />
+                <arg line="clean" /> <arg line="-dfx" />
+            </exec>
+        </sequential>
+    </macrodef>
+
+    <target name="debug-clone-repo"
+        description="debug the 'clone-repo' macro"
+    >
+        <property name="module.tests.dir" location="${user.dir}/ModuleTests" />
+        <mkdir dir="${module.tests.dir}" />
+        <property name="repo.name" value="txt2odf" />
+        <clone-repo git.repo.name="${repo.name}" />
+    </target>
+
+    <target name="clone-test-repos" unless="noclonetests" depends="package"
+        description="make a local copy (git clone) of each GenePattern module GitHub repository" >
+        <mkdir dir="${module.tests.dir}" />
+        <clone-repo git.repo.name="ABSOLUTE" />
+        <clone-repo git.repo.name="ComparativeMarkerSelection" />
+        <clone-repo git.repo.name="CoxRegression" /> <!-- tests '<R>' substitution -->
+        <clone-repo git.repo.name="ExpressionFileCreator" />
+        <clone-repo git.repo.name="HeatMapImage" />
+        <clone-repo git.repo.name="HeatMapViewer" />
+        <clone-repo git.repo.name="HierarchicalClustering" />
+        <clone-repo git.repo.name="MergeHTSeqCounts" />
+        <clone-repo git.repo.name="PreprocessDataset" />
+        <clone-repo git.repo.name="PreprocessReadCounts" />
+        <clone-repo git.repo.name="TopHat" />
+        <clone-repo git.repo.name="txt2odf" />
+        <clone-repo git.repo.name="download_from_gdc" /> <!-- Starting to add chronologically rather than alphabetically -->
+    </target>
+
+    <!--
+      special-case for Broad hosted (non-containerized) servers:
+      pin to older version of the gpunit tests, HierarchicalClustering v6
+    -->
+    <target name="clone-hcl_v6" unless="noclonetests" depends="package"
+        description="pull HierarchicalClustering v6 tests from GitHub" 
+     >
+        <mkdir dir="${module.tests.dir}" />
+        <!-- Example git command: git reset \-\-hard tags/v6 -->
+        <clone-repo git.repo.name="HierarchicalClustering" git.origin.name="tags" git.branch.name="v6" />
     </target>
 
     <target name="clean-test-repos"
@@ -214,11 +616,45 @@
         />
     </target>
 
+    <!-- txt2odf -->
+    <fileset id="Shorttxt2odfTests" dir="${gpunit.dir}/${module.tests.dir}/txt2odf/gpunit" >
+        <!-- txt2odf - v2 -->
+        <include name="*.yml" />
+    </fileset>
+
+    <target name="short-txt2odf-tests" depends="package, clone-test-repos">
+        <pathconvert property="short.nightly.tests" refid="Shorttxt2odfTests" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
+    <!-- download_from_gdc -->
+    <fileset id="Shortdownload_from_gdcTests" dir="${gpunit.dir}/${module.tests.dir}/download_from_gdc/gpunit" >
+        <!-- download_from_gdc - v2.x -->
+        <include name="*.yml" />
+    </fileset>
+
+    <target name="short-download_from_gdc-tests" depends="package, clone-test-repos">
+        <pathconvert property="short.nightly.tests" refid="Shortdownload_from_gdcTests" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
     <!--******************************************************************************************-->
     <!-- Aggregate test suite target definitions. Set "noclonetests" to skip the git phase. -->
     <!--******************************************************************************************-->
 
-    <!-- Regression tests in Jenkins -->
+    <!--******************************************************************************************-->
+    <!-- Begin of: Three groups of nighly tests -->
+    <!--******************************************************************************************-->
+
+    <!-- Regression tests in gp-beta-ami -->
     <target name="short-nightly-tests" depends="package, clone-test-repos">
         <union id="short.tests">
             <resources refid="ShortComparativeMarkerSelectionTests" />
@@ -228,6 +664,7 @@
             <resources refid="ShortHeatMapViewerTests" />
             <resources refid="ShortHierarchicalClusteringTests" />
             <resources refid="ShortTopHatTests" />
+            <resources refid="Shorttxt2odfTests" />
             <resources refid="nightlyMergeHTSeqCountsTests" />
             <resources refid="nightlyPreprocessDatasetTests" />
             <resources refid="nightlyPreprocessReadCountsTests" />
@@ -245,7 +682,7 @@
     </target>
 
     <!-- Regression tests in Jenkins for IU -->
-    <target name="short-nightly-tests-iu" depends="package, clone-test-repos">
+    <target name="short-nightly-tests-iu" depends="package, clone-test-repos, clone-hcl_v6">
         <union id="short.tests.iu">
             <resources refid="ShortComparativeMarkerSelectionTests" />
             <!-- resources refid="ShortCoxRegressionTests" / -->
@@ -269,6 +706,38 @@
             shutdownTimeout="${gpunit.shutdownTimeout}"
         />
     </target>
+
+    <!-- Regression tests in broad servers -->
+    <target name="short-nightly-tests-broad" depends="package, clone-test-repos, clone-hcl_v6">
+        <union id="short.tests.broad">
+            <resources refid="ShortComparativeMarkerSelectionTests" />
+            <resources refid="ShortCoxRegressionTests" />
+            <resources refid="ShortExpressionFileCreatorTests" />
+            <resources refid="ShortHeatMapImageTests" />
+            <resources refid="ShortHeatMapViewerTests" />
+            <!-- pinned to v6 by 'clone-hcl_v6' dependency -->
+            <resources refid="ShortHierarchicalClusteringTests" />
+            <resources refid="ShortTopHatTests" />
+            <resources refid="nightlyMergeHTSeqCountsTests" />
+            <resources refid="nightlyPreprocessDatasetTests" />
+            <resources refid="nightlyPreprocessReadCountsTests" />
+        </union>
+        <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
+    	<!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
+    	<!-- with ";" as the separator on both platforms (!). The pathconvert task transforms the fileset -->
+    	<!-- to one with a delimiter that properly matches what the code expects. -->
+        <pathconvert property="short.nightly.tests" refid="short.tests.broad" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
+    <!--******************************************************************************************-->
+    <!-- End of: Three groups of nighly tests -->
+    <!--******************************************************************************************-->
+
 
     <target name="nightly-smoke-tests" depends="package, clone-test-repos">
         <union id="smoke.tests">
@@ -295,3 +764,4 @@
     </target>
 
 </project>
+>>>>>>> 7d5a0489231ed04774117fe9a6b1493849cadd37
