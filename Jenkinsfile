@@ -1,10 +1,5 @@
 pipeline {
-  agent {
-    node {
-      label 'my-env'
-    }
-
-  }
+  agent any
   stages {
     stage('checkout') {
       steps {
