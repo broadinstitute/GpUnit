@@ -8,9 +8,10 @@ pipeline {
     }
     stage('step1') {
       steps {
-        withAnt(installation: 'ant-1.9.5', jdk: 'jdk8') {
-          sh "ant -version"
-        }
+        //withAnt(installation: 'ant-1.9.5', jdk: 'jdk8') {
+        //  sh "ant -version"
+        //}
+        sh 'ant -version'
       }
     }
 }
