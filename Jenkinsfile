@@ -1,5 +1,8 @@
 pipeline {
   agent any
+  tools {
+    ant 'ant-1.9.5'
+  }
   stages {
     stage('checkout') {
       steps {
@@ -8,9 +11,8 @@ pipeline {
     }
     stage('step1') {
       steps {
-        tool 'ant-1.9.5'
-        sh '''ant -version
-ant -p'''
+        sh 'ant -version'
+        sh 'ant -p'
       }
     }
   }
