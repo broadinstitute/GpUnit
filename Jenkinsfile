@@ -4,7 +4,7 @@ pipeline {
     ant 'ant-1.9.5'
   }
   parameters {
-    choice(name: 'Invoke_Parameters', choices:"Yes\nNo", description: "Do you whish to do a dry run to grab parameters?" )
+    choice(name: 'Refresh_Parameters', choices:"Yes\nNo", description: "Do you whish to do a dry run to grab parameters?" )
     choice(name: 'Action', choices:"Show version\nShow targets\nShow help", description: "Select an ant target" )
   }
   stages {
@@ -13,14 +13,15 @@ pipeline {
         git(url: 'git@github.com:broadinstitute/GpUnit.git', branch: 'develop')
       }
     }
-    stage('invoke-parameters') {
+    stage('refresh-parameters') {
       steps {
         script {
-          if ("${params.Invoke_Parameters}" == "Yes") {
+          if ("${params.Refresh_Parameters}" == "Yes") {
             currentBuild.result = 'ABORTED'
             error('DRY RUN COMPLETED. JOB PARAMETERIZED.')
           }
         }
+      }
     }
     stage('show-version') {
       when {
