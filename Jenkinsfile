@@ -25,11 +25,11 @@ pipeline {
     stage('refresh-parameters-and-exit') {
       when {
         expression { params.Abort == "Yes" }
-        steps {
-          script {
-            currentBuild.result = 'ABORTED'
-            error('DRY RUN COMPLETED. JOB PARAMETERIZED.')
-          }
+      }
+      steps {
+        script {
+          currentBuild.result = 'ABORTED'
+          error('DRY RUN COMPLETED. JOB PARAMETERIZED.')
         }
       }
     }
