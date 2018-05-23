@@ -8,6 +8,7 @@ pipeline {
     }
     stage('step1') {
       steps {
+        tool 'ant-1.9.5'
         sh 'ant -p'
       }
     }
