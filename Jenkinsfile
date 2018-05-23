@@ -8,8 +8,11 @@ pipeline {
     }
     stage('step1') {
       steps {
-        sh 'ant -p'
+        sh '''withAnt(installation: \'ant-1.9.5\', jdk: \'jdk8\') {
+ ant -p
+}
+'''
+        }
       }
     }
   }
-}
