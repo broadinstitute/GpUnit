@@ -4,6 +4,95 @@
     xmlns:unless="ant:unless"
     xmlns:artifact="antlib:org.apache.maven.artifact.ant"
 >
+    <target name="init-filesets" depends="init-git.parentdir">
+        <!-- ABSOLUTE -->
+        <fileset id="weeklyABSOLUTETests" dir="${git.parentdir}/ABSOLUTE/gpunit" >
+            <!--ABSOLUTE v2 -->
+            <include name="v2/Weekly/*.yml" />
+        </fileset>
+
+        <!-- ComparativeMarkerSelection -->
+        <fileset id="ShortComparativeMarkerSelectionTests" dir="${git.parentdir}/ComparativeMarkerSelection/gpunit" >
+            <!-- ComparativeMarkerSelection v10 -->
+            <include name="DefaultSmokeTest_Protocol/*.yml" />
+        </fileset>
+
+        <!-- CoxRegression -->
+        <fileset id="ShortCoxRegressionTests" dir="${git.parentdir}/CoxRegression/gpunit" >
+            <!-- include all top-level tests. Hint: to add a long running test put it in a sub folder -->
+            <include name="*.yml" />
+            <include name="*.yaml" />
+        </fileset>
+
+        <!-- ExpressionFileCreator -->
+        <fileset id="ShortExpressionFileCreatorTests" dir="${git.parentdir}/ExpressionFileCreator/gpunit" >
+            <!-- ExpressionFileCreator - v13 smoke tests only -->
+            <include name="smoke*.yml" />
+        </fileset>
+
+        <!-- HeatMapImage -->
+        <fileset id="ShortHeatMapImageTests" dir="${git.parentdir}/HeatMapImage/gpunit" >
+            <!-- HeatMapImage - latest -->
+            <include name="smoke*.yaml" />
+        </fileset>
+
+        <!-- HeatMapViewer -->
+        <fileset id="ShortHeatMapViewerTests" dir="${git.parentdir}/HeatMapViewer/gpunit" >
+            <include name="smoke*.yml" />
+        </fileset>
+
+        <!-- HierarchicalClustering -->
+        <fileset id="ShortHierarchicalClusteringTests" dir="${git.parentdir}/HierarchicalClustering/gpunit" >
+            <!-- HierarchicalClustering - v6 -->
+            <include name="*.yml" />
+        </fileset>
+
+        <!-- HierarchicalClusteringImage -->
+        <fileset id="ShortHierarchicalClusteringImageTests" dir="${git.parentdir}/HierarchicalClusteringImage/gpunit" >
+            <!-- HierarchicalClusteringImage - v4 -->
+            <include name="*.yaml" />
+        </fileset>
+
+        <!-- PreprocessDataset -->
+        <fileset id="nightlyPreprocessDatasetTests" dir="${git.parentdir}/PreprocessDataset/gpunit" >
+            <include name="smoke*.yml" />
+        </fileset>
+
+        <!-- PreprocessReadCounts -->
+        <fileset id="nightlyPreprocessReadCountsTests" dir="${git.parentdir}/PreprocessReadCounts/gpunit" >
+            <include name="smoke*.yml" />
+        </fileset>
+
+        <!-- TopHat -->
+        <fileset id="ShortTopHatTests" dir="${git.parentdir}/TopHat/gpunit/" >
+            <!-- TopHat v9 -->
+            <!-- this test has the smallest output folder -->
+            <include name="smoke_valid_pset_13_test.yml" />
+        </fileset>
+
+        <!-- txt2odf -->
+        <fileset id="Shorttxt2odfTests" dir="${git.parentdir}/txt2odf/gpunit" >
+            <!-- txt2odf - v2 -->
+            <include name="*.yml" />
+        </fileset>
+
+        <!-- ABasicModule -->
+        <fileset id="ShortABasicModuleTests" dir="${git.parentdir}/ABasicModule/gpunit" >
+            <!-- ABasicModule - v2.x -->
+            <include name="*.yml" />
+        </fileset>
+        
+        <!-- MergeHTSeqCounts -->
+        <fileset id="nightlyMergeHTSeqCountsTests" dir="${git.parentdir}/MergeHTSeqCounts/gpunit" >
+            <include name="nightly*.yml" />
+        </fileset>
+
+        <!-- download_from_gdc renamed to TCGAImporter-->
+        <fileset id="ShortTCGAImporterTests" dir="${git.parentdir}/TCGAImporter/gpunit" >
+            <!-- TCGAImporter - v2.x -->
+            <include name="*.yml" />
+        </fileset>
+    </target>
 
     <!--******************************************************************************************-->
     <!-- Module test targets -->
@@ -54,14 +143,10 @@
     <!-- Ideally short running tests will be in the top level gpunit dir, and other will be in a sub dir -->
     <!-- see below for examples -->
     <!--******************************************************************************************-->
+    
+    <target name="init-test-suite" depends="package, clone-test-repos, init-filesets" />
 
-    <!-- ABSOLUTE -->
-    <fileset id="weeklyABSOLUTETests" dir="${git.parentdir.default}/ABSOLUTE/gpunit" >
-        <!--ABSOLUTE v2 -->
-        <include name="v2/Weekly/*.yml" />
-    </fileset>
-
-    <target name="weekly-absolute-tests" depends="package, clone-test-repos" >
+    <target name="weekly-absolute-tests" depends="init-test-suite" >
         <pathconvert property="weekly.tests" refid="weeklyABSOLUTETests" />
         <run-tests
                 testcases="${weekly.tests}"
@@ -70,13 +155,7 @@
                 />
     </target>
 
-    <!-- ComparativeMarkerSelection -->
-    <fileset id="ShortComparativeMarkerSelectionTests" dir="${git.parentdir.default}/ComparativeMarkerSelection/gpunit" >
-        <!-- ComparativeMarkerSelection v10 -->
-        <include name="DefaultSmokeTest_Protocol/*.yml" />
-    </fileset>
-
-    <target name="short-cms-tests" depends="package, clone-test-repos">
+    <target name="short-cms-tests" depends="init-test-suite">
         <pathconvert property="short.nightly.tests" refid="ShortComparativeMarkerSelectionTests" />
         <run-tests
                 testcases="${short.nightly.tests}"
@@ -85,20 +164,7 @@
                 />
     </target>
 
-    <!-- CoxRegression -->
-    <fileset id="ShortCoxRegressionTests" dir="${git.parentdir.default}/CoxRegression/gpunit" >
-        <!-- include all top-level tests. Hint: to add a long running test put it in a sub folder -->
-        <include name="*.yml" />
-        <include name="*.yaml" />
-    </fileset>
-
-    <!-- ExpressionFileCreator -->
-    <fileset id="ShortExpressionFileCreatorTests" dir="${git.parentdir.default}/ExpressionFileCreator/gpunit" >
-        <!-- ExpressionFileCreator - v13 smoke tests only -->
-        <include name="smoke*.yml" />
-    </fileset>
-
-    <target name="short-efc-tests" depends="package, clone-test-repos">
+    <target name="short-efc-tests" depends="init-test-suite">
         <pathconvert property="short.nightly.tests" refid="ShortExpressionFileCreatorTests" />
         <run-tests
             testcases="${short.nightly.tests}"
@@ -107,13 +173,7 @@
         />
     </target>
 
-    <!-- HeatMapImage -->
-    <fileset id="ShortHeatMapImageTests" dir="${git.parentdir.default}/HeatMapImage/gpunit" >
-        <!-- HeatMapImage - latest -->
-        <include name="smoke*.yaml" />
-    </fileset>
-
-    <target name="short-hmi-tests" depends="package, clone-test-repos">
+    <target name="short-hmi-tests" depends="init-test-suite">
         <pathconvert property="short.nightly.tests" refid="ShortHeatMapImageTests" />
         <run-tests
             testcases="${short.nightly.tests}"
@@ -122,12 +182,7 @@
         />
     </target>
 
-    <!-- HeatMapViewer -->
-    <fileset id="ShortHeatMapViewerTests" dir="${git.parentdir.default}/HeatMapViewer/gpunit" >
-        <include name="smoke*.yml" />
-    </fileset>
-
-    <target name="short-hmv-tests" depends="package, clone-test-repos">
+    <target name="short-hmv-tests" depends="init-test-suite">
         <pathconvert property="short.nightly.tests" refid="ShortHeatMapViewerTests" />
         <run-tests
             testcases="${short.nightly.tests}"
@@ -136,13 +191,7 @@
         />
     </target>
 
-    <!-- HierarchicalClustering -->
-    <fileset id="ShortHierarchicalClusteringTests" dir="${git.parentdir.default}/HierarchicalClustering/gpunit" >
-        <!-- HierarchicalClustering - v6 -->
-        <include name="*.yml" />
-    </fileset>
-
-    <target name="short-hc-tests" depends="package, clone-test-repos">
+    <target name="short-hc-tests" depends="init-test-suite">
         <pathconvert property="short.nightly.tests" refid="ShortHierarchicalClusteringTests" />
         <run-tests
             testcases="${short.nightly.tests}"
@@ -151,13 +200,7 @@
         />
     </target>
 
-    <!-- HierarchicalClusteringImage -->
-    <fileset id="ShortHierarchicalClusteringImageTests" dir="${git.parentdir.default}/HierarchicalClusteringImage/gpunit" >
-        <!-- HierarchicalClusteringImage - v4 -->
-        <include name="*.yaml" />
-    </fileset>
-
-    <target name="short-hcimg-tests" depends="package, clone-test-repos">
+    <target name="short-hcimg-tests" depends="init-test-suite">
         <pathconvert property="short.nightly.tests" refid="ShortHierarchicalClusteringImageTests" />
         <run-tests
             testcases="${short.nightly.tests}"
@@ -166,12 +209,7 @@
         />
     </target>
 
-    <!-- MergeHTSeqCounts -->
-    <fileset id="nightlyMergeHTSeqCountsTests" dir="${git.parentdir.default}/MergeHTSeqCounts/gpunit" >
-        <include name="nightly*.yml" />
-    </fileset>
-
-    <target name="nightly-mergehtseq-tests" depends="package, clone-test-repos" >
+    <target name="nightly-mergehtseq-tests" depends="init-test-suite" >
         <pathconvert property="nightly.tests" refid="nightlyMergeHTSeqCountsTests" />
         <run-tests
                 testcases="${short.nightly.tests}"
@@ -180,12 +218,7 @@
         />
     </target>
 
-<!-- PreprocessDataset -->
-    <fileset id="nightlyPreprocessDatasetTests" dir="${git.parentdir.default}/PreprocessDataset/gpunit" >
-        <include name="smoke*.yml" />
-    </fileset>
-
-    <target name="nightly-preprocessdataset-tests" depends="package, clone-test-repos" >
+    <target name="nightly-preprocessdataset-tests" depends="init-test-suite" >
         <pathconvert property="nightly.tests" refid="nightlyPreprocessDatasetTests" />
         <run-tests
                 testcases="${short.nightly.tests}"
@@ -194,12 +227,7 @@
         />
     </target>
 
-<!-- PreprocessReadCounts -->
-    <fileset id="nightlyPreprocessReadCountsTests" dir="${git.parentdir.default}/PreprocessReadCounts/gpunit" >
-        <include name="smoke*.yml" />
-    </fileset>
-
-    <target name="nightly-preprocessreadcounts-tests" depends="package, clone-test-repos" >
+    <target name="nightly-preprocessreadcounts-tests" depends="init-test-suite" >
         <pathconvert property="nightly.tests" refid="nightlyPreprocessReadCountsTests" />
         <run-tests
                 testcases="${short.nightly.tests}"
@@ -208,14 +236,7 @@
         />
     </target>
 
-    <!-- TopHat -->
-    <fileset id="ShortTopHatTests" dir="${git.parentdir.default}/TopHat/gpunit/" >
-        <!-- TopHat v9 -->
-        <!-- this test has the smallest output folder -->
-        <include name="smoke_valid_pset_13_test.yml" />
-    </fileset>
-
-    <target name="short-tophat-tests" depends="package, clone-test-repos">
+    <target name="short-tophat-tests" depends="init-test-suite">
         <pathconvert property=":" refid="ShortTopHatTests" />
         <run-tests
             testcases="${short.nightly.tests}"
@@ -224,13 +245,7 @@
         />
     </target>
 
-    <!-- txt2odf -->
-    <fileset id="Shorttxt2odfTests" dir="${git.parentdir.default}/txt2odf/gpunit" >
-        <!-- txt2odf - v2 -->
-        <include name="*.yml" />
-    </fileset>
-
-    <target name="short-txt2odf-tests" depends="package, clone-test-repos">
+    <target name="short-txt2odf-tests" depends="init-test-suite">
         <pathconvert property="short.nightly.tests" refid="Shorttxt2odfTests" />
         <run-tests
             testcases="${short.nightly.tests}"
@@ -239,13 +254,7 @@
         />
     </target>
 
-    <!-- download_from_gdc renamed to TCGAImporter-->
-    <fileset id="ShortTCGAImporterTests" dir="${git.parentdir.default}/TCGAImporter/gpunit" >
-        <!-- TCGAImporter - v2.x -->
-        <include name="*.yml" />
-    </fileset>
-
-    <target name="short-TCGAImporter-tests" depends="package, clone-test-repos">
+    <target name="short-TCGAImporter-tests" depends="init-test-suite">
         <pathconvert property="short.nightly.tests" refid="ShortTCGAImporterTests" />
         <run-tests
             testcases="${short.nightly.tests}"
@@ -254,13 +263,7 @@
         />
     </target>
     
-    <!-- ABasicModule -->
-    <fileset id="ShortABasicModuleTests" dir="${gpunit.dir}/${module.tests.dir}/ABasicModule/gpunit" >
-        <!-- ABasicModule - v2.x -->
-        <include name="*.yml" />
-    </fileset>
-
-    <target name="short-ABasicModule-tests" depends="package, clone-test-repos">
+    <target name="short-ABasicModule-tests" depends="init-test-suite">
         <pathconvert property="short.nightly.tests" refid="ShortABasicModuleTests" />
         <run-tests
             testcases="${short.nightly.tests}"
@@ -279,7 +282,7 @@
     <!--******************************************************************************************-->
 
     <!-- Regression tests in gp-beta-ami -->
-    <target name="short-nightly-tests" depends="package, clone-test-repos">
+    <target name="short-nightly-tests" depends="init-test-suite">
         <union id="short.tests">
             <resources refid="ShortComparativeMarkerSelectionTests" />
             <resources refid="ShortCoxRegressionTests" />
@@ -309,7 +312,7 @@
     </target>
 
     <!-- Regression tests in Jenkins for IU -->
-    <target name="short-nightly-tests-iu" depends="package, clone-test-repos, clone-hcl_v6">
+    <target name="short-nightly-tests-iu" depends="init-test-suite, clone-hcl_v6">
         <union id="short.tests.iu">
             <resources refid="ShortComparativeMarkerSelectionTests" />
             <!-- resources refid="ShortCoxRegressionTests" / -->
@@ -336,7 +339,7 @@
     </target>
 
     <!-- Regression tests in broad servers -->
-    <target name="short-nightly-tests-broad" depends="package, clone-test-repos, clone-hcl_v6">
+    <target name="short-nightly-tests-broad" depends="init-test-suite, clone-hcl_v6">
         <union id="short.tests.broad">
             <resources refid="ShortComparativeMarkerSelectionTests" />
             <resources refid="ShortCoxRegressionTests" />
@@ -368,7 +371,7 @@
     <!--******************************************************************************************-->
 
 
-    <target name="nightly-smoke-tests" depends="package, clone-test-repos">
+    <target name="nightly-smoke-tests" depends="init-test-suite">
         <union id="smoke.tests">
             <!--resources refid="ShortABSOLUTETests" /-->
         </union>
@@ -380,7 +383,7 @@
                 />
     </target>
 
-    <target name="weekly-tests" depends="package, clone-test-repos">
+    <target name="weekly-tests" depends="init-test-suite">
         <union id="weekly.tests">
             <resources refid="weeklyABSOLUTETests" />
         </union>
