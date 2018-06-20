@@ -129,7 +129,7 @@
         description="pull HierarchicalClustering v6 tests from GitHub" 
      >
         <!-- Example git command: --><?code git reset --hard tags/v6 ?>
-        <clone-repo git.repo.name="HierarchicalClustering" git.origin.name="tags" git.branch.name="v6" />
+        <clone-repo git.repo.name="HierarchicalClustering" git.origin.name="origin" git.branch.name="v6-gpunit-update" />
     </target>
 
     <target name="clean-test-repos" depends="init-git.parentdir"
