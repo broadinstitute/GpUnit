@@ -89,6 +89,11 @@ public class BatchProperties {
      */
     final static public String PROP_SAVE_DOWNLOADS="gpunit.save.downloads";
     /**
+     * set 'gpunit.save.job.json' to true when you want to save the {jobId}.json 
+     * output from the rest api (for debugging)
+     */
+    final static public String PROP_SAVE_JOB_JSON="gpunit.save.job.json";
+    /**
      * When this is set, delete jobs from the server for all successfully completed test cases.
      */
     final static public String PROP_DELETE_JOBS="gpunit.delete.jobs";
@@ -172,6 +177,8 @@ public class BatchProperties {
      */
     private boolean saveDownloads=false;
     
+    private final boolean saveJobJson; //default: false;
+
     /**
      * By default delete the job from the GP server after each successful run of the test.
      */
@@ -220,6 +227,7 @@ public class BatchProperties {
             //this.saveDownloads=Boolean.getBoolean(PROP_SAVE_DOWNLOADS);
             this.saveDownloads=Boolean.valueOf(sysProps.getProperty(PROP_SAVE_DOWNLOADS));
         }
+        this.saveJobJson=Boolean.valueOf(sysProps.getProperty(PROP_SAVE_JOB_JSON, "false"));
         if (sysProps.containsKey(PROP_DELETE_JOBS)) {
             //this.deleteJobs=Boolean.getBoolean(PROP_DELETE_JOBS);
             this.deleteJobs=Boolean.valueOf(sysProps.getProperty(PROP_DELETE_JOBS));
@@ -245,6 +253,7 @@ public class BatchProperties {
         this.uploadDir=in.uploadDir;
         this.serverDir=in.serverDir;
         this.saveDownloads=in.saveDownloads;
+        this.saveJobJson=in.saveJobJson;
         this.deleteJobs=in.deleteJobs;
         this.batchOutputDir=_initBatchOutputDir();
         this.localAssertions=in.localAssertions;
@@ -392,6 +401,10 @@ public class BatchProperties {
         return saveDownloads;
     }
     
+    public boolean getSaveJobJson() {
+        return saveJobJson;
+    }
+
     public boolean getDeleteJobs() {
         return deleteJobs;
     }
@@ -488,6 +501,7 @@ public class BatchProperties {
         private String uploadDir=null;
         private String serverDir=null;
         private boolean saveDownloads=false;
+        private boolean saveJobJson=false;
         private boolean localAssertions = true;
 
         private int testTimeout = -1;
@@ -576,7 +590,13 @@ public class BatchProperties {
             this.saveDownloads=saveDownloads;
             return this;
         }
-        
+
+        // gpunit.save.job.json
+        public Builder saveJobJson(final boolean saveJobJson) {
+            this.saveJobJson=saveJobJson;
+            return this;
+        }
+
         // gpunit.delete.jobs
         public Builder deleteJobs(final boolean deleteJobs) {
             this.deleteJobs=deleteJobs;

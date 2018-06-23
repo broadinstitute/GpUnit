@@ -156,6 +156,7 @@
         <property name="gpunit.client" value="REST" />
         <property name="gpunit.batch.name" value="run_${DSTAMP}_${TSTAMP}" />
         <property name="gpunit.save.downloads" value="false" />
+        <property name="gpunit.save.job.json" value="false" />
         <property name="gpunit.delete.jobs" value="false" />
         <property name="report.run.dir" location="${report.dir}/${gpunit.batch.name}" />
         <mkdir dir="${report.run.dir}" />
@@ -208,6 +209,7 @@
         <echo-value pname="local.dir" />
         <echo-value pname="gpunit.outputdir" />
         <echo-value pname="gpunit.save.downloads" />
+        <echo-value pname="gpunit.save.job.json" />
         <echo-value pname="gpunit.delete.jobs" />
         <echo></echo>
         <echo-value pname="report.dir" />
@@ -1197,6 +1199,7 @@
                 <sysproperty key="gpunit.outputdir" value="${gpunit.outputdir}" />
                 <sysproperty key="gpunit.batch.name" value="${gpunit.batch.name}" />
                 <sysproperty key="gpunit.save.downloads" value="${gpunit.save.downloads}" />
+                <sysproperty key="gpunit.save.job.json" value="${gpunit.save.job.json}" />
                 <sysproperty key="gpunit.delete.jobs" value="${gpunit.delete.jobs}" />
                 
                 <sysproperty key="gpunit.upload.dir" value="${gpunit.upload.dir}" />
