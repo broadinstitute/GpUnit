@@ -21,6 +21,10 @@
 #
 #   # ant gpunit equivalent   
 #   gpunit gpunit
+#
+# Customization:
+#   This script automatically uses the 'gpunit.properties' file
+# from the current working directory, if one exists.
 ############################################################
 
 # bash (unofficial strict mode) shell options
@@ -35,9 +39,13 @@ IFS=$'\n\t'
 # check for 'ant' command
 command -v 'ant' || { ec=$?; echo "ant command not found"; exit $ec; }
 
-_ant_args=();
-if [[ $# -ge 1 ]]; then
-  _ant_args=( "$@" )
+_gpunit_properties_arg=
+
+if [[ -e "gpunit.properties" ]]; then
+  _gpunit_properties_arg="-Dgpunit.properties=`pwd`/gpunit.properties"
 fi
 
-ant -f ${GPUNIT_HOME}/build.xml "${@:-}"
+# for debugging ...
+#   echo "command: ant -f ${GPUNIT_HOME}/build.xml ${_gpunit_properties_arg:-} ${@:-}"
+
+ant -f ${GPUNIT_HOME}/build.xml "${_gpunit_properties_arg:-}" "${@:-}"
