@@ -368,7 +368,7 @@
     <!-- Begin of: Three groups of nighly tests -->
     <!--******************************************************************************************-->
 
-    <!-- Regression tests in gp-beta-ami -->
+    <!-- Regression tests in cloud.gp.org -->
     <target name="short-nightly-tests" depends="package, clone-test-repos">
         <union id="short.tests">
             <resources refid="ShortComparativeMarkerSelectionTests" />
@@ -378,6 +378,7 @@
             <resources refid="ShortHeatMapViewerTests" />
             <resources refid="ShortHierarchicalClusteringTests" />
             <resources refid="ShortHierarchicalClusteringImageTests" />
+            <resources refid="ShortHisat2IndexerTests" />
             <resources refid="ShortTopHatTests" />
             <resources refid="Shorttxt2odfTests" />
             <resources refid="nightlyMergeHTSeqCountsTests" />
