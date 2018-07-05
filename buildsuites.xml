@@ -53,6 +53,12 @@
             <include name="*.yaml" />
         </fileset>
 
+        <!-- Hisat2Indexer -->
+        <fileset id="ShortHisat2IndexerTests" dir="${git.parentdir}/Hisat2Indexer/gpunit" >
+            <!-- Hisat2Indexer - v0.2 -->
+            <include name="Hisat2Indexer_twofile_test.yaml" />
+        </fileset>
+
         <!-- PreprocessDataset -->
         <fileset id="nightlyPreprocessDatasetTests" dir="${git.parentdir}/PreprocessDataset/gpunit" >
             <include name="smoke*.yml" />
@@ -281,7 +287,7 @@
     <!-- Begin of: Three groups of nighly tests -->
     <!--******************************************************************************************-->
 
-    <!-- Regression tests in gp-beta-ami -->
+    <!-- Regression tests in cloud.gp.org -->
     <target name="short-nightly-tests" depends="init-test-suite">
         <union id="short.tests">
             <resources refid="ShortComparativeMarkerSelectionTests" />
@@ -291,6 +297,7 @@
             <resources refid="ShortHeatMapViewerTests" />
             <resources refid="ShortHierarchicalClusteringTests" />
             <resources refid="ShortHierarchicalClusteringImageTests" />
+            <resources refid="ShortHisat2IndexerTests" />
             <resources refid="ShortTopHatTests" />
             <resources refid="Shorttxt2odfTests" />
             <resources refid="nightlyMergeHTSeqCountsTests" />
