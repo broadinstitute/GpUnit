@@ -59,6 +59,12 @@
             <include name="Hisat2Indexer_twofile_test.yaml" />
         </fileset>
 
+        <!-- Hisat2Aligner -->
+        <fileset id="ShortHisat2AlignerTests" dir="${git.parentdir}/Hisat2Aligner/gpunit" >
+            <!-- Hisat2Aligner - v0.2 -->
+            <include name="Hisat2Aligner_single_zip_phred64_test.yaml" />
+        </fileset>
+
         <!-- PreprocessDataset -->
         <fileset id="nightlyPreprocessDatasetTests" dir="${git.parentdir}/PreprocessDataset/gpunit" >
             <include name="smoke*.yml" />
@@ -119,6 +125,7 @@
         <clone-repo git.repo.name="HierarchicalClustering" />
         <clone-repo git.repo.name="HierarchicalClusteringImage" />
         <clone-repo git.repo.name="Hisat2Indexer" />
+        <clone-repo git.repo.name="Hisat2Aligner" />
         <clone-repo git.repo.name="MergeHTSeqCounts" />
         <clone-repo git.repo.name="PreprocessDataset" />
         <clone-repo git.repo.name="PreprocessReadCounts" />
@@ -225,6 +232,15 @@
         />
     </target>
 
+    <target name="short-hisatalign-tests" depends="init-test-suite">
+        <pathconvert property="short.nightly.tests" refid="ShortHisat2AlignerTests" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
     <target name="nightly-mergehtseq-tests" depends="init-test-suite" >
         <pathconvert property="nightly.tests" refid="nightlyMergeHTSeqCountsTests" />
         <run-tests
@@ -308,6 +324,7 @@
             <resources refid="ShortHierarchicalClusteringTests" />
             <resources refid="ShortHierarchicalClusteringImageTests" />
             <resources refid="ShortHisat2IndexerTests" />
+            <resources refid="ShortHisat2AlignerTests" />
             <resources refid="ShortTopHatTests" />
             <resources refid="Shorttxt2odfTests" />
             <resources refid="nightlyMergeHTSeqCountsTests" />
