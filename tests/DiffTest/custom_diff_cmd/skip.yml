@@ -1,0 +1,15 @@
+#
+# custom diff
+#   diffCmd: diff-skip-lines.sh
+#
+module: ConvertLineEndings
+params: 
+    # note, the !!java.io.File casts the input.filename param from a String to a File type
+    #    a File means, 'upload the file from my client machine to the server as part of the SOAP call to submit the job'
+    #    by default, for file input parameters, a String, means 'this is a server file path', passed literally to the server
+    input.filename: !!java.io.File ../skip_lines_Input.txt
+assertions:
+    diffCmd: [ "../diff-skip-lines.sh", "/--- DONE setting up environment variables ---/d"]
+    files:
+        skip_lines_Input.cvt.txt:
+            diff: ../Input.cvt.txt
