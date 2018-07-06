@@ -114,6 +114,7 @@
         <clone-repo git.repo.name="HeatMapViewer" />
         <clone-repo git.repo.name="HierarchicalClustering" />
         <clone-repo git.repo.name="HierarchicalClusteringImage" />
+        <clone-repo git.repo.name="Hisat2Indexer" />
         <clone-repo git.repo.name="MergeHTSeqCounts" />
         <clone-repo git.repo.name="PreprocessDataset" />
         <clone-repo git.repo.name="PreprocessReadCounts" />
