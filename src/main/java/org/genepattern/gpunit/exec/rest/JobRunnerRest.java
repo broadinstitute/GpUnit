@@ -101,7 +101,7 @@ public class JobRunnerRest {
      *     
      * @throws GpUnitException
      */
-    protected List<ParamEntry> prepareInputValues(String pname, Object yamlValue) throws GpUnitException {
+    protected List<ParamEntry> prepareInputValues(final String pname, final boolean isFileParam, final Object yamlValue) throws GpUnitException {
         if (yamlValue==null) {
             //special-case, handle null yamlValue
             return null;
@@ -110,22 +110,22 @@ public class JobRunnerRest {
         // if it's an array ...
         if (yamlValue instanceof List<?>) {
             // expecting a List<String,Object>
-            ParamEntry values=initParamEntryFromYamlList(pname, yamlValue);
+            ParamEntry values=initParamEntryFromYamlList(pname, isFileParam, yamlValue);
             return Arrays.asList(new ParamEntry[]{values});
         }
         // or a map of grouped values ...
         else if (yamlValue instanceof Map<?,?>) {
             // expecting a Map<String,Object>
-            return initParamEntriesFromYamlMap(pname, yamlValue);
+            return initParamEntriesFromYamlMap(pname, isFileParam, yamlValue);
         }
         ParamEntry paramEntry = new ParamEntry(pname);
-        String value=initJsonValueFromYamlObject(yamlValue);
+        String value=initJsonValueFromYamlObject(isFileParam, yamlValue);
         paramEntry.addValue(value);
         return Arrays.asList(new ParamEntry[]{paramEntry});
     }
     
     @SuppressWarnings("unchecked")
-    protected ParamEntry initParamEntryFromYamlList(final String pname, final Object yamlValue) throws GpUnitException {
+    protected ParamEntry initParamEntryFromYamlList(final String pname, final boolean isFileParam, final Object yamlValue) throws GpUnitException {
         List<Object> yamlList;
         try {
             yamlList = (List<Object>) yamlValue;
@@ -135,14 +135,14 @@ public class JobRunnerRest {
         }
         ParamEntry paramEntry=new ParamEntry(pname);
         for(final Object yamlEntry : yamlList) {
-            String value=initJsonValueFromYamlObject(yamlEntry);
+            String value=initJsonValueFromYamlObject(isFileParam, yamlEntry);
             paramEntry.addValue(value);
         }
         return paramEntry;
     }
 
     @SuppressWarnings("unchecked")
-    protected List<ParamEntry> initParamEntriesFromYamlMap(final String pname, final Object yamlValue) throws GpUnitException {
+    protected List<ParamEntry> initParamEntriesFromYamlMap(final String pname, final boolean isFileParam, final Object yamlValue) throws GpUnitException {
         Map<String,List<Object>> yamlValueMap;
         try {
             yamlValueMap = (Map<String,List<Object>>) yamlValue;
@@ -156,7 +156,7 @@ public class JobRunnerRest {
             GroupedParamEntry paramEntry = new GroupedParamEntry(pname, groupId);
             for(final Object yamlEntry : entry.getValue()) {
                 // convert file input value into a URL if necessary
-                String value=initJsonValueFromYamlObject(yamlEntry);
+                String value=initJsonValueFromYamlObject(isFileParam, yamlEntry);
                 paramEntry.addValue(value);
             }
             groups.add(paramEntry);
@@ -172,7 +172,7 @@ public class JobRunnerRest {
      * @return
      * @throws GpUnitException
      */
-    protected String initJsonValueFromYamlObject(final Object yamlEntry) throws GpUnitException {
+    protected String initJsonValueFromYamlObject(final boolean isFileParam, final Object yamlEntry) throws GpUnitException {
         String updatedValue;
         try {
             updatedValue=InputFileUtil.getParamValueForInputFile(batchProps, test, yamlEntry);
@@ -180,7 +180,7 @@ public class JobRunnerRest {
         catch (Throwable t) {
             throw new GpUnitException("Error initializing input file value from yamlEntry="+yamlEntry, t);
         }
-        URL url=uploadFileIfNecessary(updatedValue);
+        URL url=uploadFileIfNecessary(isFileParam, updatedValue);
         if (url != null) {
             return url.toExternalForm();
         }
@@ -203,15 +203,18 @@ public class JobRunnerRest {
        }
      * </pre>
      */
-    private JsonObject initJobInputJsonObject(final String lsid) throws GpUnitException {
+    private JsonObject initJobInputJsonObject(final TaskObj taskInfo) throws GpUnitException {
+        final String lsid=taskInfo.getLsid();
         final JsonObject obj=new JsonObject();
         obj.addProperty("lsid", lsid);
         final JsonArray paramsJsonArray=new JsonArray();
         for(final Entry<String,Object> paramYamlEntry : test.getParams().entrySet()) {
-            Object value = paramYamlEntry.getValue();
+            final String pname=paramYamlEntry.getKey();
+            final boolean isFileParam=taskInfo.isFileParam(pname);
+            final Object value = paramYamlEntry.getValue();
             List<ParamEntry> paramValues=null;            
             if (value!=null) {
-                paramValues=prepareInputValues(paramYamlEntry.getKey(), value);
+                paramValues=prepareInputValues(pname, isFileParam, value);
             }
             if (value==null) {
                 //special-case, ignore parameter with null value in yaml file
@@ -237,7 +240,7 @@ public class JobRunnerRest {
         return obj;
     }
 
-    private URL uploadFileIfNecessary(final String value) throws GpUnitException {
+    private URL uploadFileIfNecessary(final boolean isFileParam, final String value) throws GpUnitException {
         if (value==null) {
             // null arg, should be ignored
             return null;
@@ -251,14 +254,16 @@ public class JobRunnerRest {
         }
         
         //make rest api call to gp server
+        if (isFileParam) {
+            File localFile=new File(value);
+            if (!localFile.exists()) {
+                //file does not exist, must be a server file path
+                return null;
+            }
         
-        File localFile=new File(value);
-        if (!localFile.exists()) {
-            //file does not exist, must be a server file path
-            return null;
+            return uploadFile(localFile);
         }
-        
-        return uploadFile(localFile);        
+        return null;
     }
     
     private URL uploadFile(File localFile) throws GpUnitException {
@@ -337,11 +342,9 @@ public class JobRunnerRest {
         // is installed on the server
         final String taskNameOrLsid = test.getModule();
         final TaskObj taskInfo=getTaskObj(taskNameOrLsid);
-        final String lsid=taskInfo.getLsid();
-        
         JsonObject job;
         try {
-            job = initJobInputJsonObject(lsid);
+            job = initJobInputJsonObject(taskInfo);
         }
         catch (Exception e) {
             throw new GpUnitException("Error preparing JSON object to POST to "+jobsUrl, e);

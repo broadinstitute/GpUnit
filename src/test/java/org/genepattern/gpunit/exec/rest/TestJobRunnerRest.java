@@ -37,7 +37,8 @@ public class TestJobRunnerRest {
         assertEquals("expecting a List", true, (yamlValue instanceof List));
         
         JobRunnerRest jobRunner=new JobRunnerRest(batchProps, testCase);
-        List<ParamEntry> groupedEntries=jobRunner.prepareInputValues(pname, yamlValue);
+        final boolean isFileParam=true;
+        List<ParamEntry> groupedEntries=jobRunner.prepareInputValues(pname, isFileParam, yamlValue);
         assertEquals("num groups", 1, groupedEntries.size());
         assertEquals("num values", 4, groupedEntries.get(0).getValues().size());
         assertEquals("values[0]", "ftp://gpftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.cls", groupedEntries.get(0).getValues().get(0));
@@ -61,7 +62,8 @@ public class TestJobRunnerRest {
         Object yamlValue=testCase.getParams().get(pname);
         assertEquals("expecting a Map", true, (yamlValue instanceof Map));
         JobRunnerRest jobRunner=new JobRunnerRest(batchProps, testCase);
-        List<ParamEntry> groupedEntries=jobRunner.prepareInputValues(pname, yamlValue);
+        final boolean isFileParam=true;
+        List<ParamEntry> groupedEntries=jobRunner.prepareInputValues(pname, isFileParam, yamlValue);
         assertEquals("num groups", 2, groupedEntries.size());
         
         // convert to JSON for validation
