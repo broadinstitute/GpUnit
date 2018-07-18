@@ -4,7 +4,7 @@
 module: ConvertLineEndings
 params: 
     # in order to upload files from the client machine, you must cast to a File, e.g.
-    #        input.filename: !!java.io.File Input.txt
-    input.filename: Input.txt
+    #   input.filename: !!java.io.File Input.txt
+    input.filename: Input_Not_Found.txt
 assertions:
     jobStatus: error
