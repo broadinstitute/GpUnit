@@ -230,6 +230,7 @@
         <!-- echo-value pname="gp.password" / -->
         <echo-value pname="gpunit.client" />
         <echo></echo>
+        <echo-value pname="repo.name" />
         <echo-value pname="git.parentdir" />
         <echo></echo>
         <echo-value pname="gpunit.testfolder" />
@@ -742,6 +743,13 @@
         <property name="git.commit" value="origin/${git.branch}" />
         <property name="git.failonerror" value="true" />
 
+        <echo-value pname="git.organization.url" />
+        <echo-value pname="repo.name" />
+        <echo-value pname="git.repo" />
+        <echo-value pname="git.branch" />
+        <echo-value pname="git.commit" />
+        <echo-value pname="git.parentdir" />
+
         <git-shallow-clone repo="${git.repo}" branch="${git.branch}" commit="${git.commit}" parentdir="${git.parentdir}" 
             failonerror="${git.failonerror}" 
         />
@@ -1180,6 +1188,12 @@
         <attribute name="usefile" default="true" />
         <sequential>
             <echo>Running tests as '${gp.user}' on '${gp.url}'</echo>
+            <!-- debugging -->
+            <echo if:set="gpunit.shutdownTimeout" message="gpunit.shutdownTimeout=${gpunit.shutdownTimeout}" />
+            <!-- debugging -->
+            <echo if:set="gpunit.testTimeout" message="gpunit.testTimeout=${gpunit.testTimeout}" />
+            <!-- debugging -->
+            <echo if:set="gpunit.jobCompletionTimeout" message="gpunit.jobCompletionTimeout=${gpunit.jobCompletionTimeout}" />
             <echo>testcases: @{testcases}</echo>
             <echo>junit.formatter: @{junit.formatter}</echo>
 
@@ -1265,6 +1279,7 @@
         description="Run gpunit on all declared 'testcases'"
     > 
         <fail unless="gpunit.testcases" message="Missing required property 'testcases'" />
+        <echo if:true="${dry-run}">testcases=${gpunit.testcases}</echo>
         <run-tests unless:true="${dry-run}" testcases="${gpunit.testcases}" />
     </target>
 
