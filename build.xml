@@ -28,6 +28,11 @@
     <property name="gp.password" value="test" />
 
     <property name="gp.url" value="${gp.scheme}://${gp.host}${gp.port}" />
+    <!-- 
+      Set to true to force assertions/diffs to be executed and verified locally
+      (causes results files to be downloaded).
+    -->
+    <property name="gpunit.localAssertions" value="true" />
     <property name="local.dir" location="${gpunit.dir}/tmp/${gp.host}" />
     <property name="client.lib.dir" location="${local.dir}/client" />
     <!-- if the client.dir already exists, skip the rest -->
