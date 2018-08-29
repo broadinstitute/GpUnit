@@ -452,6 +452,7 @@
             <fileset id="@{pname}.fileset" file="${@{pname}.dir.fq_path}" if:set="@{pname}.dir.is_file" />
             <fileset id="@{pname}.fileset" dir="${@{pname}.dir.fq_path}" includes="@{includes}" if:set="@{pname}.dir.is_dir">
                 <filename regex="@{regexsuffix}" />
+                <filename name="**/*-ignore" negate="true"/>
             </fileset>
             <!-- set '@{pname}.fileset', for input to the gpunit macro -->
             <pathconvert property="@{pname}" refid="@{pname}.fileset" />
