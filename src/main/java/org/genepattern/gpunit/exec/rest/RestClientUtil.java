@@ -51,6 +51,15 @@ public class RestClientUtil {
         Assert.assertNotNull("jobId==null", jobId);
         File jobResultDir=testObject.getJobResultDir(batchProps.getBatchOutputDir(), jobId);
         
+        //special-case: optionally save the job.json object to a file
+        if (batchProps.getSaveJobJson()) {
+            // for debugging, let's put it in the current working dir
+            //jobResult.saveJobJsonToDir(new File(System.getProperty("user.dir")));
+            // for debugging, let's give it a custom file path
+            //jobResult.saveJobJsonToFile(new File("test_job.json"));
+            jobResult.saveJobJsonToDir(jobResultDir);
+        }
+        
         JobResultValidatorRest validator=new JobResultValidatorRest(batchProps, testObject, jobResultDir, parentJobValidator);
         validator.setRestClient(runner);
         validator.setJobStatus(jobResult);

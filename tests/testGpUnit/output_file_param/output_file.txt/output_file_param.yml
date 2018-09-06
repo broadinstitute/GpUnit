@@ -1,0 +1,14 @@
+#
+# test GpUnit bug:
+#   when a text parameter happens to have the same value as the parent directory
+#
+name: output_file param test
+description: text parameter happens to have the same value as the parent directory
+module: ConvertLineEndings
+params: 
+    input.filename: "input/input_file.txt"
+    output.file: "output_file.txt"
+assertions:
+    files:
+        "output_file.txt":
+            diff: "expected/output_file.txt"

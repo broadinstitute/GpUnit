@@ -1,0 +1,22 @@
+# for testing the scatter-gather bug fix
+#    the tophattest pipeline failed in GP 3.9.10
+#    run this test in GP >= 3.9.11
+#
+# this test took about 4 minutes on my MacBook dev server
+# running the modules in docker containers
+#
+# Note: the tophattest pipeline is private on the gpprod server
+#   I had to use the full LSID instead of the module name
+
+name: tophattest, scatter_gather_bug.yaml
+# module: tophattest
+module: "urn:lsid:8080.genepatt.genepattern.broadinstitute.org:genepatternmodules:8924:2"
+params:
+    "CreateSymlinks1.input.files": [
+        "reads_1.fq",
+        "reads_2.fq"
+    ]
+    "tophatwrapper3.TopHat1.GTF.file": "ftp://gpftp.broadinstitute.org/module_support_files/annotation/gtf/Arabidopsis_thaliana_build9_1_NCBI.gtf"
+    "tophatwrapper3.TopHat1.bowtie.index": "ftp://gpftp.broadinstitute.org/module_support_files/bowtie2/index/by_genome/Arabidopsis_thaliana_build9_1_NCBI/"
+assertions:
+    jobStatus: success

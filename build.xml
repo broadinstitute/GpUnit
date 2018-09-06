@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="gp-unit" default="package"
+<project name="gp-unit" basedir="." default="package"
     xmlns:if="ant:if"
     xmlns:unless="ant:unless"
     xmlns:artifact="antlib:org.apache.maven.artifact.ant"
@@ -17,7 +17,7 @@
       - whatever other file is specified). Any change to the sequence
       - made here should be reflected there as well.
      -->
-    <property name="gpunit.properties" value="gpunit.properties" />
+    <property name="gpunit.properties" value="${project.basedir}/gpunit.properties" />
     <property file="${gpunit.properties}" />
 
     <property name="gp.scheme" value="http" />
@@ -28,6 +28,11 @@
     <property name="gp.password" value="test" />
 
     <property name="gp.url" value="${gp.scheme}://${gp.host}${gp.port}" />
+    <!-- 
+      Set to true to force assertions/diffs to be executed and verified locally
+      (causes results files to be downloaded).
+    -->
+    <property name="gpunit.localAssertions" value="true" />
     <property name="local.dir" location="${gpunit.dir}/tmp/${gp.host}" />
     <property name="client.lib.dir" location="${local.dir}/client" />
     <!-- if the client.dir already exists, skip the rest -->
@@ -58,6 +63,32 @@
         </fileset>
         <path refid="gp.client.classpath" />
     </path>
+
+    <!-- 
+      Convenience target to set the dry-run flag from the command line
+      Usage:
+          ant dry-run actual-target
+    -->
+    <target name="dry-run" description="set dry-run flag, e.g. ant dry-run upload-files">
+        <property name="dry-run" value="true" />
+    </target>
+
+    <!--
+      debug 'dry-run' target
+      Usage:
+        ant dry-run         test-dry-run
+        ant -Ddry-run=true  test-dry-run
+        ant -Ddry-run=false test-dry-run
+        ant -Ddry-run=""    test-dry-run
+    -->
+    <target name="debug-dry-run"
+        description="debug 'dry-run' target"
+    >
+        <echo     if:set="dry-run"     >'dry-run' is set, dry-run='${dry-run}'</echo>
+        <echo unless:set="dry-run"     >'dry-run' is not set</echo>
+        <echo     if:true="${dry-run}" >'dry-run' is true</echo>
+        <echo unless:true="${dry-run}" >'dry-run' is not true</echo>
+    </target>
 
     <!--
       Set 'verbose' flag as an ant target
@@ -130,6 +161,7 @@
         <property name="gpunit.client" value="REST" />
         <property name="gpunit.batch.name" value="run_${DSTAMP}_${TSTAMP}" />
         <property name="gpunit.save.downloads" value="false" />
+        <property name="gpunit.save.job.json" value="false" />
         <property name="gpunit.delete.jobs" value="false" />
         <property name="report.run.dir" location="${report.dir}/${gpunit.batch.name}" />
         <mkdir dir="${report.run.dir}" />
@@ -148,21 +180,75 @@
         
         <has-value pname="gpunit.trustStore" />
         <has-value pname="gpunit.trustStorePassword" />
+        
+        <property name="gpunit.testData" value="ftp://gpftp.broadinstitute.org" />
+        <property name="gpunit.gpData" value="ftp://ftp.broadinstitute.org/pub/genepattern/datasets" />
     </target>
 
-    <target name="help" depends="init"
+    <target name="help" depends="init, init-testcases"
         description="init and print gpunit.properties"
     >
+        <!-- retrieve environment variables -->
+        <property environment="env" />
+        
+        <echo-value pname="env.ANT_HOME" />
+        <echo-value pname="ant.version" />
+        
+        <echo-value pname="env.GPUNIT_HOME" />
+        <echo-value pname="gpunit.dir" />
+        <echo-value pname="basedir" />
+        <echo-value pname="project.basedir" />
+        <echo-value pname="user.dir" />
+        <echo></echo>
         <echo-value pname="gpunit.properties" />
-        <echo-value pname="gp.user" />
+        
+        <echo-value pname="client.lib.dir" />
+        <echo></echo>
+        <echo-value pname="connection-test.skip" />
+        <echo-value pname="check-url.skip" />
+        <echo-value pname="gpunit.numThreads" />
+        <echo-value pname="gpunit.jobCompletionTimeout" />
+        <echo-value pname="gpunit.testTimeout" />
+        <echo-value pname="gpunit.shutdownTimeout" />
+        <echo></echo>
+        <echo-value pname="local.dir" />
+        <echo-value pname="gpunit.outputdir" />
+        <echo-value pname="gpunit.save.downloads" />
+        <echo-value pname="gpunit.save.job.json" />
+        <echo-value pname="gpunit.delete.jobs" />
+        <echo></echo>
+        <echo-value pname="report.dir" />
+        <echo-value pname="gpunit.batch.name" />
+        <echo-value pname="report.run.dir" />
+        <echo></echo>
+        <echo-value pname="gpunit.localAssertions" />
+        <echo-value pname="gpunit.upload.dir" />
+        <echo-value pname="gpunit.server.dir" />
+        <!-- Data set locations -->
+        <echo-value pname="gpunit.testData" />
+        <echo-value pname="gpunit.gpData" />
+        <echo-value pname="gpunit.diffStripTrailingCR" />
+        <echo></echo>
         <echo-value pname="gp.url" />
         <echo-value pname="gp.path" />
-        <echo-value pname="gpunit.testfolder" />
+        <echo-value pname="gp.user" />
+        <!-- echo-value pname="gp.password" / -->
         <echo-value pname="gpunit.client" />
-        <echo-value pname="gpunit.numThreads" />
-        
-        <echo-value pname="gpunit.dir" />
-        <echo-value pname="client.lib.dir" />
+        <echo></echo>
+        <echo-value pname="repo.name" />
+        <echo-value pname="git.parentdir" />
+        <echo></echo>
+        <echo-value pname="gpunit.testfolder" />
+        <echo-value pname="gpunit.includes" />
+        <echo-value pname="gpunit.regexsuffix" />
+        <echo-value pname="gpunit.dirprefix" />
+        <echo-value pname="gpunit.testcases" />
+    </target>
+    
+    <target name="debug-java.version">
+        <echo-value pname="java.version" />
+        <echo-value pname="ant.java.version" />
+        <echo-value pname="env.JAVA_HOME" />
     </target>
 
     <!-- 
@@ -190,57 +276,622 @@
     -->
     <macrodef name="echo-value">
         <attribute name="pname" />
-        <attribute name="suffix" default=".has_value" />
+        <attribute name="pad" default="" />
         <sequential>
-            <has-value pname="@{pname}" suffix="@{suffix}" />
-            <echo-value-succint pname="@{pname}" />
-            <echo-value-verbose if:set="verbose" pname="@{pname}" suffix="@{suffix}" />
+            <echo if:set="@{pname}">@{pad}@{pname}=${@{pname}}</echo>
+            <echo unless:set="@{pname}">@{pad}@{pname}=(not set)</echo>
         </sequential>
     </macrodef>
-
-    <!-- don't call this directly, it is called from the 'echo-value' macrodef -->
-    <macrodef name="echo-value-succint">
-        <attribute name="pname" />
-        <sequential>
-            <echo if:set="@{pname}">@{pname}='${@{pname}}'</echo>
-            <echo unless:set="@{pname}">@{pname}=(not set)</echo>
-        </sequential>
-    </macrodef>
+    
+    <target name="debug-echo-value"
+        description="debug 'echo-value' macrodef"
+    >
+        <input message="set -Dpname=user.dir" addProperty="pname" defaultValue="user.dir" />
+        <echo-value pname="${pname}" />
+    </target>
 
     <!-- 
-      don't call this directly, it is called from the 'echo-value' macrodef
-      when in verbose mode
-      -->
-    <macrodef name="echo-value-verbose">
-        <attribute name="pname" />
-        <attribute name="suffix" default=".has_value" />
+      Macrodef: fq-path, to convert a relative to an absolute file path;
+        by default, paths are converted to fully qualified paths
+          relative to the 'user.dir' instead of the 'basedir'.
+      Usage:
+        <property name="my_path" value="a/relative/dir" />
+        <fq-path pname="my_path" />
+        <echo>my_path.fq_name: ${my_path.fq_name}</echo>
+      Output:
+        '@{pname}.is_set'      "true" when pname references an actual property 
+        '@{pname}.is_relative' "true" when the path is relative
+        '@{pname}.fq_path'     the fully qualified path relative to the custom basedir.
+        '@{pname}.is_file'     "true" when the path is to a file
+        '@{pname}.is_dir'      "true" when the path is to a directory
+        '@{pname}.exists'      "true" when the file or directory exists
+        
+      Note: All of this is a workaround because I would like to treat relative paths as
+        being relative to the working directory instead of the ant basedir.
+    -->
+    <macrodef name="fq-path">
+        <attribute name="pname" 
+            description="the name of a property to convert" />
+        <attribute name="prefix" default="${user.dir}" 
+            description="(optional) path prefix to append to relative paths" />
+        <attribute name="debug" default="" />
         <sequential>
-            <echo       if:set="@{pname}"    >    if:set="@{pname}"</echo>
-            <echo   unless:set="@{pname}"    >    unless:set="@{pname}"</echo>
-            <echo      if:true="${@{pname}}" >    if:true="$${@{pname}}"</echo>
-            <echo  unless:true="${@{pname}}" >    unless:true="$${@{pname}}"</echo>
-            <echo     if:blank="${@{pname}}" >    if:blank="$${@{pname}}"</echo>
-            <echo unless:blank="${@{pname}}" >    unless:blank="$${@{pname}}"</echo>
-            <!-- for illustration only, incorrect use of if:blank ... 
-            <echo     if:blank="@{pname}"    >    if:blank="@{pname}"</echo>
-            <echo unless:blank="@{pname}"    >    unless:blank="@{pname}"</echo>
+            <!-- set 'is_set' -->
+            <property name="@{pname}.is_set" value="true" if:set="@{pname}" />
+
+            <!-- set 'is_relative', by comparing property by 'location' with relative='true' and 'false'
+                   See: https://ant.apache.org/manual/Tasks/property.html
             -->
+            <local name="tmp.location" />
+            <local name="tmp.relative" />
+            <property name="tmp.location" location="${@{pname}}" relative="false" />
+            <property name="tmp.relative" location="${tmp.location}" relative="true" />
+            <condition property="@{pname}.is_relative" value="true">
+                <not><equals arg1="${@{pname}}" arg2="${tmp.location}" /></not>
+            </condition>
+
+            <!-- set 'fq_path', conditionally by 'is_relative'
+                   See: https://ant.apache.org/manual/ifunless.html
+            -->
+            <property name="@{pname}.fq_path"     if:true="${@{pname}.is_relative}"
+                location="@{prefix}/${tmp.relative}" />
+            <property name="@{pname}.fq_path" unless:true="${@{pname}.is_relative}" 
+                location="${tmp.location}" />
+
+            <!-- set 'exists' -->
+            <available property="@{pname}.exists" file="${@{pname}.fq_path}" />
+
+            <!-- set 'is_dir' -->
+            <available property="@{pname}.is_dir" file="${@{pname}.fq_path}" type="dir" />
             
-            <!-- recommended, if:set="gpunit.trustStore.has_value" ... -->
-            <echo>    is '@{pname}' set ...</echo>
-            <!-- echo>    recommended ...</echo -->
-            <echo       if:set="@{pname}@{suffix}"    >        (recommended) if:set="@{pname}@{suffix}"</echo>
-            <echo   unless:set="@{pname}@{suffix}"    >        (recommended) unless:set="@{pname}@{suffix}"</echo>
-            <!-- alternative 1, if:true"${gpunit.trustStore.has_value}" ... -->
-            <!-- echo>    alternative 1 ...</echo -->
-            <echo      if:true="${@{pname}@{suffix}}" >              (alt 1) if:true="$${@{pname}@{suffix}}"</echo>
-            <echo  unless:true="${@{pname}@{suffix}}" >              (alt 1) unless:true="$${@{pname}@{suffix}}"</echo>
-            <!-- alternative 2, does not require 'has-value' macrodef
-                 if:set="gpunit.trustStore" unless:blank="${gpunit.trustStore}" ...  -->
-            <!-- echo>    alternative 2 ... </echo -->
-            <echo if:set="@{pname}" unless:blank="${@{pname}}">              (alt 2) if:set="@{pname}" unless:blank="$${@{pname}}"</echo>
+            <!-- set 'is_file' -->
+            <available property="@{pname}.is_file" file="${@{pname}.fq_path}" type="file" />
+
+            <!-- debug output -->
+            <echo       if:true="@{debug}" message="fq-path, @{pname}='${@{pname}}', ..." /> 
+            <echo-value if:true="@{debug}" pname="@{pname}.fq_path"  pad="    " /> 
+            <echo-value if:true="${debug}" pname="@{pname}.is_set" pad="    " /> 
+            <echo-value if:true="${debug}" pname="@{pname}.exists" pad="    " /> 
+            <echo-value if:true="${debug}" pname="@{pname}.is_file" pad="    " /> 
+            <echo-value if:true="${debug}" pname="@{pname}.is_dir" pad="    " /> 
+            <echo-value if:true="${debug}" pname="@{pname}.is_relative" pad="    " /> 
+            <echo-value if:true="${debug}" pname="tmp.value" pad="    " /> 
+            <echo-value if:true="${debug}" pname="tmp.location" pad="    " /> 
+            <echo-value if:true="${debug}" pname="tmp.relative" pad="    " /> 
         </sequential>
     </macrodef>
+
+    <target name="debug-fq-path"
+        description="debug 'fq-path' macro (interactive)"
+    >
+        <property name="debug" value="true" />
+        <input message="set -Dtest.dir=" addProperty="test.dir" defaultValue="gpunit" />
+        <input message="set -Dtest.basedir=" addProperty="test.basedir" defaultValue="${user.dir}" />
+        <input message="set -Ddebug=" addProperty="debug" validArgs=",true" defaultValue="" />
+        <fq-path pname="test.dir" prefix="${test.basedir}" debug="${debug}" />
+    </target>
+
+    <target name="debug-fq-path-examples"
+        description="debug 'fq-path' macro (examples)"
+    >
+        <property name="debug" value="true" />
+        
+        <!-- example: ${user.dir} -->
+        <fq-path pname="user.dir" debug="${debug}" />
+        <!-- example: ${basedir"} -->
+        <fq-path pname="basedir"  debug="${debug}" />
+        <!-- example: path to file -->
+        <property name="test.filepath.abs" location="${gpunit.dir}/tests/protocols/01_Run/01_PreprocessDataset/test.yaml" />
+        <fq-path pname="test.filepath.abs" debug="${debug}" />
+        <!-- example: relative path to file -->
+        <property name="test.filepath.rel" value="tests/protocols/01_Run/01_PreprocessDataset/test.yaml" />
+        <fq-path pname="test.filepath.rel" debug="${debug}" />
+        <!-- example: relative path -->
+        <property name="test.default.01" value="tests/protocols" />
+        <fq-path pname="test.default.01" debug="${debug}" />
+        <!-- example: relative path with parent -->
+        <property name="test.default.02" value="tests/protocols/../testGpUnit" />
+        <fq-path pname="test.default.02" debug="${debug}" />
+        <!-- example: relative to alt.basedir -->
+        <property name="alt.basedir" location="tests/protocols" />
+        <property name="test.alt.basedir.01" value="" />
+        <fq-path pname="test.alt.basedir.01" prefix="${alt.basedir}" debug="${debug}" />
+        <!-- example: relative to alt.basedir -->
+        <property name="test.alt.basedir.02" value="05_SNP" />
+        <fq-path pname="test.alt.basedir.02" prefix="${alt.basedir}" debug="${debug}" />
+        <!-- example: relative to alt.basedir with parent -->
+        <property name="test.alt.basedir.03" value="../testGpUnit" />
+        <fq-path pname="test.alt.basedir.03" prefix="${alt.basedir}" debug="${debug}" />
+
+        <!-- example: value not set -->
+        <fq-path pname="test.not_set" debug="${debug}" />
+        
+        <!-- example: with 'test.dir' and 'test.basedir' properties -->
+        <property name="test.dir" value="gpunit" />
+        <property name="test.basedir" value="${user.dir}" />
+        <fq-path pname="test.dir" prefix="${test.basedir}" debug="${debug}" />
+    </target>
+
+    <!--
+      Macrodef: set-testcases
+        Helper method to initialize the 'testcases' property to be used as 
+      input to the 'run-tests' macro. 
+        Scan for all *.yml, *.yaml, and 'gp_execution_log.txt' files
+      in the current working directory.
+      Can be customized to scan from a different base directory 
+      with different file filters.
+
+      Options:
+        pname, the name of the property to set
+          Default: 'testcases'
+        dirprefix, the path prefix for relative paths
+           Default: ${user.dir}
+        dir, the base directory relative to 'dirprefix'
+           Default: ''
+        includes, the include filter
+           Default: '**/*', match all
+        regexsuffix, by default only *.yaml, *.yml, and 'gp_execution_log.txt' files are included
+           Default: '.*(\.ya?ml|gp_execution_log\.txt)'
+      Usage:
+        <set-testcases pname="my.testcases" ... />
+        <run-tests testcases="${my.testcases}" ... />
+      Output:
+        '@{pname}'
+        '@{pname}.fileset'
+        '@{pname}.fileset.formatted'
+        '@{pname}.dir.[fq_path | is_dir | ...] ', same as set-fq-path
+    -->
+    <macrodef name="set-testcases">
+        <!-- the name of the property to set, default: testcases -->
+        <attribute name="pname" default="testcases" />
+        <attribute name="dirprefix" default="${user.dir}" />
+        <attribute name="dir" default="" /> <!-- the testcases.dir -->
+        <attribute name="regexsuffix" default=".*(\.ya?ml|gp_execution_log\.txt)" />
+        <attribute name="includes" default="**/*" />
+        <attribute name="debug" default="" />
+
+        <sequential>
+            <property name="@{pname}.dir" value="@{dir}" />
+            <fq-path pname="@{pname}.dir" prefix="@{dirprefix}" debug="${debug}" />
+            <!-- special-case, it's not a directory -->
+            <fileset id="@{pname}.fileset" file="${@{pname}.dir.fq_path}" if:set="@{pname}.dir.is_file" />
+            <fileset id="@{pname}.fileset" dir="${@{pname}.dir.fq_path}" includes="@{includes}" if:set="@{pname}.dir.is_dir">
+                <filename regex="@{regexsuffix}" />
+                <filename name="**/*-ignore" negate="true"/>
+            </fileset>
+            <!-- set '@{pname}.fileset', for input to the gpunit macro -->
+            <pathconvert property="@{pname}" refid="@{pname}.fileset" />
+            <!-- set '@{pname}.fileset.formatted' for human readable display on the terminal -->
+            <property name="@{pname}.fileset.formatted" if:set="@{pname}.dir.is_file" value="${@{pname}.dir.fq_path}" />
+            <property name="pathsep" value="${line.separator}    " />
+            <pathconvert property="@{pname}.fileset.formatted" if:set="@{pname}.dir.is_dir"
+                refid="@{pname}.fileset"
+                pathsep="${pathsep}" 
+            >
+                <map from="${@{pname}.dir.fq_path}" to=""/>
+            </pathconvert>
+            
+            <!-- debugging -->
+            <echo-value if:true="@{debug}" pname="@{pname}.dir" />
+            <echo-value if:true="@{debug}" pname="@{pname}.dir.fq_path" />
+            <echo if:true="@{debug}">@{pname}.fileset=${pathsep}${@{pname}.fileset.formatted}</echo>
+            <!-- echo-value if:true="@{debug}" pname="@{pname}" / -->
+        </sequential>
+    </macrodef>
+
+    <!--
+      Macrodef: echo-testcases
+        formatted output of the 'testcases' property
+    -->
+    <macrodef name="echo-testcases">
+        <attribute name="pname" default="testcases" />
+        <sequential>
+            <echo-value if:set="@{pname}.dir.is_dir"  pname="@{pname}.dir" />
+            <echo-value if:set="@{pname}.dir.is_dir"  pname="@{pname}.dir.fq_path" />
+            <echo       if:set="@{pname}.dir.is_dir"
+                >testcases.fileset=${pathsep}${@{pname}.fileset.formatted}</echo>
+            <echo-value if:true="@{debug}" pname="@{pname}" />
+        </sequential>
+    </macrodef>
+
+    <target name="echo-testcases"
+        description="for debugging, echo the 'testcases' property">
+        <echo-testcases pname="gpunit.testcases" />
+    </target>
+
+    <!--
+      debug-set-testcases
+    -->
+    <target name="debug-set-testcases"
+        description="debug 'set-testcases' macro (interactive)"
+    >
+        <property name="debug" value="true" />
+        <input message="set 'pname'"       addProperty="pname"         defaultValue="testcases" />
+        <input message="set 'dirprefix'"   addProperty="dirprefix"     defaultValue="${gpunit.dir}" />
+        <input message="set 'dir'"         addProperty="dir"           defaultValue="tests/protocols" />
+        <input message="set 'includes'"    addProperty="includes"      defaultValue="**/*" />
+        <input message="set 'regexsuffix'" addProperty="regexsuffix"   defaultValue=".*(\.ya?ml|gp_execution_log\.txt)" />
+        
+        <set-testcases pname="${pname}" dirprefix="${dirprefix}" dir="${dir}" includes="${includes}" regexsuffix="${regexsuffix}" />
+        <echo-testcases pname="${pname}" />
+    </target>
+
+    <!--
+      debug-set-testcases-examples
+        example 'set-testcases' usage.
+    -->
+    <target name="debug-set-testcases-examples" 
+        description="for debugging 'set-testcases' macro"
+    >
+        <!-- example: a single test from a yaml file -->
+        <set-testcases pname="testcases.from_file" dirprefix="${gpunit.dir}" dir="tests/protocols/01_Run/01_PreprocessDataset/test.yaml" />
+        <echo-value pname="testcases.from_file" />
+
+        <!-- example:  a list (aka suite) of tests from a parent directory -->
+        <set-testcases pname="testcases.from_dir" dirprefix="${gpunit.dir}" dir="tests/protocols/01_Run" />
+        <echo-value pname="testcases.from_dir" />
+
+        <!-- example: includes filter -->
+        <set-testcases pname="testcases.includes_01" dirprefix="${gpunit.dir}" dir="tests/protocols" includes="**/01_PreprocessDataset/**" />
+        <echo-value pname="testcases.includes_01" />
+
+        <!-- example: space separated includes -->
+        <set-testcases pname="testcases.includes_02" dirprefix="${gpunit.dir}" dir="tests/protocols/02_Differential" includes="**/*.yaml **/*.yml" />
+        <echo-value pname="testcases.includes_02" />
+
+        <!-- example: comma separated includes -->
+        <set-testcases pname="testcases.includes_03" dirprefix="${gpunit.dir}" dir="tests/protocols/02_Differential" includes="**/*.yml,**/*.yaml" />
+        <echo-value pname="testcases.includes_03" />
+    </target>
+
+    <!--
+      debug-fileset-examples
+        for debugging only, this target shows a bunch of different ways
+      to create a 'testcases' property directly (without the 'set-testcases' macrodef).
+            The 'testcases' property can be ...
+        ... a direct path to a test.yaml file
+        ... a direct path to a test directory
+        ... a list of one or more file paths, separated by the system java.io.File.pathSeparatorChar.
+            See: https://docs.oracle.com/javase/7/docs/api/java/io/File.html#pathSeparatorChar
+
+      Bash command to generate the -Dtestcases arg ...
+        See: https://stackoverflow.com/questions/2915556/unix-replace-newline-w-colon-preserving-newline-before-eof
+        
+        # (linux)
+        $ cd ./gpunit
+        # take 1
+        $ find "$(cd ..; pwd)" -regextype posix-extended -regex '.*\.(yml|yaml)' | tr '\n' ':' | sed '$s/.$//'
+        # take 2
+        $ echo $(find "$(cd ..; pwd)" -regex '.*\.ya?ml' | tr '\n' ':' | head -c -1)
+        # take 3
+        $ find "$(cd ..; pwd)" -regex '.*\.ya?ml' | tr '\n' ':' | sed 's/:$/\n/'
+        
+        # (mac os x) 
+        #   note: workaround for '\n' with sed on mac os x
+        $ cd ./gpunit
+        $ find -E `pwd` -regex '.*\.ya?ml' | tr '\n' ':' | sed -e 's/\(.*\):/\1/'
+        
+        # Example regex, skip child directories
+        # (mac os x)
+        $ find -E `pwd` -regex `pwd`'/[^/]*'
+      
+    -->
+    <target name="demo-testcases-from-fileset" 
+        description="for debugging, example ant filesets"
+    > 
+        <!-- example: a single testcase file -->
+        <property name="testcases.file" location="${gpunit.dir}/tests/protocols/01_Run/01_PreprocessDataset/test.yaml" />
+        <echo-value pname="testcases.file" />
+
+        <!-- example: a single testcase directory -->
+        <property name="testcases.dir" location="${gpunit.dir}/tests/protocols" />
+        <echo-value pname="testcases.dir" />
+
+        <!--
+          example: a list of directories from a dirset
+          must use pathconvert
+        -->
+        <dirset id="example.dirset" dir="${gpunit.dir}/tests">
+            <include name="protocols/03_*" />
+            <include name="protocols/04_*" />
+        </dirset>
+        <pathconvert property="testcases.from_dirset" refid="example.dirset" />
+        <echo-value pname="testcases.from_dirset" />
+
+        <!-- 
+          example: a path-like structure
+          see: http://ant.apache.org/manual/using.html#path
+        -->
+        <path id="example.path">
+            <pathelement location="${gpunit.dir}/tests/protocols/01_Run/02_HeatMapViewer/test.yaml" />
+            <pathelement location="${gpunit.dir}/tests/protocols/03_Clustering" />
+        </path>
+        <pathconvert property="testcases.from_path" refid="example.path" /> 
+        <echo-value pname="testcases.from_path" />
+
+        <!-- example: a fileset -->
+        <fileset id="example.fileset" dir="${gpunit.dir}/tests/protocols/01_Run">
+            <include name="**/*.yaml" />
+            <include name="**/*.yml" />
+        </fileset>
+        <pathconvert property="testcases.from_fileset" refid="example.fileset" /> 
+        <echo-value pname="testcases.from_fileset" />
+
+        <!-- example: 'saved_jobs' fileset -->
+        <fileset id="saved_jobs.fileset" dir="${gpunit.dir}/tests/saved_jobs">
+            <include name="**/*.yaml" />
+            <include name="**/*.yml" />
+            <include name="**/gp_execution_log.txt" />
+        </fileset>
+        <pathconvert property="testcases.saved_jobs" refid="saved_jobs.fileset" /> 
+        <echo-value pname="testcases.saved_jobs" />
+    </target>
+
+    <!--
+      Macrodef: git-shallow-clone
+        Makes a shallow clone of the remote repository into a target directory
+        on the local file system.
+      Template:
+        cd {parentdir}
+        git clone [-b [{branch}] {urlPrefix}/{name}
+        
+      GitHub Url Template:
+        @see: https://help.github.com/articles/changing-a-remote-s-url/
+          origin  https://github.com/USERNAME/REPOSITORY.git (fetch)
+          origin  git@github.com:USERNAME/REPOSITORY.git (fetch)
+        urlPrefix := {github.url}/{github.organization}
+        name := {github.repository}
+        repository := {github.url}/{github.username}/{github.repository}
+        repository := {urlPrefix}/{name}
+        
+      Uses the '-C <path>' option,
+        Run as if git was started in <path> instead of the current working directory. 
+      Command Template: --><?code
+        # (initialize) shallow clone into a new target directory
+          cd {parentdir}
+          git clone --no-single-branch --depth 1 [--branch {branch}] {repo} {repo-name}
+        # reset to a specific commit
+          cd {parentdir}
+          git -C {repo.name} fetch --depth 1
+          git -C {repo.name} reset --hard {commit}
+          git -C txt2odf clean -dfx
+    ?><!--
+    Example:  --><?code 
+          cd target/ModuleTests
+          git clone --no-single-branch --depth 1 --branch master https://github.com/genepattern/txt2odf txt2odf
+          git -C txt2odf fetch --depth 1
+          git -C txt2odf reset --hard origin/develop
+          git -C txt2odf clean -dfx
+    
+    Example commits 
+          origin/master
+          origin/develop
+          tags/v2
+          tags/v0.3
+    ?>
+    <property name="git-shallow-clone.failonerror" value="false" />
+    <macrodef name="git-shallow-clone">
+        <attribute name="repo" 
+            description="the full url to a github repository, including the trailing '.git'" />
+        <attribute name="parentdir" default="${user.dir}" 
+            description="the git working directory is created as a child of the parentdir"
+        />
+        <attribute name="branch" default="master" 
+            description="the argument to the git clone --branch command, e.g. 'develop' or 'v0.1'"
+        />
+        <attribute name="commit" default="origin/@{branch}" 
+            description="the argment to the git reset --hard command, e.g. 'origin/develop' or 'tags/v0.1'" 
+        />
+        <attribute name="failonerror" default="${git-shallow-clone.failonerror}" />
+
+        <sequential>
+            <echo message="repo='@{repo}'" />
+            <echo message="branch='@{branch}'" />
+            <echo message="commit='@{commit}'" />
+            
+            <local name="reponame" />
+            <basename property="reponame" file="@{repo}" suffix=".git" />
+            <local name="local.repo.dir" />
+            <local name="local.repo.dir.exists" />
+            <property name="local.repo.dir" location="@{parentdir}/${reponame}" />
+            <available property="local.repo.dir.exists" file="${local.repo.dir}" />
+
+            <echo message="reponame='${reponame}'" />
+
+            <!-- shallow clone if the local repo does not exist -->
+            <echo unless:set="local.repo.dir.exists">Cloning git repository: '@{repo}' (branch '@{branch}')</echo>
+            <exec unless:set="local.repo.dir.exists" executable="git" dir="@{parentdir}" failonerror="@{failonerror}">
+                <arg value="clone" />
+                <!-- shallow clone -->
+                <arg value="--no-single-branch" />
+                <arg value="--depth" />
+                <arg value="1" />
+                <arg value="--branch" />
+                <arg value="@{branch}" />
+                <arg value="@{repo}" />
+                <arg value="${reponame}" />
+            </exec>
+
+            <!-- shallow update: fetch -->
+            <echo>git -C '${reponame}' fetch --depth 1</echo>
+            <exec executable="git" dir="@{parentdir}" failonerror="@{failonerror}">
+                <arg value="-C" /> <arg value="${reponame}" />
+                <arg value="fetch" />
+                <arg value="--depth" />
+                <arg value= "1" />
+            </exec>
+
+            <!-- shallow update: reset -->
+            <echo>git -C '${reponame}' reset --hard '@{commit}'</echo>
+            <exec executable="git" dir="@{parentdir}" failonerror="@{failonerror}">
+                <arg value="-C" /> <arg value="${reponame}" />
+                <arg value="reset" />
+                <arg value="--hard" /> 
+                <arg value="@{commit}" />
+            </exec>
+
+            <!-- shallow update: clear -->
+            <echo>git clean -dfx</echo>
+            <exec executable="git" dir="@{parentdir}" failonerror="@{failonerror}">
+                <arg line="-C" /> <arg line="${reponame}" />
+                <arg line="clean" /> <arg line="-dfx" />
+            </exec>
+        </sequential>
+    </macrodef>
+
+    <target name="debug-git-clone" depends="init-git.parentdir"
+        description="debug the 'git-shallow-clone' macro"
+    >
+        <property name="git.organization.url" value="https://github.com/genepattern" />
+        <property name="repo.name" value="txt2odf" />
+        <property name="git.repo" value="${git.organization.url}/${repo.name}.git" />
+        <property name="git.branch" value="master" />
+        <property name="git.commit" value="origin/${git.branch}" />
+        <property name="git.failonerror" value="true" />
+
+        <echo-value pname="git.organization.url" />
+        <echo-value pname="repo.name" />
+        <echo-value pname="git.repo" />
+        <echo-value pname="git.branch" />
+        <echo-value pname="git.commit" />
+        <echo-value pname="git.parentdir" />
+
+        <git-shallow-clone repo="${git.repo}" branch="${git.branch}" commit="${git.commit}" parentdir="${git.parentdir}" 
+            failonerror="${git.failonerror}" 
+        />
+    </target>
+
+    <property name="module.git.branch.name" value="master" />
+    <!--
+      Macrodef: clone-repo
+        clone the remote repository into a target directory on the local file system.
+    -->
+    <macrodef name="clone-repo">
+        <attribute name="git.organization.url" default="https://github.com/genepattern" />
+        <attribute name="git.repo.name" />
+        <attribute name="git.branch.name" default="${module.git.branch.name}" />
+        <attribute name="git.origin.name" default="origin" />
+        <attribute name="git.parentdir" default="${git.parentdir}" />
+        <attribute name="git.failonerror" default="false" />
+
+        <sequential> 
+            <git-shallow-clone parentdir="@{git.parentdir}" 
+                repo="@{git.organization.url}/@{git.repo.name}.git" 
+                branch="@{git.branch.name}" 
+                commit="@{git.origin.name}/@{git.branch.name}"
+                failonerror="@{git.failonerror}" />
+        </sequential>
+    </macrodef>
+
+    <target name="debug-clone-repo" depends="init-git.parentdir"
+        description="debug the 'clone-repo' macro"
+    >
+        <property name="repo.name" value="txt2odf" />
+        <property name="git.origin.name" value="origin" />
+        <clone-repo git.repo.name="${repo.name}" git.origin.name="${git.origin.name}" git.parentdir="${git.parentdir}" />
+    </target>
+
+    <!--
+      init-testcases
+        set 'testcases' by scanning all *.y?ml files relative to a base directory ('gpunit.dirprefix').
+      The basedir is determined from these rules:
+          ${gpunit.dirprefix}              if 'gpunit.dirprefix' is set
+          ${gpunit.testfolder}             if 'gpunit.testfolder' is set to an absolute path
+          ${user.dir}/${gpunit.testfolder} if 'gpunit.testfolder' is set to a relative path
+          ${user.dir}/${gpunit.dirname}    if ${user.dir}/${gpunit.dirname} exists
+          ${user.dir}                      by default if no other rules apply
+    -->
+    <target name="init-testcases" depends="init-gpunit.dirprefix">
+        <property name="gpunit.testfolder"   value="" />
+        <property name="gpunit.includes"     value="**/*" />
+        <property name="gpunit.regexsuffix" value=".*(\.ya?ml|gp_execution_log\.txt)" />
+        <!-- fail if property not set -->
+        <fail unless="gpunit.dirprefix" message="Missing required property 'gpunit.dirprefix'" />
+        <set-testcases pname="gpunit.testcases" 
+            dirprefix="${gpunit.dirprefix}" 
+            dir="${gpunit.testfolder}" 
+            includes="${gpunit.includes}" 
+            regexsuffix="${gpunit.regexsuffix}" 
+            debug="${dry-run}" 
+        />
+    </target>
+
+    <!--
+      Set the 'gpunit.dirprefix' to match the rules described in the 'init-testcases' target. 
+      Options:
+        gpunit.dirname, set an alternate name for the test directory
+          Default: 'gpunit'
+    -->
+    <target name="init-gpunit.dirprefix">
+        <!-- set default 'gpunit.dirname' -->
+        <property name="gpunit.dirname" value="gpunit" />
+        
+        <!-- special-case: if gpunit folder exists -->
+        <condition property="gpunit.dirprefix" value="${user.dir}/${gpunit.dirname}" else="${user.dir}">
+            <and>
+                <!-- ${user.dir}/gpunit exists -->
+                <available file="${user.dir}/${gpunit.dirname}" type="dir" />
+                <!-- and gpunit.testfolder is not set -->
+                <or>
+                    <not><isset property="gpunit.testfolder" /></not>
+                    <equals arg1="" arg2="${gpunit.testfolder}" />
+                </or>
+            </and>
+        </condition>
+        <echo-value if:true="${debug}" pname="gpunit.testfolder" />
+        <echo-value if:true="${debug}" pname="gpunit.dirname" />
+        <echo-value if:true="${debug}" pname="gpunit.dirprefix" />
+    </target>
+ 
+    <!-- set the 'git.parentdir' property,
+       the local path from which to run the git clone command
+     to use as input to the git-shallow-clone macro 
+      Template:
+        cd {git.parentdir}
+        git clone {repository}
+      Example:
+        cd ./target/ModuleTests
+        git clone git@github.com:genepattern/txt2odf.git
+    --> 
+    <target name="init-git.parentdir">
+        <!-- replacing 'module.tests.dir' with 'git.parentdir' -->
+        <echo if:set="module.tests.dir">WARNING: 'module.tests.dir' is deprecated, use 'git.parentdir' instead</echo>
+        <property name="git.parentdir" value="${module.tests.dir}" if:set="module.tests.dir" />
+        <property name="git.parentdir" location="${gpunit.dir}/target/ModuleTests" />        
+        <property name="git.parentdir" location="${user.dir}/ModuleTests" />
+
+        <property name="debug" value="true" />
+        <echo-value if:true="${debug}" pname="module.tests.dir" />
+        <echo-value if:true="${debug}" pname="git.parentdir" />
+        <mkdir dir="${git.parentdir}" />
+    </target>
+
+    <!-- pull testcases from the Git repository -->
+    <target name="pull-testcases" depends="init-git.parentdir"
+        description="pull testcases from the 'git.repo', default=https://github.com/genepattern/'repo.name'"
+    >
+        <property name="git.organization.url" value="https://github.com/genepattern" />
+        <property name="repo.name" value="txt2odf" />
+        <property name="git.repo" value="${git.organization.url}/${repo.name}.git" />
+        <property name="git.branch" value="master" />
+        <property name="git.commit" value="origin/${git.branch}" />
+        <property name="git.failonerror" value="false" />
+        <property name="dry-run" value="false" />
+
+        <git-shallow-clone repo="${git.repo}" branch="${git.branch}" commit="${git.commit}"  parentdir="${git.parentdir}" failonerror="${git.failonerror}" />
+    </target>
+
+    <!-- calls 'pull-testcases' then sets the 'gpunit.testcases' property -->
+    <target name="init-testcases-git" depends="pull-testcases">
+        <property name="gpunit.testfolder"   value="" />
+        <property name="gpunit.includes"     value="**/*" />
+        <property name="gpunit.regexsuffix" value=".*(\.ya?ml|gp_execution_log\.txt)" />
+        <set-testcases pname="gpunit.testcases" dirprefix="${git.parentdir}" dir="${repo.name}/gpunit" 
+            includes="${gpunit.includes}" 
+            regexsuffix="${gpunit.regexsuffix}" 
+            debug="${dry-run}" 
+        /> 
+    </target>
 
     <!--                                                                                                                                                               
       Test 'gpunit.trustStore' and 'gpunit.trustStorePassword' flags
@@ -306,21 +957,32 @@
     </target>
 
     <!-- location for maven dependencies copied into this project -->
-    <property name="dependency.dir" location="target/dependency" />
-
-    <target name="download-deps" depends="init"
+    <property name="dependency.dir" location="${gpunit.dir}/target/dependency" />
+    <target name="download-deps" depends="init" unless="download-deps.called"
         description="install maven dependencies"
     >
-        <path id="maven-ant-tasks.classpath" path="lib/maven-ant-tasks-2.1.3.jar" />
+        <!-- workaround for java.lang.ClassCastException: org.codehaus.plexus.DefaultPlexusContainer -->
+        <property name="download-deps.called" value="true" />
+        <!--  
+          Maven Ant Tasks > Dependencies 
+            See: http://maven.apache.org/ant-tasks/reference.html#dependencies
+            See: http://maven.apache.org/ant-tasks/examples/dependencies.html
+
+          Note: must set custom 'dependencyRefsBuildFile'
+            default: ./target/build-dependencies.xml
+        -->
+        <path id="maven-ant-tasks.classpath" path="${gpunit.dir}/lib/maven-ant-tasks-2.1.3.jar" />
         <typedef resource="org/apache/maven/artifact/ant/antlib.xml"
             uri="antlib:org.apache.maven.artifact.ant"
             classpathref="maven-ant-tasks.classpath" />
 
-        <artifact:dependencies pathId="dependencies.classpath" cacheDependencyRefs="true" 
+        <artifact:dependencies pathId="dependencies.classpath" 
             filesetId="dependency.fileset"
             sourcesFilesetId="sources.dependency.fileset"
             javadocFilesetId="javadoc.dependency.fileset"
             versionsId="dependency.versions"
+            cacheDependencyRefs="true"
+            dependencyRefsBuildFile="${gpunit.dir}/target/build-dependencies.xml"
         >
 
             <dependency groupId="commons-codec" artifactId="commons-codec" version="1.3" />
@@ -349,7 +1011,7 @@
 
         <path id="gpunit.classpath">
             <pathelement location="${gpunit.dir}/classes" />
-            <pathelement location="lib/gp-modules-updated.jar" />
+            <pathelement location="${gpunit.dir}/lib/gp-modules-updated.jar" />
             <path refid="gp.client.classpath" />
             <path refid="dependencies.classpath" />
         </path>
@@ -414,15 +1076,17 @@
     </target>
 
     <target name="clean-gpunit-outputdir"
-        description="clean the ${gpunit.outputdir}, which includes all downloaded job results"
+        description="delete the '${gpunit.outputdir}', which includes all downloaded job results"
     >
+        <fail unless="gpunit.outputdir" />
         <delete dir="${gpunit.outputdir}" />
         <delete file="System.out" />
     </target>
 
     <target name="clean-report-dir"
-        description="clean the ${report.dir} and the ${gpunit.outputdir}"
+        description="delete the '${report.dir}'"
     >
+        <fail unless="report.dir" />
         <delete dir="${report.dir}" />
     </target>
 
@@ -513,7 +1177,7 @@
         </sequential>
     </macrodef>
 
-    <!-- run a batch of gp-unit tests via SOAP client requests 
+    <!-- run a batch of gp-unit tests via REST client requests 
          use a single parameterized jUnit test to submit the jobs and validate the results.
          
          To run the tests, create a path, give it a refid, then create a property from that refid.
@@ -530,6 +1194,12 @@
         <attribute name="usefile" default="true" />
         <sequential>
             <echo>Running tests as '${gp.user}' on '${gp.url}'</echo>
+            <!-- debugging -->
+            <echo if:set="gpunit.shutdownTimeout" message="gpunit.shutdownTimeout=${gpunit.shutdownTimeout}" />
+            <!-- debugging -->
+            <echo if:set="gpunit.testTimeout" message="gpunit.testTimeout=${gpunit.testTimeout}" />
+            <!-- debugging -->
+            <echo if:set="gpunit.jobCompletionTimeout" message="gpunit.jobCompletionTimeout=${gpunit.jobCompletionTimeout}" />
             <echo>testcases: @{testcases}</echo>
             <echo>junit.formatter: @{junit.formatter}</echo>
 
@@ -549,6 +1219,7 @@
                 <sysproperty key="gpunit.outputdir" value="${gpunit.outputdir}" />
                 <sysproperty key="gpunit.batch.name" value="${gpunit.batch.name}" />
                 <sysproperty key="gpunit.save.downloads" value="${gpunit.save.downloads}" />
+                <sysproperty key="gpunit.save.job.json" value="${gpunit.save.job.json}" />
                 <sysproperty key="gpunit.delete.jobs" value="${gpunit.delete.jobs}" />
                 
                 <sysproperty key="gpunit.upload.dir" value="${gpunit.upload.dir}" />
@@ -585,41 +1256,65 @@
     </macrodef>
     
     <target name="gpunit-all-protocols" depends="package"
-        description="Run all GpUnit tests in the './tests/protocols' folder" >
-        <path id="all-protocols.path">
-            <pathelement location="./tests/protocols" />
-        </path>
-        <property name="all-protocols.testcases" refid="all-protocols.path" /> 
-        <!-- the max amount of time to wait, in seconds, before terminating the unit test -->
+        description="Run all GpUnit tests in the '${gpunit.dir}/tests/protocols' folder" 
+    >
+        <property name="protocols.dir" location="${gpunit.dir}/tests/protocols" />
         <run-tests 
-            testcases="${all-protocols.testcases}" 
+            testcases="${protocols.dir}" 
             numThreads="5" 
-            shutdownTimeout="${gpunit.shutdownTimeout}"
         />
     </target>
 
     <target name="gpunit-all-saved-jobs" depends="package"
-        description="Run all GpUnit tests in the './tests/saved_jobs' folder" >
-        <path id="saved-jobs.path">
-            <pathelement location="./tests/saved_jobs" />
-        </path>
-        <property name="saved-jobs.testcases" refid="saved-jobs.path" /> 
-        <run-tests testcases="${saved-jobs.testcases}" />
+        description="Run all GpUnit tests in the '${gpunit.dir}/tests/saved_jobs' folder" 
+    >
+        <property name="saved-jobs.dir" location="{gpunit.dir}/tests/saved_jobs" />
+        <run-tests testcases="${saved-jobs.dir}" />
     </target>
 
-    <target name="gpunit" depends="package, connection-test"
-        description="Run all GpUnit tests in the '${gpunit.testfolder}' (default=./tests)"
-        >
-        <property name="gpunit.testfolder" location="./tests" />
-        <path id="testfolder.path">
-            <pathelement location="${gpunit.testfolder}" />
-        </path>
-        <property name="testcases" refid="testfolder.path" /> 
-        <run-tests testcases="${testcases}"
-            numThreads="${gpunit.numThreads}" 
-            shutdownTimeout="${gpunit.shutdownTimeout}" />
+    <!--
+      Usage:
+        # run all tests in the 'gpunit' sub directory
+        gpunit -Dtestcases=`pwd`/gpunit gpunit
+        # run a single test in a sub directory
+        gpunit -Dtestcases=`pwd`/gpunit/basic_test.yml gpunit
+        # run a single test in the current working directory
+        gpunit -Dtestcases=`pwd`/basic_test.yml gpunit
+    -->
+    <target name="gpunit-testcases" depends="package, connection-test"
+        description="Run gpunit on all declared 'testcases'"
+    > 
+        <fail unless="gpunit.testcases" message="Missing required property 'testcases'" />
+        <echo if:true="${dry-run}">testcases=${gpunit.testcases}</echo>
+        <run-tests unless:true="${dry-run}" testcases="${gpunit.testcases}" />
     </target>
+
+    <!--
+      gpunit-git
+          run the gpunit tests checked out from a module git repository
     
+      Usage:
+          gpunit [dry-run] -Drepo.name=repo-name [-Dgit.branch=branch-name] [-Dgit.commit=commit-ref]
+      Examples:
+          # run latest from 'master' branch
+          gpunit -Drepo.name=txt2odf gpunit-git
+          # run latest from 'develop' branch
+          gpunit -Drepo.name=txt2odf -Dgit.branch=develop gpunit-git
+          # run a tagged version of the tests
+          gpunit -Drepo.name=txt2odf -Dgit.commit=tags/v2 gpunit-git
+    -->
+    <target name="gpunit-git" depends="init-testcases-git, gpunit-testcases"
+        description="Run 'testcases' checked out from the git 'repo.name', 'git.branch', and 'git.commit'"
+    /> 
+
+    <target name="gpunit-single-module" depends="gpunit-git"
+        description="Run all gpunit tests in the ${repo.name}/gpunit folder"
+    />
+
+    <target name="gpunit" depends="init-testcases, gpunit-testcases"
+        description="Run all declared GpUnit 'gpunit.testcases', (default=tests/**/*.y*ml)"
+    />
+
     <target name="compile-automatrix" depends="package"
         description="compile automatrix, see ./automatrix/build.xml"
         >
@@ -630,8 +1325,9 @@
     </target>
 
     <target name="gpunit-junit-tests" depends="init, package"
-        description="run junit test of the GpUnit source code">
-        <property name="junit.results.dir" location="./junit" />
+        description="run junit test of the GpUnit source code"
+    >
+        <property name="junit.results.dir" location="${gpunit.dir}/target/junit" />
         <mkdir dir="${junit.results.dir}" />
         <junit showoutput="true" printsummary="true" >
             <classpath>
@@ -642,9 +1338,20 @@
                 <path refid="dependencies.classpath" />
                 <pathelement location="${client.lib.dir}/GenePattern.jar" />
             </classpath>
+            <!-- example single test-case -->
+            <!--
             <test name="org.genepattern.gpunit.yaml.PropertyExpansionTests" outfile="gpunit-junit" todir="${junit.results.dir}" >
                 <formatter type="xml"/>
             </test>
+            -->
+            <!-- run all tests -->
+            <batchtest fork="yes" todir="${junit.results.dir}">
+                <formatter type="xml"/>
+                <fileset dir="${gpunit.dir}/src/test/java">
+                    <include name="**/*Test*.java"/>
+                    <exclude name="**/AllTests.java"/>
+                </fileset>
+            </batchtest>
         </junit>
     </target>
 

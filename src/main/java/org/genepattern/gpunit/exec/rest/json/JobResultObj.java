@@ -1,5 +1,8 @@
 package org.genepattern.gpunit.exec.rest.json;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -30,12 +33,14 @@ public class JobResultObj {
         } 
     }
     
+    private final JsonObject jsonObject;
     private final String jobId;
     private final boolean hasError;
     private final boolean isFinished;
     private final List<OutputFile> outputFiles;
     
     private JobResultObj(Builder in) {
+        this.jsonObject=in.jsonObject;
         this.jobId=in.jobId;
         this.hasError=in.hasError;
         this.isFinished=in.isFinished;
@@ -45,6 +50,10 @@ public class JobResultObj {
         else {
             this.outputFiles=Collections.unmodifiableList(in.outputFiles);
         }
+    }
+    
+    public JsonObject getJsonObject() {
+        return jsonObject;
     }
     
     public String getJobId() {
@@ -63,12 +72,41 @@ public class JobResultObj {
         return outputFiles;
     }
     
+    public void saveJobJsonToDir(final File dir) {
+        boolean mkdirs_success=dir.mkdirs();
+        final File toFile=new File(dir, jobId+".json");
+        boolean success=saveJobJsonToFile(toFile);
+        if (!success) {
+            System.err.println("    jsonFile.mkdirs: "+mkdirs_success);
+        }
+    }
+
+    public boolean saveJobJsonToFile(final File jsonFile) {
+        PrintWriter logWriter = null;
+        try {
+            logWriter = new PrintWriter(new FileWriter(jsonFile));
+            logWriter.print(jsonObject.toString());
+            logWriter.close();
+            return true;
+        }
+        catch (Throwable t) {
+            System.err.println("Error writing jsonFile for jobId="+jobId);
+            System.err.println("    "+jsonFile);
+            t.printStackTrace();
+            return false;
+        }
+        finally {
+            logWriter.close();
+        }
+    }
+    
     /**
      * Builder pattern for building JobResultObj instances
      * @author pcarr
      *
      */
     public static class Builder {
+        private JsonObject jsonObject=null;
         private String jobId=null;
         private boolean hasError=false;
         private boolean isFinished=false;
@@ -103,6 +141,9 @@ public class JobResultObj {
 
         // GSON specific code
         public Builder gsonObject(JsonObject jsonObject) {
+            // save the json output 
+            this.jsonObject=jsonObject;
+
             // init jobId
             jobId(jsonObject.get("jobId").getAsString());
 
