@@ -41,6 +41,100 @@ import org.junit.Assert;
  */
 public abstract class JobResultValidatorGeneric {
     final protected static String NL = System.getProperty("line.separator");
+    
+    public static final class DiffUtil {
+        public static LocalDiffTest initDiffTestFromCmdArgs(List<String> args) throws Exception {
+            if (args == null) {
+                throw new IllegalArgumentException("diffCmd==null");
+            }
+            if (args.size() == 0) {
+                throw new IllegalArgumentException("diffCmd.size()==0");
+            }
+            //the first arg must be a classname, for a class which can be cast to AbstractDiffTest
+            //if the first arg is not a classname, use the CmdLineDiff class
+            String classname = args.get(0);
+            // use reflection 
+            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+            
+            Class<?> diffClass = null;
+            try {
+                diffClass = Class.forName(classname, false, classLoader);
+            }
+            catch (ClassNotFoundException e) {
+                //assume that we want to use the CmdLineDiff class instead
+                classname = CmdLineDiff.class.getName();
+                //hack: add this to the arg list so that we deal with the arg list consistently
+                args.add(0, classname);
+            }
+            try {
+                diffClass = Class.forName(classname, false, classLoader);
+            }
+            catch (ClassNotFoundException e) {
+                throw e;
+            }
+            if (!LocalDiffTest.class.isAssignableFrom(diffClass)) {
+                throw new Exception("diffCmd class cannot be cast to LocalDiffTest, classname="+diffClass);
+            }
+            try {
+                LocalDiffTest customDiff = (LocalDiffTest) diffClass.newInstance();
+                List<String> extraArgs;
+                if (args.size()>1) {
+                    extraArgs = args.subList(1, args.size());
+                }
+                else {
+                    extraArgs = Collections.emptyList();
+                }
+                customDiff.setArgs(extraArgs);
+                return customDiff;
+            }
+            catch (InstantiationException e) {
+                throw e;
+            }
+            catch (IllegalAccessException e) {
+                throw e;
+            }   
+        }
+
+        public static Object getDiffCmdObj(final ModuleTestObject testCase, final TestFileObj resultFileObj) {
+            //for debugging
+            Object customDiffCmdObj = null;
+            final GpAssertions assertions = testCase.getAssertions();
+
+            //1) if there is a custom diff cmd for the individual result file 
+            if (resultFileObj != null && resultFileObj.getDiffCmdArgs() != null) {
+                //customDiffCmdArgs = resultFileObj.getDiffCmdArgs();
+                customDiffCmdObj = resultFileObj.getDiffCmd();
+            }
+            //2) else if there is a custom diff cmd for the test-case (all files)
+            else if (assertions.getDiffCmdArgs() != null) {
+                //customDiffCmdArgs = assertions.getDiffCmdArgs();
+                customDiffCmdObj = assertions.getDiffCmd();
+            }
+            return customDiffCmdObj;
+        }
+
+        public static LocalDiffTest getDiff(final ModuleTestObject testCase, final TestFileObj resultFileObj) throws Exception {
+            List<String> customDiffCmdArgs = null;
+            GpAssertions assertions = testCase.getAssertions();
+
+            //1) if there is a custom diff cmd for the individual result file 
+            if (resultFileObj != null && resultFileObj.getDiffCmdArgs() != null) {
+                customDiffCmdArgs = resultFileObj.getDiffCmdArgs();
+            }
+            //2) else if there is a custom diff cmd for the test-case (all files)
+            else if (assertions.getDiffCmdArgs() != null) {
+                customDiffCmdArgs = assertions.getDiffCmdArgs();
+            }
+            //else default case
+            else {
+                LocalDiffTest diffTest = new UnixCmdLineDiff();
+                List<String> args = Collections.emptyList();
+                diffTest.setArgs(args);
+                return diffTest;
+            }
+            return initDiffTestFromCmdArgs(customDiffCmdArgs);
+        } 
+    }
 
     final private BatchProperties props;
     final private ModuleTestObject testCase;
@@ -370,94 +464,22 @@ public abstract class JobResultValidatorGeneric {
             Assert.fail(createErrorMessage("job #"+jobId+", More job result files than expected: "+resultFilesMap.size()));
         }
     }
-    
-    private LocalDiffTest getDiff(TestFileObj resultFileObj) {
-        
-        List<String> customDiffCmdArgs = null;
-        //for debugging
-        Object customDiffCmdObj = null;
-        GpAssertions assertions = testCase.getAssertions();
 
-        //1) if there is a custom diff cmd for the individual result file 
-        if (resultFileObj != null && resultFileObj.getDiffCmdArgs() != null) {
-            customDiffCmdArgs = resultFileObj.getDiffCmdArgs();
-            customDiffCmdObj = resultFileObj.getDiffCmd();
-        }
-        //2) else if there is a custom diff cmd for the test-case (all files)
-        else if (assertions.getDiffCmdArgs() != null) {
-            customDiffCmdArgs = assertions.getDiffCmdArgs();
-            customDiffCmdObj = assertions.getDiffCmd();
-        }
-        //else default case
-        else {
-            LocalDiffTest diffTest = new UnixCmdLineDiff();
-            List<String> args = Collections.emptyList();
-            diffTest.setArgs(args);
-            return diffTest;
-        }
-        LocalDiffTest customDiff = null;
-        try {
-            customDiff = initDiffTestFromCmdArgs(customDiffCmdArgs);
-        }
-        catch (Throwable t) {
-            String message="job #"+jobId+", Error initializing custom diff command, test: "+customDiffCmdObj+". Error: "+t.getLocalizedMessage();
-            Assert.fail(createErrorMessage(message));
-        }
-        if (customDiff == null) {
-            Assert.fail(createErrorMessage("job #"+jobId+", Error initializing custom diff command, test: "+customDiffCmdObj));
-        }
-        return customDiff;
-    }
-    
-    private LocalDiffTest initDiffTestFromCmdArgs(List<String> args) throws Exception {
-        if (args == null) {
-            throw new IllegalArgumentException(createErrorMessage("diffCmd==null"));
-        }
-        if (args.size() == 0) {
-            throw new IllegalArgumentException(createErrorMessage("diffCmd.size()==0"));
-        }
-        //the first arg must be a classname, for a class which can be cast to AbstractDiffTest
-        //if the first arg is not a classname, use the CmdLineDiff class
-        String classname = args.get(0);
-        // use reflection 
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        
-        Class<?> diffClass = null;
-        try {
-            diffClass = Class.forName(classname, false, classLoader);
-        }
-        catch (ClassNotFoundException e) {
-            //assume that we want to use the CmdLineDiff class instead
-            classname = CmdLineDiff.class.getName();
-            //hack: add this to the arg list so that we deal with the arg list consistently
-            args.add(0, classname);
-        }
-        try {
-            diffClass = Class.forName(classname, false, classLoader);
-        }
-        catch (ClassNotFoundException e) {
-            throw e;
-        }
-        if (!LocalDiffTest.class.isAssignableFrom(diffClass)) {
-            throw new Exception(createErrorMessage("diffCmd class cannot be cast to LocalDiffTest, classname="+diffClass));
-        }
-        try {
-            LocalDiffTest customDiff = (LocalDiffTest) diffClass.newInstance();
-            List<String> extraArgs;
-            if (args.size()>1) {
-                extraArgs = args.subList(1, args.size());
-            }
-            else {
-                extraArgs = Collections.emptyList();
-            }
-            customDiff.setArgs(extraArgs);
-            return customDiff;
-        }
-        catch (InstantiationException e) {
-            throw e;
-        }
-        catch (IllegalAccessException e) {
-            throw e;
-        }   
-    }
+    private LocalDiffTest getDiff(final TestFileObj resultFileObj) {
+      LocalDiffTest customDiff = null;
+      try {
+          customDiff=DiffUtil.getDiff(testCase, resultFileObj);
+      }
+      catch (Throwable t) {
+          final Object customDiffCmdObj=DiffUtil.getDiffCmdObj(testCase, resultFileObj);
+          String message="job #"+jobId+", Error initializing custom diff command, test: "+customDiffCmdObj+". Error: "+t.getLocalizedMessage();
+          Assert.fail(createErrorMessage(message));
+      }
+      if (customDiff == null) {
+          final Object customDiffCmdObj=DiffUtil.getDiffCmdObj(testCase, resultFileObj);
+          Assert.fail(createErrorMessage("job #"+jobId+", Error initializing custom diff command, test: "+customDiffCmdObj));
+      }
+      return customDiff;
+  }
+
 }
