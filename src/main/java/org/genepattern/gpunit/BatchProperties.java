@@ -80,7 +80,7 @@ public class BatchProperties {
     final static public String PROP_OUTPUT_DIR="gpunit.outputdir";
     /** optionally, download job result files into a directory, based on batch.name, e.g.,
      * <pre>
-     *  <gpunit.outputdir>/<gpunit.batchname> 
+     *  <gpunit.outputdir>/<gpunit.batch.name> 
      * </pre>
      */
     final static public String PROP_BATCH_NAME="gpunit.batch.name";
