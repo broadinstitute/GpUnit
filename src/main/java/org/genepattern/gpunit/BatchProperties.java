@@ -160,12 +160,10 @@ public class BatchProperties {
     private String gpUsername =  "test";
     private String gpPassword = "test";
 
-
     private GpUnitClient client=GpUnitClient.REST;
 
-
-    private String outputDir="./jobResults";
-    private String batchName="latest";
+    private final String outputDir; //default: "./jobResults";
+    private final String batchName; //default: "latest";
     
     private String uploadDir=null;
     private String serverDir=null;
@@ -212,10 +210,16 @@ public class BatchProperties {
             throw new GpUnitException("Error initializing client from "+PROP_CLIENT+"="+clientStr+": "+t.getLocalizedMessage());
         }
         if (sysProps.containsKey(PROP_OUTPUT_DIR)) {
-            this.outputDir=sysProps.getProperty(PROP_OUTPUT_DIR, outputDir);
+            this.outputDir=sysProps.getProperty(PROP_OUTPUT_DIR, "./jobResults");
+        }
+        else {
+            this.outputDir="./jobResults";
         }
         if (sysProps.containsKey(PROP_BATCH_NAME)) {
-            this.batchName=sysProps.getProperty(PROP_BATCH_NAME, batchName);
+            this.batchName=sysProps.getProperty(PROP_BATCH_NAME, "latest");
+        }
+        else {
+            this.batchName="latest";
         }
         
         //options for handling input files
@@ -232,7 +236,8 @@ public class BatchProperties {
             //this.deleteJobs=Boolean.getBoolean(PROP_DELETE_JOBS);
             this.deleteJobs=Boolean.valueOf(sysProps.getProperty(PROP_DELETE_JOBS));
         }
-        this.batchOutputDir=_initBatchOutputDir();
+        this.batchOutputDir=initDir(outputDir, batchName);
+        this.createdBatchOutputDir=mkdirIfNecessary(batchOutputDir);
         
         if (sysProps.containsKey(PROP_LOCAL_ASSERTIONS)) {
             //this.localAssertions=Boolean.getBoolean(PROP_LOCAL_ASSERTIONS);
@@ -255,7 +260,8 @@ public class BatchProperties {
         this.saveDownloads=in.saveDownloads;
         this.saveJobJson=in.saveJobJson;
         this.deleteJobs=in.deleteJobs;
-        this.batchOutputDir=_initBatchOutputDir();
+        this.batchOutputDir=initDir(outputDir, batchName);
+        this.createdBatchOutputDir=mkdirIfNecessary(batchOutputDir);
         this.localAssertions=in.localAssertions;
         this.testTimeout=in.initTestTimeout();
         this.jobCompletionTimeout=in.initJobCompletionTimeout();
@@ -421,28 +427,51 @@ public class BatchProperties {
         return localAssertions;
     }
 
-    private boolean createdBatchOutputDir=false;
-    private File batchOutputDir=null;
-    //if necessary, create the top level download directory
-    //    for all jobs in the batch
-    private File _initBatchOutputDir() throws GpUnitException {
-        String path=outputDir;
-        if (batchName != null && batchName.length()>0) {
-            if (!outputDir.endsWith("/")) {
-                path = outputDir + "/" + batchName;
+    private final boolean createdBatchOutputDir;
+    private final File batchOutputDir;
+
+    /**
+     * Initialize a directory path. 
+     * Handle special cases:
+     *   (1) batch.name not set
+     *   (2) gpunit.outputdir with and without file separator
+     * 
+     * Use this to create the top level download directory for all jobs in the batch.
+     * Template:
+     *     <gpunit.outputdir>[/<gpunit.batch.name>]
+     * Default:
+     *     ./jobResults/latest
+     * 
+     * @param parentDir - the <gpunit.outputdir>, default: "./jobResults"
+     * @param name - <gpunit.batch.name>, default: "latest"
+     * @return a new File object
+     * @throws GpUnitException
+     */
+    private static File initDir(final String parentDir, final String name) throws GpUnitException {
+        final String path;
+        if (name != null && name.length()>0) {
+            if (!parentDir.endsWith("/")) {
+                path=parentDir + "/" + name;
             }
             else {
-                path = outputDir + batchName;
+                path=parentDir + name;
             }
         }
-        File rval=new File(path);
-        if (!rval.exists()) {
-            createdBatchOutputDir=rval.mkdirs();
+        else {
+            path=parentDir;
+        } 
+        return new File(path);
+    }
+    
+    private static boolean mkdirIfNecessary(final File batchOutputDir) throws GpUnitException {
+        if (!batchOutputDir.exists()) {
+            boolean createdBatchOutputDir=batchOutputDir.mkdirs();
             if (!createdBatchOutputDir) {
                 throw new GpUnitException("Failed to initialize parent directory for downloading job results: "+batchOutputDir.getAbsolutePath());
             }
+            return createdBatchOutputDir;
         }
-        return rval;
+        return false;
     }
     
     public boolean getCreatedBatchOutputDir() {
