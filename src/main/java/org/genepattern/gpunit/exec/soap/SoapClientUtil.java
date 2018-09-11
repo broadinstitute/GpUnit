@@ -9,7 +9,21 @@ import org.genepattern.webservice.JobResult;
 
 
 public class SoapClientUtil {
-    static public void runTest(final BatchProperties batchProps, final BatchModuleTestObject testObject) 
+    /**
+     * initialize the jobId from the soap client JobResult object
+     *
+     * @param jobResult
+     * @return the jobId or null if not set
+     * @throws GpUnitException
+     */
+    protected static String getJobId(final JobResult jobResult) throws GpUnitException {
+        if (jobResult != null && jobResult.getJobNumber()>=0) {
+            return ""+jobResult.getJobNumber();
+        }
+        return null;
+    }
+
+    public static void runTest(final BatchProperties batchProps, final BatchModuleTestObject testObject) 
     throws GpUnitException
     {
         if (batchProps == null) {
@@ -29,7 +43,8 @@ public class SoapClientUtil {
         ModuleRunnerSoap runner = new ModuleRunnerSoap(batchProps, testObject.getTestCase());
         JobResult jobResult = runner.runJobAndWait();
         
-        File jobResultDir=testObject.getJobResultDir(batchProps.getBatchOutputDir(), jobResult);
+        final String jobId=getJobId(jobResult);
+        File jobResultDir=testObject.getJobResultDir(batchProps.getBatchOutputDir(), jobId);
         
         JobResultValidatorSoap validator=new JobResultValidatorSoap(batchProps, testObject, jobResultDir);
         validator.setJobResult(jobResult);

@@ -5,7 +5,6 @@ import static org.genepattern.gpunit.BatchProperties.isNullOrEmpty;
 import java.io.File;
 
 import org.genepattern.gpunit.ModuleTestObject;
-import org.genepattern.webservice.JobResult;
 
 /**
  * For running a parameterized test, you need a list of these.
@@ -57,28 +56,6 @@ public class BatchModuleTestObject {
         }
     }
     
-    /**
-     * Get a job result directory for the given testCase and jobResult.
-     * You download job result files from the server and into this directory.
-     *
-     * Rule for creating the download directory for a test-case.
-     *     if (batch.name is set) {
-     *         <gpunit.outputdir>/<gpunit.batch.name>/<testfile.parentdir.name>/<testfile.basename>
-     *     }
-     *     else {
-     *         <gpunit.outputdir>/<testfile.parentdir.name>/<testfile.basename>
-     *     }
-     *
-     * @return a directory into which to download job results for the given completed test
-     */
-    public File getJobResultDir(final File batchOutputDir, final JobResult jobResult) throws GpUnitException {
-        String jobId=null;
-        if (jobResult != null && jobResult.getJobNumber()>=0) {
-            jobId=""+jobResult.getJobNumber();
-        }
-        return getJobResultDir(batchOutputDir, jobId);
-    }
-
     /**
      * Get a job result directory for the given testCase and jobId.
      * You download job result files from the server and into this directory.
