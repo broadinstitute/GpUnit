@@ -1,20 +1,23 @@
 package org.genepattern.gpunit.exec.soap;
 
+import static org.junit.Assert.fail;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.genepattern.client.GPClient;
 import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.ModuleTestObject;
 import org.genepattern.gpunit.BatchProperties;
-import org.genepattern.gpunit.yaml.InputFileUtil;
 import org.genepattern.webservice.AnalysisWebServiceProxy;
 import org.genepattern.webservice.JobResult;
 import org.genepattern.webservice.Parameter;
+import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
-import org.junit.Assert;
 
 /**
  * Run a single job on a GP server. 
@@ -26,19 +29,76 @@ import org.junit.Assert;
 public class ModuleRunnerSoap {
     private final BatchProperties batchProps;
     private final ModuleTestObject test;
-    private final GPClient gpClient;
     private AnalysisWebServiceProxy webService;
 
     public ModuleRunnerSoap(final BatchProperties batchProps, final ModuleTestObject test) {
         this.batchProps=batchProps;
         this.test = test;
-        this.gpClient = ModuleRunnerSoap.initGpClient(batchProps);
     }
     
     public JobResult runJobAndWait() {
         return runJobSoap();
     }
     
+    protected static AnalysisWebServiceProxy initWebService(final BatchProperties batchProps) throws GpUnitException {
+        AnalysisWebServiceProxy analysisProxy = null;
+        try {
+            analysisProxy = new AnalysisWebServiceProxy(batchProps.getGpUrl(), batchProps.getGpUsername(), batchProps.getGpPassword());
+            //in milliseconds
+            final int timeout=60*1000;
+            analysisProxy.setTimeout(timeout);
+            return analysisProxy;
+        }
+        catch (WebServiceException e) {
+            throw new GpUnitException("Error initializing  AnalysisWebServiceProxy", e);
+        }
+    }
+
+    protected static GPClient initGpClient(final BatchProperties batchProps) {
+        GPClient gpClient = null;
+        try {
+            gpClient = new GPClient(batchProps.getGpUrl(), batchProps.getGpUsername(), batchProps.getGpPassword());
+        }
+        catch (Throwable t) {
+            throw new AssertionError("Error initializing gpClient for gpUrl='"+batchProps.getGpUrl()+"': "+t.getLocalizedMessage());
+        }
+        return gpClient;
+    }
+
+    private static Map<String, ParameterInfo> initPinfoMap(final TaskInfo taskInfo) {
+        ParameterInfo[] formalParameters=taskInfo.getParameterInfoArray();
+        if (formalParameters==null) {
+            throw new IllegalArgumentException("Error initializing parameter map from task, formalParameters==null");
+        }
+        final Map<String, ParameterInfo> pinfoMap=new HashMap<String,ParameterInfo>();
+        for(ParameterInfo param : formalParameters) {
+            pinfoMap.put(param.getName(), param);
+        }
+        return pinfoMap;
+    }
+
+    private static Parameter[] initParams(final BatchProperties batchProps, final TaskInfo taskInfo, final ModuleTestObject test) 
+    throws GpUnitException
+    {
+        // special-case: no test params
+        if (test.getParams()==null || test.getParams().size()==0) {
+            return new Parameter[0];
+        }
+        
+        final Map<String, ParameterInfo> pinfoMap=initPinfoMap(taskInfo);
+        final List<Parameter> params = new ArrayList<Parameter>();
+        for(final Entry<String,Object> entry : test.getParams().entrySet()) {
+            final String pName=entry.getKey();
+            final Object pValue=entry.getValue();
+            final ParameterInfo pinfo=pinfoMap.get(pName);
+            final Parameter param = InputFileUtilSoap.initParam(batchProps, test, pName, pValue, pinfo);
+            params.add(param);
+        }
+        
+        //convert to an array
+        return params.toArray(new Parameter[]{});
+    }
+
     public void deleteJob(int jobId) throws GpUnitException {
         if (webService==null) {
             this.webService=initWebService(batchProps);
@@ -60,22 +120,24 @@ public class ModuleRunnerSoap {
      * @return
      */
     protected JobResult runJobSoap() {
-        JobResult jobResult = null;
-        
+        // initialize SOAP client
+        final GPClient gpClient = ModuleRunnerSoap.initGpClient(batchProps);
         if (gpClient == null) {
             throw new AssertionError("GpUnit configuration error, gpClient==null");
         }
-
-        final TaskInfo taskInfo;
         final String nameOrLsid = test.getModule();
+        // make SOAP call to fetch TaskInfo
+        final TaskInfo taskInfo;
         try {
-            taskInfo=initTaskInfo(gpClient, nameOrLsid);
+            taskInfo = gpClient.getModule(nameOrLsid);
+        } 
+        catch (WebServiceException e) {
+            throw new AssertionError("Error getting taskInfo from SOAP API, ["+test.getName()+", module='"+nameOrLsid+"']", e);
         }
         catch (Throwable t) {
-            throw new AssertionError("Error getting taskInfo for job ["+test.getName()+", module='"+nameOrLsid+"']: "
-                    +t.getLocalizedMessage(), t); 
+            throw new AssertionError("Unexpected error getting taskInfo from SOAP API, ["+test.getName()+", module='"+nameOrLsid+"']", t);
         }
-
+        // initialize parameters for SOAP API call
         final Parameter[] params;
         try {
             params = initParams(batchProps, taskInfo, test);
@@ -84,6 +146,8 @@ public class ModuleRunnerSoap {
             throw new AssertionError("Error initializing parameters for job ["+test.getName()+", module='"+nameOrLsid+"']: "
                     +t.getLocalizedMessage(), t);
         }
+        // make SOAP call to run the job
+        JobResult jobResult = null;
         try {
             jobResult = gpClient.runAnalysis(nameOrLsid, params);
         }
@@ -91,65 +155,9 @@ public class ModuleRunnerSoap {
             throw new AssertionError("Error running job ["+test.getName()+", module='"+nameOrLsid+"']: "+t.getLocalizedMessage(), t);
         }
         if (jobResult == null) {
-            Assert.fail("Error running job ["+test.getName()+", module='"+nameOrLsid+"']: No jobResult returned");
+            fail("Error running job ["+test.getName()+", module='"+nameOrLsid+"']: No jobResult returned");
         }
         return jobResult;
     }
 
-    protected static GPClient initGpClient(final BatchProperties batchProps) {
-        GPClient gpClient = null;
-        try {
-            gpClient = new GPClient(batchProps.getGpUrl(), batchProps.getGpUsername(), batchProps.getGpPassword());
-        }
-        catch (Throwable t) {
-            t.printStackTrace();
-            throw new AssertionError("Error initializing gpClient for gpUrl='"+batchProps.getGpUrl()+"': "+t.getLocalizedMessage());
-        }
-        return gpClient;
-    }
-    
-    protected static AnalysisWebServiceProxy initWebService(final BatchProperties batchProps) throws GpUnitException {
-        AnalysisWebServiceProxy analysisProxy = null;
-        try {
-            analysisProxy = new AnalysisWebServiceProxy(batchProps.getGpUrl(), batchProps.getGpUsername(), batchProps.getGpPassword());
-            //in milliseconds
-            final int timeout=60*1000;
-            analysisProxy.setTimeout(timeout);
-            return analysisProxy;
-        }
-        catch (WebServiceException e) {
-            throw new GpUnitException("Error initializing  AnalysisWebServiceProxy", e);
-        }
-    }
-    
-    protected static TaskInfo initTaskInfo(final GPClient gpClient, final String nameOrLsid) 
-    throws GpUnitException
-    {
-        try {
-            final TaskInfo taskInfo = gpClient.getModule(nameOrLsid);
-            return taskInfo;
-        } 
-        catch (WebServiceException e) {
-            throw new GpUnitException("Error getting taskInfo from SOAP API, module='"+nameOrLsid+"'", e);
-        }
-        catch (Throwable t) {
-            throw new GpUnitException("Unexpected error getting taskInfo from SOAP API, module='"+nameOrLsid+"'", t);
-        }
-    }
-
-    private static Parameter[] initParams(final BatchProperties batchProps, final TaskInfo taskInfo, final ModuleTestObject test) 
-    throws GpUnitException
-    {
-        InputFileUtil ifutil=new InputFileUtil(batchProps, taskInfo);
-        List<Parameter> params = new ArrayList<Parameter>();
-        if (test.getParams() != null) {
-            for(Entry<String,Object> entry : test.getParams().entrySet()) {
-                Parameter param = ifutil.initParam(test, entry);
-                params.add(param);
-            }
-        }
-        
-        //convert to an array
-        return params.toArray(new Parameter[]{});
-    }
 }
