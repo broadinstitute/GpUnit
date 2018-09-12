@@ -201,7 +201,8 @@
         <echo-value pname="user.dir" />
         <echo></echo>
         <echo-value pname="gpunit.properties" />
-        
+
+        <echo-value pname="gpunit.client" />
         <echo-value pname="client.lib.dir" />
         <echo></echo>
         <echo-value pname="connection-test.skip" />
