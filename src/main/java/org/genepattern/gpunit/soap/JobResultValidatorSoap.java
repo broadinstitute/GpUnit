@@ -1,10 +1,9 @@
-package org.genepattern.gpunit.exec.soap;
+package org.genepattern.gpunit.soap;
 
 import java.io.File;
 
 import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.download.JobResultDownloader;
-import org.genepattern.gpunit.download.soap.JobResultDownloaderSoap;
 import org.genepattern.gpunit.BatchModuleTestObject;
 import org.genepattern.gpunit.BatchProperties;
 import org.genepattern.gpunit.validator.JobResultValidatorGeneric;

@@ -146,6 +146,9 @@
         </propertyset>
     </target>
 
+    <target name="init-soap-client">
+    </target>
+
     <target name="init" depends="init-verbose, init-logging">
         <echo>initializing directories ... </echo>
         <echo>local.dir: ${local.dir} </echo>

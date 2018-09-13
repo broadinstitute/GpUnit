@@ -1,4 +1,4 @@
-package org.genepattern.gpunit.exec.soap;
+package org.genepattern.gpunit.soap;
 
 import java.io.File;
 

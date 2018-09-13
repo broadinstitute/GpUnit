@@ -10,7 +10,7 @@ import org.genepattern.gpunit.BatchModuleTestObject;
 import org.genepattern.gpunit.BatchProperties;
 import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.exec.rest.RestClientUtil;
-import org.genepattern.gpunit.exec.soap.SoapClientUtil;
+import org.genepattern.gpunit.soap.SoapClientUtil;
 import org.genepattern.gpunit.test.BatchModuleUtil;
 import org.junit.Ignore;
 

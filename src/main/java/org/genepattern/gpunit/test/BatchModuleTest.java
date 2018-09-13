@@ -18,7 +18,7 @@ import org.genepattern.gpunit.BatchProperties;
 import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.ModuleTestObject;
 import org.genepattern.gpunit.exec.rest.RestClientUtil;
-import org.genepattern.gpunit.exec.soap.SoapClientUtil;
+import org.genepattern.gpunit.soap.SoapClientUtil;
 import org.genepattern.util.junit.Parallelized;
 import org.junit.AfterClass;
 import org.junit.Assert;

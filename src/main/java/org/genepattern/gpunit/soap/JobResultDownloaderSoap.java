@@ -1,4 +1,4 @@
-package org.genepattern.gpunit.download.soap;
+package org.genepattern.gpunit.soap;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
