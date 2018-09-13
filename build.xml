@@ -1041,6 +1041,7 @@
         </copy>
     </target>
 
+    <property name="soap.dir" location="${gpunit.dir}/soap" />
     <target name="compile" depends="init, gp-client-lib, download-deps"
         description="compile GpUnit">
         <property name="java.target" value="1.6" /> 
@@ -1050,8 +1051,10 @@
             destdir="${gpunit.dir}/classes" 
             optimize="false" 
             proceed="false" 
-            srcdir="${gpunit.dir}/src/main/java" 
-            classpathref="gpunit.classpath" >
+             classpathref="gpunit.classpath" 
+        >
+            <src path="${gpunit.dir}/src/main/java"/>
+            <src path="${soap.dir}/src/main/java"/>
         </javac>
     </target>
 
