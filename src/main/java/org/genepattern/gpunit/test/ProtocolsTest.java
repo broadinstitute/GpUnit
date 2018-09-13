@@ -15,14 +15,14 @@ import org.genepattern.gpunit.BatchModuleTestObject;
 public class ProtocolsTest extends BatchModuleTest { 
 
     /**
-     * @see BatchModuleTest#data()
+     * @see BatchModuleUtil#data()
      */
     @Parameters(name="{0}")
     public static Collection<Object[]> data() {
         return BatchModuleUtil.data(new File("./tests/protocols"));
     }
     
-    public ProtocolsTest(final int batchIdx, final String testname, final BatchModuleTestObject testObj) {
+    public ProtocolsTest(final int batchIdx, final BatchModuleTestObject testObj) {
         super(batchIdx, testObj);
     }
 
