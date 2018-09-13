@@ -1204,8 +1204,6 @@
             <echo>testcases: @{testcases}</echo>
             <echo>junit.formatter: @{junit.formatter}</echo>
 
-            <property name="gpunit.classpath.prop" refid="gpunit.classpath" /> 
-
             <junit fork="yes" printsummary="on" haltonfailure="false" showoutput="@{showoutput}" logfailedtests="true" failureProperty="test.failure" >
                 <formatter type="@{junit.formatter}" usefile="@{usefile}" />
                 <test name="@{junit.test.name}" outfile="TEST-all" todir="${report.run.dir}"/>
@@ -1325,28 +1323,44 @@
         <ant antfile="automatrix/build.xml" target="createWar" useNativeBasedir="true" />
     </target>
 
-    <target name="gpunit-junit-tests" depends="init, package"
+    <!-- compile the 'test-gpunit' classes -->
+    <target name="compile-tests" depends="compile">
+        <property name="target.dir" location="${gpunit.dir}/target" />
+        <property name="test-classes" location="${target.dir}/junit/test-classes" />
+        <mkdir dir="${test-classes}" />
+        
+        <javac includeantruntime="false"
+            srcdir="${gpunit.dir}/src/test/java" 
+            destdir="${test-classes}" 
+            classpathref="gpunit.classpath"
+        />
+
+        <path id="gpunit.test.classpath">
+            <path refid="gpunit.classpath" />
+            <fileset dir="${gpunit.dir}/src/test/lib" >
+                <include name="**/*.jar"/>
+            </fileset>
+            <pathelement location="${test-classes}"/>
+        </path>
+    </target>
+
+    <target name="test-gpunit" depends="compile-tests"
         description="run junit test of the GpUnit source code"
     >
-        <property name="junit.results.dir" location="${gpunit.dir}/target/junit" />
-        <mkdir dir="${junit.results.dir}" />
-        <junit showoutput="true" printsummary="true" >
-            <classpath>
-                <pathelement location="${gpunit.dir}/classes"/>
-                <fileset dir="${gpunit.dir}/src/test/lib" >
-                    <include name="**/*.jar"/>
-                </fileset>
-                <path refid="dependencies.classpath" />
-                <pathelement location="${client.lib.dir}/GenePattern.jar" />
-            </classpath>
+        <property name="junit.dir" location="${gpunit.dir}/target/junit" />
+        <mkdir dir="${junit.dir}" />
+        <junit showoutput="true" printsummary="withOutAndErr" >
+            <classpath refid="gpunit.test.classpath" />
             <!-- example single test-case -->
             <!--
-            <test name="org.genepattern.gpunit.yaml.PropertyExpansionTests" outfile="gpunit-junit" todir="${junit.results.dir}" >
+            <test name="org.genepattern.gpunit.yaml.PropertyExpansionTests" outfile="gpunit-junit" todir="${junit.dir}" >
                 <formatter type="xml"/>
             </test>
             -->
             <!-- run all tests -->
-            <batchtest fork="yes" todir="${junit.results.dir}">
+            <batchtest fork="yes" todir="${junit.dir}">
+                <!-- for debugging -->
+                <!-- formatter type="plain" usefile="false"/ -->
                 <formatter type="xml"/>
                 <fileset dir="${gpunit.dir}/src/test/java">
                     <include name="**/*Test*.java"/>
@@ -1354,6 +1368,15 @@
                 </fileset>
             </batchtest>
         </junit>
+        
+        <property name="junit.report.dir" location="${junit.dir}/report" />
+        <mkdir dir="${junit.report.dir}" />
+        <junitreport todir="${junit.report.dir}">
+            <fileset dir="${junit.dir}">
+                <include name="TEST-*.xml"/>
+            </fileset>
+            <report format="frames" todir="${junit.report.dir}/html"/>
+        </junitreport>
     </target>
 
     <!-- Import module test suite targets and fileset definitions -->
