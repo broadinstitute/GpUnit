@@ -293,6 +293,44 @@
         <input message="set -Dpname=user.dir" addProperty="pname" defaultValue="user.dir" />
         <echo-value pname="${pname}" />
     </target>
+    
+    <!--
+      Macrodef: echo-path, print the value of the given path reference.
+        a helper method for printing path like structures.
+      
+      Usage:
+        path id="my.classpath"
+        echo-value pname="my.classpath"
+      <path id="gpunit.runtime.classpath">
+            <path refid="gpunit.classpath" />
+            <path refid="soap.client.classpath" />
+    </path>
+         
+    -->
+    <macrodef name="echo-path">
+        <attribute name="pname" />
+        <attribute name="pad" default="    " />
+        <sequential>
+            <!-- for debugging -->
+            <local name="classpathProp" />
+            <pathconvert property="classpathProp" refid="@{pname}" pathsep="${line.separator}@{pad}" />
+            <echo>@{pname}: ${line.separator}@{pad}${classpathProp}</echo>
+        </sequential>
+    </macrodef>
+    
+    <target name="debug-echo-path"
+        description="debug 'echo-path' macrodef"
+    >
+        <!-- 
+          example: a path-like structure
+          see: http://ant.apache.org/manual/using.html#path
+        -->
+        <path id="example.path">
+            <pathelement location="${gpunit.dir}/tests/protocols/01_Run/02_HeatMapViewer/test.yaml" />
+            <pathelement location="${gpunit.dir}/tests/protocols/03_Clustering" />
+        </path>
+        <echo-path pname="example.path" />
+    </target>
 
     <!-- 
       Macrodef: fq-path, to convert a relative to an absolute file path;
