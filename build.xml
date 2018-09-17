@@ -1082,7 +1082,6 @@
     <property name="soap.dir" location="${gpunit.dir}/soap" />
     <target name="compile" depends="init, gp-client-lib, download-deps"
         description="compile GpUnit">
-        <property name="java.target" value="1.6" /> 
         <javac debug="true" includeantruntime="false"
             defaultexcludes="true" 
             deprecation="true" 
