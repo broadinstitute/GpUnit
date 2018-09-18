@@ -20,6 +20,9 @@
     <property name="gpunit.properties" value="${project.basedir}/gpunit.properties" />
     <property file="${gpunit.properties}" />
 
+    <!-- target directory aka build output directory -->
+    <property name="target.dir" location="${gpunit.dir}/target" />
+
     <property name="gp.scheme" value="http" />
     <property name="gp.host" value="127.0.0.1" />
     <property name="gp.port" value="" />
@@ -34,9 +37,6 @@
     -->
     <property name="gpunit.localAssertions" value="true" />
     <property name="local.dir" location="${gpunit.dir}/tmp/${gp.host}" />
-    <property name="client.lib.dir" location="${local.dir}/client" />
-    <!-- if the client.dir already exists, skip the rest -->
-    <available property="gp-client-lib-exists" file="${client.lib.dir}/GenePattern.jar" />
     <!-- location for downloading job results -->
     <property name="gpunit.outputdir" value="${local.dir}/jobResults" />
     <!-- location for generating junit reports -->
@@ -49,19 +49,11 @@
     <property name="gpunit.trustStore" value="" />
     <property name="gpunit.trustStorePassword" value="" />
     
-    <path id="gp.client.classpath">
-        <pathelement location="${client.lib.dir}/GenePattern.jar" />
-        <fileset dir="${client.lib.dir}/lib">
-            <include name="**/*.jar"/>
-        </fileset>
-    </path>
-
     <path id="gpunit.classpath">
         <pathelement location="${gpunit.dir}/classes"/>
         <fileset dir="${gpunit.dir}/lib">
             <include name="**/*.jar"/>
         </fileset>
-        <path refid="gp.client.classpath" />
     </path>
 
     <!-- 
@@ -146,9 +138,6 @@
         </propertyset>
     </target>
 
-    <target name="init-soap-client">
-    </target>
-
     <target name="init" depends="init-verbose, init-logging">
         <echo>initializing directories ... </echo>
         <echo>local.dir: ${local.dir} </echo>
@@ -157,11 +146,9 @@
         <tstamp />
         <mkdir dir="${gpunit.dir}/classes" />
         <mkdir dir="${gpunit.dir}/dist" />
-        <mkdir dir="${client.lib.dir}" />
         <mkdir dir="${report.dir}" />
         
         <!-- initialize properties for a batch run -->
-        <property name="gpunit.client" value="REST" />
         <property name="gpunit.batch.name" value="run_${DSTAMP}_${TSTAMP}" />
         <property name="gpunit.save.downloads" value="false" />
         <property name="gpunit.save.job.json" value="false" />
@@ -205,8 +192,6 @@
         <echo></echo>
         <echo-value pname="gpunit.properties" />
 
-        <echo-value pname="gpunit.client" />
-        <echo-value pname="client.lib.dir" />
         <echo></echo>
         <echo-value pname="connection-test.skip" />
         <echo-value pname="check-url.skip" />
@@ -237,7 +222,6 @@
         <echo-value pname="gp.path" />
         <echo-value pname="gp.user" />
         <!-- echo-value pname="gp.password" / -->
-        <echo-value pname="gpunit.client" />
         <echo></echo>
         <echo-value pname="repo.name" />
         <echo-value pname="git.parentdir" />
@@ -296,16 +280,6 @@
     
     <!--
       Macrodef: echo-path, print the value of the given path reference.
-        a helper method for printing path like structures.
-      
-      Usage:
-        path id="my.classpath"
-        echo-value pname="my.classpath"
-      <path id="gpunit.runtime.classpath">
-            <path refid="gpunit.classpath" />
-            <path refid="soap.client.classpath" />
-    </path>
-         
     -->
     <macrodef name="echo-path">
         <attribute name="pname" />
@@ -988,16 +962,6 @@
         <check-url />
     </target>
 
-    <!-- the gp-client-lib is needed to compile GpUnit -->
-    <target name="gp-client-lib" depends="init, gp-client-lib-check-url" unless="gp-client-lib-exists"
-        description="download the GenePattern Java Programming Library (SOAP client) from the server" >
-
-        <get verbose="false" 
-            src="${gp.url}${gp.path}/downloads/GenePattern.zip" 
-            dest="${local.dir}/GenePattern.zip" usetimestamp="true" />
-        <unzip src="${local.dir}/GenePattern.zip" dest="${client.lib.dir}" overwrite="true" />
-    </target>
-
     <!-- location for maven dependencies copied into this project -->
     <property name="dependency.dir" location="${gpunit.dir}/target/dependency" />
     <target name="download-deps" depends="init" unless="download-deps.called"
@@ -1054,7 +1018,6 @@
         <path id="gpunit.classpath">
             <pathelement location="${gpunit.dir}/classes" />
             <pathelement location="${gpunit.dir}/lib/gp-modules-updated.jar" />
-            <path refid="gp.client.classpath" />
             <path refid="dependencies.classpath" />
         </path>
 
@@ -1079,8 +1042,7 @@
         </copy>
     </target>
 
-    <property name="soap.dir" location="${gpunit.dir}/soap" />
-    <target name="compile" depends="init, gp-client-lib, download-deps"
+    <target name="compile" depends="download-deps"
         description="compile GpUnit">
         <javac debug="true" includeantruntime="false"
             defaultexcludes="true" 
@@ -1091,11 +1053,134 @@
              classpathref="gpunit.classpath" 
         >
             <src path="${gpunit.dir}/src/main/java"/>
-            <src path="${soap.dir}/src/main/java"/>
         </javac>
     </target>
 
-    <target name="package" depends="compile"
+    <!-- Optional SOAP client integration -->
+    <target name="init-soap">
+        <property name="with.soap" value="true" />
+        <property name="junit.test.name" value="org.genepattern.gpunit.soap.test.GpUnitSoap" />
+    </target>
+
+    <target name="compile-with-soap" depends="compile">
+        <property name="soap.dir" location="${gpunit.dir}/soap" />
+        <property name="soap.client.dir" location="${soap.dir}/client" />
+
+        <path id="soap.client.classpath">
+            <pathelement location="${soap.client.dir}/GenePattern.jar" />
+            <fileset dir="${soap.client.dir}/lib">
+                <include name="**/*.jar"/>
+            </fileset>
+        </path>
+
+        <!-- add soap client to classpath -->
+        <path id="gpunit.client.classpath">
+            <path refid="gpunit.classpath" />
+            <path refid="soap.client.classpath" />
+        </path>
+        
+        <javac debug="true" includeantruntime="false"
+            defaultexcludes="true" 
+            deprecation="true" 
+            destdir="${gpunit.dir}/classes" 
+            optimize="false" 
+            proceed="false" 
+            classpathref="gpunit.client.classpath" 
+        >
+            <src path="${soap.dir}/src/main/java" />
+        </javac>
+    </target>
+
+    <target name="with-soap" depends="init-soap, compile-with-soap"
+        description="run with soap client; ant with-soap ..."
+    />
+
+    <target name="init-soap-download" depends="init-soap">
+        <fail unless="target.dir"
+            message="Missing required property: 'target.dir' not set" />
+        <property name="soap.download.dir" location="${target.dir}/soap-download" />
+        <fail if="soap.client.dir" 
+            message="Error 'soap.client.dir' already set" />
+        <property name="soap.client.dir" location="${soap.download.dir}/client" />
+        <available property="soap-client-download-exists" file="${soap.download.dir}/client/GenePattern.jar" /> 
+    </target>
+    
+    <!-- Download the soap client library from the server
+           ./target/soap-download/GenePattern.zip
+           ./target/soap-download/client/GenePattern.jar
+    -->
+    <target name="download-soap" depends="init-soap-download" unless="soap-client-download-exists"
+        description="download the GenePattern Java Programming Library (SOAP client) from the server" 
+    >
+        <fail unless="soap.client.dir"
+            message="Missing required property: 'soap.client.dir' not set" />
+
+        <fail unless="soap.download.dir"
+            message="Missing required property: 'soap.download.dir' not set" 
+        />
+
+        <mkdir dir="${soap.download.dir}" />
+
+        <get verbose="false"  usetimestamp="true" 
+            src="${gp.url}${gp.path}/downloads/GenePattern.zip" 
+            dest="${soap.download.dir}"
+        />
+        <unzip 
+            src="${soap.download.dir}/GenePattern.zip"
+            dest="${soap.client.dir}" overwrite="false" 
+        />
+    </target>
+
+    <target name="with-soap-download" depends="init-soap-download, download-soap, compile-with-soap"
+        description="run with soap client downloaded from server; ant with-soap-download ..."
+    />
+
+    <!-- compile the 'test-gpunit' classes -->
+    <target name="compile-tests-with-soap" depends="compile-with-soap">
+        <property name="test-classes" location="${target.dir}/junit/test-classes" />
+        <mkdir dir="${test-classes}" />
+        
+        <javac includeantruntime="false"
+            srcdir="${gpunit.dir}/src/test/java" 
+            destdir="${test-classes}" 
+            classpathref="gpunit.classpath"
+        >
+            <src path="${soap.dir}/src/test/java" />
+        </javac>
+
+        <path id="gpunit.soap.test.classpath">
+            <path refid="gpunit.soap.classpath" />
+            <fileset dir="${gpunit.dir}/src/test/lib" >
+                <include name="**/*.jar"/>
+            </fileset>
+            <pathelement location="${test-classes}"/>
+        </path>
+    </target>
+
+    <!-- initialize GpUnit runtime before running the tests -->
+    <target name="init-runtime" depends="init-runtime-classpath, init-runtime-classpath-soap">
+        <!-- set default 'junit.test.name' -->
+        <property name="junit.test.name" value="org.genepattern.gpunit.test.BatchModuleTest" />
+
+        <!-- for debugging -->
+        <echo-value if:true="${debug}" pname="junit.test.name" />
+        <echo-path if:true="${debug}" pname="gpunit.runtime.classpath" />
+    </target>
+
+    <target name="init-runtime-classpath" unless="with.soap">
+        <!-- set default 'gpunit.runtime.classpath' -->
+        <path id="gpunit.runtime.classpath">
+            <path refid="gpunit.classpath" />
+        </path>
+    </target>
+    <target name="init-runtime-classpath-soap" if="with.soap">
+        <path id="gpunit.runtime.classpath">
+            <path refid="gpunit.classpath" />
+            <path refid="soap.client.classpath" />
+        </path>
+    </target>
+
+    <target name="package" depends="compile, init-runtime"
         description="build and package GpUnit, creates the 'gp-unit.jar' file"
         >
         <jar basedir="${gpunit.dir}/classes" jarfile="${gpunit.dir}/dist/gp-unit.jar" />
@@ -1228,7 +1313,8 @@
          Look at the gpunit-all-protocols target for an example. 
       -->
     <macrodef name="run-tests">
-        <attribute name="junit.test.name" default="org.genepattern.gpunit.test.BatchModuleTest" />
+        <attribute name="junit.test.name" default="${junit.test.name}" />
+        <attribute name="junit.classpath.refid" default="gpunit.runtime.classpath" />
         <attribute name="testcases" />
         <attribute name="numThreads" default="${gpunit.numThreads}" />
         <!-- when running jobs in parallel, this is the max time in seconds to wait before finishing the test -->
@@ -1250,14 +1336,13 @@
             <junit fork="yes" printsummary="on" haltonfailure="false" showoutput="@{showoutput}" logfailedtests="true" failureProperty="test.failure" >
                 <formatter type="@{junit.formatter}" usefile="@{usefile}" />
                 <test name="@{junit.test.name}" outfile="TEST-all" todir="${report.run.dir}"/>
-                <classpath refid="gpunit.classpath" />
+                <classpath refid="@{junit.classpath.refid}" />
                 <sysproperty key="gpunit.testcase.dirs" value="@{testcases}" />
 
                 <sysproperty key="gp.url" value="${gp.url}" />
                 <sysproperty key="gp.user" value="${gp.user}" />
                 <sysproperty key="gp.password" value="${gp.password}" />
 
-                <sysproperty key="gpunit.client" value="${gpunit.client}" />
                 <sysproperty key="gpunit.outputdir" value="${gpunit.outputdir}" />
                 <sysproperty key="gpunit.batch.name" value="${gpunit.batch.name}" />
                 <sysproperty key="gpunit.save.downloads" value="${gpunit.save.downloads}" />
