@@ -6,21 +6,14 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import org.genepattern.gpunit.BatchModuleTestObject;
 import org.genepattern.gpunit.BatchProperties;
 import org.genepattern.gpunit.GpUnitException;
-import org.genepattern.gpunit.exec.rest.RestClientUtil;
-import org.genepattern.gpunit.soap.SoapClientUtil;
-import org.genepattern.gpunit.test.BatchModuleUtil;
 import org.junit.Ignore;
 
-/**
- * for debugging, do a GpUnit test for a single ModuleTestObject, typically a single test_yaml file.
- */
 @Ignore
 public class ModuleTest {
     /** helper class to avoid check for MalformedURLException */
-    private static final URL initLocalUrl() {
+    public static final URL initLocalUrl() {
         try {
             return new URL("http://127.0.0.1:8080/gp/");
         } 
@@ -41,7 +34,7 @@ public class ModuleTest {
      * 
      * @param usernamePassword - the username and password separated by the ':' character.
      */
-    protected static BatchProperties initGpClient(final String usernamePassword) throws GpUnitException  {
+    public static BatchProperties initGpClient(final String usernamePassword) throws GpUnitException  {
         return initGpClient(usernamePassword, LOCAL_URL);
     }
 
@@ -54,7 +47,7 @@ public class ModuleTest {
      * @param usernamePassword - the username:password, separated by the ':' character.
      * @param gpUrl - the server on which to run the tests
      */
-    protected static BatchProperties initGpClient(final String usernamePassword, final String gpUrl) throws GpUnitException {
+    public static BatchProperties initGpClient(final String usernamePassword, final String gpUrl) throws GpUnitException {
         try {
             return initGpClient(usernamePassword, new URL(gpUrl));
         } 
@@ -69,7 +62,7 @@ public class ModuleTest {
      * @param usernamePassword - the username:password, separated by the ':' character
      * @param url - the server on which to run the tests
      */
-    protected static BatchProperties initGpClient(final String usernamePassword, final URL url) throws GpUnitException {
+    public static BatchProperties initGpClient(final String usernamePassword, final URL url) throws GpUnitException {
         final String[] userArgs=usernamePassword.split(":", 2);
         final String username=userArgs[0];
         final String password;
@@ -88,7 +81,7 @@ public class ModuleTest {
      * @param password
      * @param url - the server on which to run the tests
      */
-    protected static BatchProperties initGpClient(final String username, final String password, final URL url) throws GpUnitException {
+    public static BatchProperties initGpClient(final String username, final String password, final URL url) throws GpUnitException {
         final BatchProperties.Builder b = new BatchProperties.Builder() 
             .scheme(url.getProtocol())
             .host(url.getHost())
@@ -143,22 +136,7 @@ public class ModuleTest {
      * @throws GpUnitException
      */
     public static void doModuleTest(final BatchProperties gpClient, final File testFile) throws GpUnitException {
-        final BatchModuleTestObject testObj=BatchModuleUtil.initBatchModuleTestObject(testFile);
-        if (testObj == null) {
-            fail("testObj == null");
-        }
-        if (testObj.hasInitExceptions()) {
-            fail(testObj.getInitException().getLocalizedMessage());
-        }
-
-        //submit a job via new REST API
-        if (gpClient.getClient().equals(BatchProperties.GpUnitClient.REST)) {
-            RestClientUtil.runTest(gpClient, testObj, null);
-            return;
-        }
-
-        // otherwise use legacy SOAP API
-        SoapClientUtil.runTest(gpClient,testObj);
+        new RestModuleTest(gpClient, testFile).doModuleTest();
     }
 
 }

@@ -22,11 +22,6 @@ public class BatchProperties {
         }
         return true;
     }
-    
-    public enum GpUnitClient {
-        SOAP,
-        REST,
-    }
 
 //    this code snippet is not needed when the 'log4j.properties' file is on the classpath
 //    protected static void setIfNotSet(final String key, final String value) {
@@ -72,9 +67,6 @@ public class BatchProperties {
      * When this property is set, run all matching *.yaml or *.yml files as gpunit tests.
      */
     public static final String PROP_TESTCASE_DIRS="gpunit.testcase.dirs";
-
-    /** type of client, can be 'soap', 'rest', or 'localexec' */
-    final static public String PROP_CLIENT="gpunit.client";
     
     /** the location on the local file system for downloading job result files */
     final static public String PROP_OUTPUT_DIR="gpunit.outputdir";
@@ -160,8 +152,6 @@ public class BatchProperties {
     private String gpUsername =  "test";
     private String gpPassword = "test";
 
-    private GpUnitClient client=GpUnitClient.REST;
-
     private final String outputDir; //default: "./jobResults";
     private final String batchName; //default: "latest";
     
@@ -201,13 +191,6 @@ public class BatchProperties {
         }
         if (sysProps.containsKey(PROP_GP_PASSWORD)) {
             this.gpPassword=sysProps.getProperty(PROP_GP_PASSWORD);
-        }
-        String clientStr=sysProps.getProperty(PROP_CLIENT, GpUnitClient.REST.toString());
-        try {
-            client=GpUnitClient.valueOf(clientStr);
-        }
-        catch (Throwable t) {
-            throw new GpUnitException("Error initializing client from "+PROP_CLIENT+"="+clientStr+": "+t.getLocalizedMessage());
         }
         if (sysProps.containsKey(PROP_OUTPUT_DIR)) {
             this.outputDir=sysProps.getProperty(PROP_OUTPUT_DIR, "./jobResults");
@@ -249,7 +232,6 @@ public class BatchProperties {
     
     public BatchProperties(final Builder in) throws GpUnitException {
         //initialize values from Builder
-        this.client=in.client;
         this.gpUrl=in.scheme+"://"+in.host+in.initPort();
         this.gpUsername=in.username;
         this.gpPassword=in.password;
@@ -399,10 +381,6 @@ public class BatchProperties {
         return gpPassword;
     }
     
-    public GpUnitClient getClient() {
-        return client;
-    }
-    
     public boolean getSaveDownloads() {
         return saveDownloads;
     }
@@ -514,8 +492,6 @@ public class BatchProperties {
     }
 
     public static final class Builder {
-        private GpUnitClient client=GpUnitClient.REST;
-
         //private String gpUrl = "http://127.0.0.1:8080";
         private String scheme="http";
         private String host="127.0.0.1";
@@ -538,11 +514,6 @@ public class BatchProperties {
         private int shutdownTimeout = -1;
 
         private boolean deleteJobs = true;
-        
-        public Builder client(final GpUnitClient client) {
-            this.client=client;
-            return this;
-        }
         
         public Builder scheme(final String scheme) {
             this.scheme=scheme;

@@ -1,7 +1,6 @@
 package org.genepattern.gpunit.debug;
 
 import java.io.File;
-import java.net.MalformedURLException;
 
 import org.genepattern.gpunit.BatchProperties;
 import org.genepattern.gpunit.GpUnitException;
