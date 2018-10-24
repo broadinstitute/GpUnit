@@ -116,12 +116,7 @@ public class ServerDiff extends AbstractDiffTest {
             batchTestObj.setTestCase(testCase);
             BatchProperties bp = BatchProperties.initFromProps();
             try {
-                if (bp.getClient().equals(BatchProperties.GpUnitClient.REST)) {
-                    RestClientUtil.runTest(bp, batchTestObj, parentJobValidator);
-                }
-                else {
-                    throw new GpUnitException("Invalid SOAP call context; server side diffs are REST only");
-                }
+                RestClientUtil.runTest(bp, batchTestObj, parentJobValidator);
             }
             catch (Throwable t) {
                 Assert.fail(t.getLocalizedMessage());

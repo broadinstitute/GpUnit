@@ -5,16 +5,11 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import org.genepattern.gpunit.BatchProperties;
 import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.ModuleTestObject;
-import org.genepattern.webservice.Parameter;
-import org.genepattern.webservice.ParameterInfo;
-import org.genepattern.webservice.TaskInfo;
 
 /**
  * Helper class for initializing input file parameters.
@@ -58,63 +53,15 @@ public class InputFileUtil {
         return pathOut;
     }
 
-    final private BatchProperties props;
-    final private TaskInfo taskInfo;
-    final private Map<String, ParameterInfo> pinfoMap;
-
-    public InputFileUtil(final BatchProperties props, final TaskInfo taskInfo) {
-        this.props=props;
-        this.taskInfo=taskInfo;
-        //initialize parameter map
-        pinfoMap=new HashMap<String,ParameterInfo>();
-        final ParameterInfo[] formalParameters = taskInfo.getParameterInfoArray();
-        if (formalParameters==null) {
-            throw new IllegalArgumentException("Error initializing parameter map from task, formalParameters==null");
-        }
-        for(ParameterInfo param : formalParameters) {
-            pinfoMap.put(param.getName(), param);
-        }
-    }
-
-    public TaskInfo getTaskInfo() {
-        return taskInfo;
-    }
-
-    public Parameter initParam(final ModuleTestObject test, final Entry<String,Object> paramEntry) 
-    throws GpUnitException
-    {
-        String pName = paramEntry.getKey();
-        String pValue=getParamValue(test, paramEntry);
-        return new Parameter(pName, pValue);
-    }
-
-    public String getParamValue(final ModuleTestObject test, final Entry<String,Object> paramEntry) 
-    throws GpUnitException 
-    {
-        final String pName = paramEntry.getKey();
-        final ParameterInfo pinfo=getParameterInfo(pName);
-        return getParamValue(props, pinfo, test, paramEntry);
-    }
-
-    public static String getParamValue(final BatchProperties props, final ParameterInfo pinfo, final ModuleTestObject test, final Entry<String,Object> paramEntry) 
-            throws GpUnitException
-    {
-        boolean isInputFile;
-        if (pinfo==null) {
-            //[WARNING!] ... log error message
-            isInputFile=false;
-        }
-        else {
-            isInputFile=pinfo.isInputFile();
-        }
-        return getParamValue(props, isInputFile, test, paramEntry);
-    }
-
     public static String getParamValue(final BatchProperties props, final boolean isInputFile, final ModuleTestObject test, final Entry<String,Object> paramEntry) 
     throws GpUnitException
     {
-        Object pValue = paramEntry.getValue();
+        return getParamValue(props, isInputFile, test, paramEntry.getKey(), paramEntry.getValue());
+    }
 
+    public static String getParamValue(final BatchProperties props, final boolean isInputFile, final ModuleTestObject test, final String pName, final Object pValue) 
+    throws GpUnitException
+    {
         if (pValue == null) {
             //convert to empty String
             return "";
@@ -130,7 +77,6 @@ public class InputFileUtil {
                 return inputFileValue;
             }
             catch (Throwable t) {
-                String pName = paramEntry.getKey();
                 throw new GpUnitException("Error setting value for "+pName+"='"+pValue, t);
             }
         }
@@ -231,11 +177,6 @@ public class InputFileUtil {
 
         //d) else [WARNING!] ... literal value
         return pValue.toString();
-    }
-
-    public ParameterInfo getParameterInfo(final String pname) {
-        ParameterInfo pinfo=pinfoMap.get(pname);
-        return pinfo;
     }
 
 }

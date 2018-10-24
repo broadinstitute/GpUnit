@@ -1,0 +1,1 @@
+This folder is for the legacy SOAP API client code

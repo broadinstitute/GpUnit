@@ -22,11 +22,6 @@ public class BatchProperties {
         }
         return true;
     }
-    
-    public enum GpUnitClient {
-        SOAP,
-        REST,
-    }
 
 //    this code snippet is not needed when the 'log4j.properties' file is on the classpath
 //    protected static void setIfNotSet(final String key, final String value) {
@@ -72,15 +67,12 @@ public class BatchProperties {
      * When this property is set, run all matching *.yaml or *.yml files as gpunit tests.
      */
     public static final String PROP_TESTCASE_DIRS="gpunit.testcase.dirs";
-
-    /** type of client, can be 'soap', 'rest', or 'localexec' */
-    final static public String PROP_CLIENT="gpunit.client";
     
     /** the location on the local file system for downloading job result files */
     final static public String PROP_OUTPUT_DIR="gpunit.outputdir";
     /** optionally, download job result files into a directory, based on batch.name, e.g.,
      * <pre>
-     *  <gpunit.outputdir>/<gpunit.batchname> 
+     *  <gpunit.outputdir>/<gpunit.batch.name> 
      * </pre>
      */
     final static public String PROP_BATCH_NAME="gpunit.batch.name";
@@ -160,12 +152,8 @@ public class BatchProperties {
     private String gpUsername =  "test";
     private String gpPassword = "test";
 
-
-    private GpUnitClient client=GpUnitClient.REST;
-
-
-    private String outputDir="./jobResults";
-    private String batchName="latest";
+    private final String outputDir; //default: "./jobResults";
+    private final String batchName; //default: "latest";
     
     private String uploadDir=null;
     private String serverDir=null;
@@ -204,18 +192,17 @@ public class BatchProperties {
         if (sysProps.containsKey(PROP_GP_PASSWORD)) {
             this.gpPassword=sysProps.getProperty(PROP_GP_PASSWORD);
         }
-        String clientStr=sysProps.getProperty(PROP_CLIENT, GpUnitClient.REST.toString());
-        try {
-            client=GpUnitClient.valueOf(clientStr);
-        }
-        catch (Throwable t) {
-            throw new GpUnitException("Error initializing client from "+PROP_CLIENT+"="+clientStr+": "+t.getLocalizedMessage());
-        }
         if (sysProps.containsKey(PROP_OUTPUT_DIR)) {
-            this.outputDir=sysProps.getProperty(PROP_OUTPUT_DIR, outputDir);
+            this.outputDir=sysProps.getProperty(PROP_OUTPUT_DIR, "./jobResults");
+        }
+        else {
+            this.outputDir="./jobResults";
         }
         if (sysProps.containsKey(PROP_BATCH_NAME)) {
-            this.batchName=sysProps.getProperty(PROP_BATCH_NAME, batchName);
+            this.batchName=sysProps.getProperty(PROP_BATCH_NAME, "latest");
+        }
+        else {
+            this.batchName="latest";
         }
         
         //options for handling input files
@@ -232,7 +219,8 @@ public class BatchProperties {
             //this.deleteJobs=Boolean.getBoolean(PROP_DELETE_JOBS);
             this.deleteJobs=Boolean.valueOf(sysProps.getProperty(PROP_DELETE_JOBS));
         }
-        this.batchOutputDir=_initBatchOutputDir();
+        this.batchOutputDir=initDir(outputDir, batchName);
+        this.createdBatchOutputDir=mkdirIfNecessary(batchOutputDir);
         
         if (sysProps.containsKey(PROP_LOCAL_ASSERTIONS)) {
             //this.localAssertions=Boolean.getBoolean(PROP_LOCAL_ASSERTIONS);
@@ -244,7 +232,6 @@ public class BatchProperties {
     
     public BatchProperties(final Builder in) throws GpUnitException {
         //initialize values from Builder
-        this.client=in.client;
         this.gpUrl=in.scheme+"://"+in.host+in.initPort();
         this.gpUsername=in.username;
         this.gpPassword=in.password;
@@ -255,7 +242,8 @@ public class BatchProperties {
         this.saveDownloads=in.saveDownloads;
         this.saveJobJson=in.saveJobJson;
         this.deleteJobs=in.deleteJobs;
-        this.batchOutputDir=_initBatchOutputDir();
+        this.batchOutputDir=initDir(outputDir, batchName);
+        this.createdBatchOutputDir=mkdirIfNecessary(batchOutputDir);
         this.localAssertions=in.localAssertions;
         this.testTimeout=in.initTestTimeout();
         this.jobCompletionTimeout=in.initJobCompletionTimeout();
@@ -393,10 +381,6 @@ public class BatchProperties {
         return gpPassword;
     }
     
-    public GpUnitClient getClient() {
-        return client;
-    }
-    
     public boolean getSaveDownloads() {
         return saveDownloads;
     }
@@ -421,28 +405,51 @@ public class BatchProperties {
         return localAssertions;
     }
 
-    private boolean createdBatchOutputDir=false;
-    private File batchOutputDir=null;
-    //if necessary, create the top level download directory
-    //    for all jobs in the batch
-    private File _initBatchOutputDir() throws GpUnitException {
-        String path=outputDir;
-        if (batchName != null && batchName.length()>0) {
-            if (!outputDir.endsWith("/")) {
-                path = outputDir + "/" + batchName;
+    private final boolean createdBatchOutputDir;
+    private final File batchOutputDir;
+
+    /**
+     * Initialize a directory path. 
+     * Handle special cases:
+     *   (1) batch.name not set
+     *   (2) gpunit.outputdir with and without file separator
+     * 
+     * Use this to create the top level download directory for all jobs in the batch.
+     * Template:
+     *     <gpunit.outputdir>[/<gpunit.batch.name>]
+     * Default:
+     *     ./jobResults/latest
+     * 
+     * @param parentDir - the <gpunit.outputdir>, default: "./jobResults"
+     * @param name - <gpunit.batch.name>, default: "latest"
+     * @return a new File object
+     * @throws GpUnitException
+     */
+    private static File initDir(final String parentDir, final String name) throws GpUnitException {
+        final String path;
+        if (name != null && name.length()>0) {
+            if (!parentDir.endsWith("/")) {
+                path=parentDir + "/" + name;
             }
             else {
-                path = outputDir + batchName;
+                path=parentDir + name;
             }
         }
-        File rval=new File(path);
-        if (!rval.exists()) {
-            createdBatchOutputDir=rval.mkdirs();
+        else {
+            path=parentDir;
+        } 
+        return new File(path);
+    }
+    
+    private static boolean mkdirIfNecessary(final File batchOutputDir) throws GpUnitException {
+        if (!batchOutputDir.exists()) {
+            boolean createdBatchOutputDir=batchOutputDir.mkdirs();
             if (!createdBatchOutputDir) {
                 throw new GpUnitException("Failed to initialize parent directory for downloading job results: "+batchOutputDir.getAbsolutePath());
             }
+            return createdBatchOutputDir;
         }
-        return rval;
+        return false;
     }
     
     public boolean getCreatedBatchOutputDir() {
@@ -485,8 +492,6 @@ public class BatchProperties {
     }
 
     public static final class Builder {
-        private GpUnitClient client=GpUnitClient.REST;
-
         //private String gpUrl = "http://127.0.0.1:8080";
         private String scheme="http";
         private String host="127.0.0.1";
@@ -509,11 +514,6 @@ public class BatchProperties {
         private int shutdownTimeout = -1;
 
         private boolean deleteJobs = true;
-        
-        public Builder client(final GpUnitClient client) {
-            this.client=client;
-            return this;
-        }
         
         public Builder scheme(final String scheme) {
             this.scheme=scheme;
