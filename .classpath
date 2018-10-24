@@ -18,8 +18,8 @@
 	<classpathentry kind="lib" path="target/dependency/httpcore-4.4.6.jar"/>
 	<classpathentry kind="lib" path="target/dependency/log4j-1.2.17.jar"/>
 	<classpathentry kind="lib" path="target/dependency/commons-logging-1.2.jar"/>
+	<classpathentry kind="lib" path="soap/client/GenePattern.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/GENEPATTERN_CLIENT"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/genepattern-server"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

@@ -1062,7 +1062,7 @@
         <property name="junit.test.name" value="org.genepattern.gpunit.soap.test.GpUnitSoap" />
     </target>
 
-    <target name="compile-with-soap" depends="compile">
+    <target name="init-soap-client-classpath-default">
         <property name="soap.dir" location="${gpunit.dir}/soap" />
         <property name="soap.client.dir" location="${soap.dir}/client" />
 
@@ -1072,7 +1072,9 @@
                 <include name="**/*.jar"/>
             </fileset>
         </path>
+    </target>
 
+    <target name="compile-with-soap" depends="compile, init-soap-client-classpath-default">
         <!-- add soap client to classpath -->
         <path id="gpunit.client.classpath">
             <path refid="gpunit.classpath" />
@@ -1158,7 +1160,7 @@
     </target>
 
     <!-- initialize GpUnit runtime before running the tests -->
-    <target name="init-runtime" depends="init-runtime-classpath, init-runtime-classpath-soap">
+    <target name="init-runtime" depends="init-soap-client-classpath-default, init-runtime-classpath, init-runtime-classpath-soap">
         <!-- set default 'junit.test.name' -->
         <property name="junit.test.name" value="org.genepattern.gpunit.test.BatchModuleTest" />
 
@@ -1171,6 +1173,7 @@
         <!-- set default 'gpunit.runtime.classpath' -->
         <path id="gpunit.runtime.classpath">
             <path refid="gpunit.classpath" />
+            <path refid="soap.client.classpath" />
         </path>
     </target>
     <target name="init-runtime-classpath-soap" if="with.soap">
