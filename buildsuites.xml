@@ -75,8 +75,8 @@
             <include name="smoke*.yml" />
         </fileset>
 
-        <!-- PreprocessReadCounts -->
-        <fileset id="nightlyPreprocessReadCountsTests" dir="${git.parentdir}/PreprocessReadCounts/gpunit" >
+        <!-- VoomNormalize -->
+        <fileset id="nightlyVoomNormalizeTests" dir="${git.parentdir}/VoomNormalize/gpunit" >
             <include name="smoke*.yml" />
         </fileset>
 
@@ -134,7 +134,7 @@
         <clone-repo git.repo.name="MergeHTSeqCounts" />
         <clone-repo git.repo.name="NearestTemplatePrediction" />
         <clone-repo git.repo.name="PreprocessDataset" />
-        <clone-repo git.repo.name="PreprocessReadCounts" />
+        <clone-repo git.repo.name="VoomNormalize" />
         <clone-repo git.repo.name="TopHat" />
         <clone-repo git.repo.name="txt2odf" />
         <clone-repo git.repo.name="TCGAImporter" /> <!-- Starting to add chronologically rather than alphabetically -->
@@ -275,7 +275,7 @@
     </target>
 
     <target name="nightly-preprocessreadcounts-tests" depends="init-test-suite" >
-        <pathconvert property="nightly.tests" refid="nightlyPreprocessReadCountsTests" />
+        <pathconvert property="nightly.tests" refid="nightlyVoomNormalizeTests" />
         <run-tests
                 testcases="${short.nightly.tests}"
                 numThreads="5"
@@ -345,7 +345,7 @@
             <resources refid="Shorttxt2odfTests" />
             <resources refid="nightlyMergeHTSeqCountsTests" />
             <resources refid="nightlyPreprocessDatasetTests" />
-            <resources refid="nightlyPreprocessReadCountsTests" />
+            <resources refid="nightlyVoomNormalizeTests" />
             <!-- Should we have download_from_gdc here? -->
             <resources refid="ShortABasicModuleTests" />
         </union>
@@ -375,7 +375,7 @@
             <resources refid="ShortTopHatTests" />
             <resources refid="nightlyMergeHTSeqCountsTests" />
             <resources refid="nightlyPreprocessDatasetTests" />
-            <resources refid="nightlyPreprocessReadCountsTests" />
+            <resources refid="nightlyVoomNormalizeTests" />
         </union>
         <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
         <!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
@@ -404,7 +404,7 @@
             <resources refid="ShortTopHatTests" />
             <resources refid="nightlyMergeHTSeqCountsTests" />
             <resources refid="nightlyPreprocessDatasetTests" />
-            <resources refid="nightlyPreprocessReadCountsTests" />
+            <resources refid="nightlyVoomNormalizeTests" />
         </union>
         <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
     	<!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
