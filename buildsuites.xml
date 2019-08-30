@@ -65,6 +65,11 @@
             <include name="Hisat2Aligner_single_zip_phred64_test.yaml" />
         </fileset>
 
+        <!-- NearestTemplatePrediction -->
+        <fileset id="ShortNearestTemplatePredictionTests" dir="${git.parentdir}/NearestTemplatePrediction/gpunit" >
+            <include name="*.yml" />
+        </fileset>
+
         <!-- PreprocessDataset -->
         <fileset id="nightlyPreprocessDatasetTests" dir="${git.parentdir}/PreprocessDataset/gpunit" >
             <include name="smoke*.yml" />
@@ -127,6 +132,7 @@
         <clone-repo git.repo.name="Hisat2Indexer" />
         <clone-repo git.repo.name="Hisat2Aligner" />
         <clone-repo git.repo.name="MergeHTSeqCounts" />
+        <clone-repo git.repo.name="NearestTemplatePrediction" />
         <clone-repo git.repo.name="PreprocessDataset" />
         <clone-repo git.repo.name="VoomNormalize" />
         <clone-repo git.repo.name="TopHat" />
@@ -250,6 +256,15 @@
         />
     </target>
 
+     <target name="short-NTP-tests" depends="init-test-suite" >
+        <pathconvert property="short.nightly.tests" refid="ShortNearestTemplatePredictionTests" />
+        <run-tests
+                testcases="${short.nightly.tests}"
+                numThreads="5"
+                shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
     <target name="nightly-preprocessdataset-tests" depends="init-test-suite" >
         <pathconvert property="nightly.tests" refid="nightlyPreprocessDatasetTests" />
         <run-tests
@@ -325,6 +340,7 @@
             <resources refid="ShortHierarchicalClusteringImageTests" />
             <resources refid="ShortHisat2IndexerTests" />
             <resources refid="ShortHisat2AlignerTests" />
+            <resources refid="ShortNearestTemplatePredictionTests" />
             <resources refid="ShortTopHatTests" />
             <resources refid="Shorttxt2odfTests" />
             <resources refid="nightlyMergeHTSeqCountsTests" />
@@ -355,6 +371,7 @@
             <resources refid="ShortHeatMapViewerTests" />
             <resources refid="ShortHierarchicalClusteringTests" />
             <resources refid="ShortHierarchicalClusteringImageTests" />
+            <resources refid="ShortNearestTemplatePredictionTests" />
             <resources refid="ShortTopHatTests" />
             <resources refid="nightlyMergeHTSeqCountsTests" />
             <resources refid="nightlyPreprocessDatasetTests" />
@@ -383,6 +400,7 @@
             <!-- pinned to v6 by 'clone-hcl_v6' dependency -->
             <resources refid="ShortHierarchicalClusteringTests" />
             <resources refid="ShortHierarchicalClusteringImageTests" />
+            <resources refid="ShortNearestTemplatePredictionTests" />
             <resources refid="ShortTopHatTests" />
             <resources refid="nightlyMergeHTSeqCountsTests" />
             <resources refid="nightlyPreprocessDatasetTests" />
