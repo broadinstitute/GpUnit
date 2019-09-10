@@ -270,7 +270,7 @@
                 numThreads="5"
                 shutdownTimeout="${gpunit.shutdownTimeout}"
                 />
-    </target>"
+    </target>
 
      <target name="short-NTP-tests" depends="init-test-suite" >
         <pathconvert property="short.nightly.tests" refid="ShortNearestTemplatePredictionTests" />
