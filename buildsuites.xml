@@ -324,6 +324,15 @@
             shutdownTimeout="${gpunit.shutdownTimeout}"
         />
     </target>
+    
+    <target name="nightly-MethylationCNVAnalysis-test" depends="init-test-suite">
+        <pathconvert property="short.nightly.tests" refid="ShortMethylationCNVAnalysisTests" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
 
 
     <!--******************************************************************************************-->
@@ -354,6 +363,7 @@
             <resources refid="nightlyVoomNormalizeTests" />
             <!-- Should we have download_from_gdc here? -->
             <resources refid="ShortABasicModuleTests" />
+            <resources refid="ShortMethylationCNVAnalysisTests" />
         </union>
         <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
     	<!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
