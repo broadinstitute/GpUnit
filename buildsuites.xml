@@ -65,6 +65,12 @@
             <include name="Hisat2Aligner_single_zip_phred64_test.yaml" />
         </fileset>
 
+        <!-- MutPanning -->
+        <fileset id="weeklyMutPanningTest" dir="${git.parentdir}/MutPanning/gpunit" >
+            <!--MutPanning v2 -->
+            <include name="mutpanning_smoke.yaml" />
+        </fileset>
+
         <!-- NearestTemplatePrediction -->
         <fileset id="ShortNearestTemplatePredictionTests" dir="${git.parentdir}/NearestTemplatePrediction/gpunit" >
             <include name="*.yml" />
@@ -132,6 +138,7 @@
         <clone-repo git.repo.name="Hisat2Indexer" />
         <clone-repo git.repo.name="Hisat2Aligner" />
         <clone-repo git.repo.name="MergeHTSeqCounts" />
+        <clone-repo git.repo.name="MutPanning" />
         <clone-repo git.repo.name="NearestTemplatePrediction" />
         <clone-repo git.repo.name="PreprocessDataset" />
         <clone-repo git.repo.name="VoomNormalize" />
@@ -254,6 +261,15 @@
                 numThreads="5"
                 shutdownTimeout="${gpunit.shutdownTimeout}"
         />
+    </target>
+
+    <target name="weekly-mutpanning-tests" depends="init-test-suite" >
+        <pathconvert property="weekly.tests" refid="weeklyMutPanningTest" />
+        <run-tests
+                testcases="${weekly.tests}"
+                numThreads="5"
+                shutdownTimeout="${gpunit.shutdownTimeout}"
+                />
     </target>
 
      <target name="short-NTP-tests" depends="init-test-suite" >
@@ -438,6 +454,7 @@
     <target name="weekly-tests" depends="init-test-suite">
         <union id="weekly.tests">
             <resources refid="weeklyABSOLUTETests" />
+            <resources refid="weeklyMutPanningTest" />
         </union>
         <pathconvert property="weekly.tests" refid="weekly.tests" />
         <run-tests
