@@ -104,7 +104,7 @@
             <!-- ABasicModule - v2.x -->
             <include name="*.yml" />
         </fileset>
-        
+
         <!-- MergeHTSeqCounts -->
         <fileset id="nightlyMergeHTSeqCountsTests" dir="${git.parentdir}/MergeHTSeqCounts/gpunit" >
             <include name="nightly*.yml" />
@@ -118,6 +118,18 @@
         <!-- MethylationCNVAnalysis -->
         <fileset id="ShortMethylationCNVAnalysisTests" dir="${git.parentdir}/MethylationCNVAnalysis/gpunit" >
             <!-- MethylationCNVAnalysis - v2.x -->
+            <include name="nightly*.yml" />
+        </fileset>
+
+        <!-- CellFie -->
+        <fileset id="ShortCellFieTests" dir="${git.parentdir}/MethylationCNVAnalysis/gpunit" >
+            <!-- CellFie - v1.2 -->
+            <include name="nightly*.yml" />
+        </fileset>
+
+        <!-- OpenCRAVAT -->
+        <fileset id="ShortOpenCRAVATTests" dir="${git.parentdir}/OpenCRAVAT/gpunit" >
+            <!-- OpenCRAVAT - v1 -->
             <include name="nightly*.yml" />
         </fileset>
     </target>
@@ -149,9 +161,12 @@
         <clone-repo git.repo.name="VoomNormalize" />
         <clone-repo git.repo.name="TopHat" />
         <clone-repo git.repo.name="txt2odf" />
-        <clone-repo git.repo.name="TCGAImporter" /> <!-- Starting to add chronologically rather than alphabetically -->
+        <clone-repo git.repo.name="TCGAImporter" /> 
+        <!-- Starting to add chronologically rather than alphabetically -->
         <clone-repo git.repo.name="ABasicModule" />
         <clone-repo git.repo.name="MethylationCNVAnalysis" />
+        <clone-repo git.repo.name="CellFie" />
+        <!-- clone-repo git.repo.name="OpenCRAVAT" / -->
     </target>
 
     <!--
@@ -159,7 +174,7 @@
       pin to older version of the gpunit tests, HierarchicalClustering v6
     -->
     <target name="clone-hcl_v6" unless="noclonetests" depends="package, init-git.parentdir"
-        description="pull HierarchicalClustering v6 tests from GitHub" 
+        description="pull HierarchicalClustering v6 tests from GitHub"
      >
         <!-- Example git command: --><?code git reset --hard tags/v6 ?>
         <clone-repo git.repo.name="HierarchicalClustering" git.origin.name="origin" git.branch.name="v6-gpunit-update" />
@@ -176,7 +191,7 @@
     <!-- Ideally short running tests will be in the top level gpunit dir, and other will be in a sub dir -->
     <!-- see below for examples -->
     <!--******************************************************************************************-->
-    
+
     <target name="init-test-suite" depends="package, clone-test-repos, init-filesets" />
 
     <target name="weekly-absolute-tests" depends="init-test-suite" >
@@ -287,6 +302,15 @@
         />
     </target>
 
+    <target name="short-OpenCRAVAT-tests" depends="init-test-suite" >
+        <pathconvert property="short.nightly.tests" refid="ShortOpenCRAVATTests" />
+        <run-tests
+                testcases="${short.nightly.tests}"
+                numThreads="5"
+                shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
     <target name="nightly-preprocessdataset-tests" depends="init-test-suite" >
         <pathconvert property="nightly.tests" refid="nightlyPreprocessDatasetTests" />
         <run-tests
@@ -331,7 +355,7 @@
             shutdownTimeout="${gpunit.shutdownTimeout}"
         />
     </target>
-    
+
     <target name="short-ABasicModule-tests" depends="init-test-suite">
         <pathconvert property="short.nightly.tests" refid="ShortABasicModuleTests" />
         <run-tests
@@ -340,9 +364,18 @@
             shutdownTimeout="${gpunit.shutdownTimeout}"
         />
     </target>
-    
+
     <target name="nightly-MethylationCNVAnalysis-test" depends="init-test-suite">
         <pathconvert property="short.nightly.tests" refid="ShortMethylationCNVAnalysisTests" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
+    <target name="nightly-CellFie-test" depends="init-test-suite">
+        <pathconvert property="short.nightly.tests" refid="ShortCellFieTests" />
         <run-tests
             testcases="${short.nightly.tests}"
             numThreads="5"
@@ -359,7 +392,7 @@
     <!-- Begin of: Three groups of nighly tests -->
     <!--******************************************************************************************-->
 
-    <!-- Regression tests in cloud.gp.org -->
+    <!-- Regression tests in cloud.gp.org and beta.gp.org -->
     <target name="short-nightly-tests" depends="init-test-suite">
         <union id="short.tests">
             <resources refid="ShortComparativeMarkerSelectionTests" />
@@ -377,9 +410,11 @@
             <resources refid="nightlyMergeHTSeqCountsTests" />
             <resources refid="nightlyPreprocessDatasetTests" />
             <resources refid="nightlyVoomNormalizeTests" />
-            <!-- Should we have download_from_gdc here? -->
+            <resources refid="ShortTCGAImporterTests" />
             <resources refid="ShortABasicModuleTests" />
             <resources refid="ShortMethylationCNVAnalysisTests" />
+            <resources refid="ShortCellFieTests" />
+            <!-- resources refid="ShortOpenCRAVATTests" /-->
         </union>
         <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
     	<!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
