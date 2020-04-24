@@ -166,7 +166,7 @@
         <clone-repo git.repo.name="ABasicModule" />
         <clone-repo git.repo.name="MethylationCNVAnalysis" />
         <clone-repo git.repo.name="CellFie" />
-        <!-- clone-repo git.repo.name="OpenCRAVAT" / -->
+        <clone-repo git.repo.name="OpenCRAVAT" />
     </target>
 
     <!--
@@ -414,7 +414,7 @@
             <resources refid="ShortABasicModuleTests" />
             <resources refid="ShortMethylationCNVAnalysisTests" />
             <resources refid="ShortCellFieTests" />
-            <!-- resources refid="ShortOpenCRAVATTests" /-->
+            <resources refid="ShortOpenCRAVATTests" />
         </union>
         <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
     	<!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
