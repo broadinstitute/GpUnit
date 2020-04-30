@@ -30,6 +30,13 @@
             <include name="smoke*.yml" />
         </fileset>
 
+        <!-- ESPPredictor -->
+        <fileset id="ShortESPPredictorTests" dir="${git.parentdir}/ESPPredictor/gpunit" >
+            <!-- ESPPredictor - v4 with diff for text output -->
+            <include name="nightly*.yaml" />
+        </fileset>
+
+
         <!-- HeatMapImage -->
         <fileset id="ShortHeatMapImageTests" dir="${git.parentdir}/HeatMapImage/gpunit" >
             <!-- HeatMapImage - latest -->
@@ -167,6 +174,7 @@
         <clone-repo git.repo.name="MethylationCNVAnalysis" />
         <clone-repo git.repo.name="CellFie" />
         <clone-repo git.repo.name="OpenCRAVAT" />
+        <clone-repo git.repo.name="ESPPredictor" />
     </target>
 
     <!--
@@ -214,6 +222,15 @@
 
     <target name="short-efc-tests" depends="init-test-suite">
         <pathconvert property="short.nightly.tests" refid="ShortExpressionFileCreatorTests" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
+    <target name="short-esp-tests" depends="init-test-suite">
+        <pathconvert property="short.nightly.tests" refid="ShortESPPredictorTests" />
         <run-tests
             testcases="${short.nightly.tests}"
             numThreads="5"
@@ -415,6 +432,7 @@
             <resources refid="ShortMethylationCNVAnalysisTests" />
             <resources refid="ShortCellFieTests" />
             <resources refid="ShortOpenCRAVATTests" />
+            <resources refid="ShortESPPredictorTests" />
         </union>
         <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
     	<!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
