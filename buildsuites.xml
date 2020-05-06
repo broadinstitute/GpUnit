@@ -72,6 +72,12 @@
             <include name="Hisat2Aligner_single_zip_phred64_test.yaml" />
         </fileset>
 
+        <!-- igv.js -->
+        <fileset id="nightlyIGVjsTests" dir="${git.parentdir}/igv.js/gpunit" >
+            <!-- Hisat2Aligner - v0.2 -->
+            <include name="nightly*.yaml" />
+        </fileset>
+
         <!-- MutPanning -->
         <fileset id="weeklyMutPanningTest" dir="${git.parentdir}/MutPanning/gpunit" >
             <!--MutPanning v2 -->
@@ -175,6 +181,7 @@
         <clone-repo git.repo.name="CellFie" />
         <clone-repo git.repo.name="OpenCRAVAT" />
         <clone-repo git.repo.name="ESPPredictor" />
+        <clone-repo git.repo.name="igv.js" />
     </target>
 
     <!--
@@ -292,6 +299,15 @@
         />
     </target>
 
+    <target name="nightly-igvjs-tests" depends="init-test-suite">
+        <pathconvert property="short.nightly.tests" refid="nightlyIGVjsTests" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+    
     <target name="nightly-mergehtseq-tests" depends="init-test-suite" >
         <pathconvert property="nightly.tests" refid="nightlyMergeHTSeqCountsTests" />
         <run-tests
@@ -433,6 +449,7 @@
             <resources refid="ShortCellFieTests" />
             <resources refid="ShortOpenCRAVATTests" />
             <resources refid="ShortESPPredictorTests" />
+            <resources refid="nightlyIGVjsTests" />
         </union>
         <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
     	<!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
