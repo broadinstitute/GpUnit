@@ -135,8 +135,8 @@
         </fileset>
 
         <!-- CellFie -->
-        <fileset id="ShortCellFieTests" dir="${git.parentdir}/MethylationCNVAnalysis/gpunit" >
-            <!-- CellFie - v1.2 -->
+        <fileset id="ShortCellFieTests" dir="${git.parentdir}/CellFie/gpunit" >
+            <!-- CellFie - v3.x -->
             <include name="nightly*.yml" />
         </fileset>
 
@@ -174,7 +174,7 @@
         <clone-repo git.repo.name="VoomNormalize" />
         <clone-repo git.repo.name="TopHat" />
         <clone-repo git.repo.name="txt2odf" />
-        <clone-repo git.repo.name="TCGAImporter" /> 
+        <clone-repo git.repo.name="TCGAImporter" />
         <!-- Starting to add chronologically rather than alphabetically -->
         <clone-repo git.repo.name="ABasicModule" />
         <clone-repo git.repo.name="MethylationCNVAnalysis" />
