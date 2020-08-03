@@ -454,7 +454,7 @@
     	<!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
     	<!-- with ";" as the separator on both platforms (!). The pathconvert task transforms the fileset -->
     	<!-- to one with a delimiter that properly matches what the code expects. -->
-        <pathconvert property="short.nightly.tests" refid="short.tests" />
+        <pathconvert property="short.nightly.tests" refid="short.tests.cloud" />
         <run-tests
             testcases="${short.nightly.tests}"
             numThreads="5"
@@ -492,7 +492,7 @@
     	<!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
     	<!-- with ";" as the separator on both platforms (!). The pathconvert task transforms the fileset -->
     	<!-- to one with a delimiter that properly matches what the code expects. -->
-        <pathconvert property="short.nightly.tests" refid="short.tests" />
+        <pathconvert property="short.nightly.tests" refid="short.tests,beta" />
         <run-tests
             testcases="${short.nightly.tests}"
             numThreads="5"
