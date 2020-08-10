@@ -422,12 +422,49 @@
     <!--******************************************************************************************-->
 
     <!--******************************************************************************************-->
-    <!-- Begin of: Three groups of nighly tests -->
+    <!-- Begin of: Four groups of nighly tests -->
     <!--******************************************************************************************-->
 
-    <!-- Regression tests in cloud.gp.org and beta.gp.org -->
-    <target name="short-nightly-tests" depends="init-test-suite">
-        <union id="short.tests">
+    <!-- Regression tests against cloud.gp.org -->
+    <target name="short-nightly-tests-cloud" depends="init-test-suite">
+        <union id="short.tests.cloud">
+            <resources refid="ShortComparativeMarkerSelectionTests" />
+            <resources refid="ShortCoxRegressionTests" />
+            <resources refid="ShortExpressionFileCreatorTests" />
+            <resources refid="ShortHeatMapImageTests" />
+            <resources refid="ShortHeatMapViewerTests" />
+            <resources refid="ShortHierarchicalClusteringTests" />
+            <resources refid="ShortHierarchicalClusteringImageTests" />
+            <resources refid="ShortHisat2IndexerTests" />
+            <resources refid="ShortHisat2AlignerTests" />
+            <resources refid="ShortNearestTemplatePredictionTests" />
+            <resources refid="ShortTopHatTests" />
+            <resources refid="Shorttxt2odfTests" />
+            <resources refid="nightlyMergeHTSeqCountsTests" />
+            <resources refid="nightlyPreprocessDatasetTests" />
+            <resources refid="nightlyVoomNormalizeTests" />
+            <resources refid="ShortTCGAImporterTests" />
+            <resources refid="ShortMethylationCNVAnalysisTests" />
+            <resources refid="ShortCellFieTests" />
+            <resources refid="ShortOpenCRAVATTests" />
+            <resources refid="ShortESPPredictorTests" />
+            <resources refid="nightlyIGVjsTests" />
+        </union>
+        <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
+    	<!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
+    	<!-- with ";" as the separator on both platforms (!). The pathconvert task transforms the fileset -->
+    	<!-- to one with a delimiter that properly matches what the code expects. -->
+        <pathconvert property="short.nightly.tests" refid="short.tests.cloud" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+    
+     <!-- Regression tests against beta.gp.org -->
+    <target name="short-nightly-tests-beta" depends="init-test-suite">
+        <union id="short.tests.beta">
             <resources refid="ShortComparativeMarkerSelectionTests" />
             <resources refid="ShortCoxRegressionTests" />
             <resources refid="ShortExpressionFileCreatorTests" />
@@ -455,7 +492,7 @@
     	<!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
     	<!-- with ";" as the separator on both platforms (!). The pathconvert task transforms the fileset -->
     	<!-- to one with a delimiter that properly matches what the code expects. -->
-        <pathconvert property="short.nightly.tests" refid="short.tests" />
+        <pathconvert property="short.nightly.tests" refid="short.tests,beta" />
         <run-tests
             testcases="${short.nightly.tests}"
             numThreads="5"
@@ -521,7 +558,7 @@
     </target>
 
     <!--******************************************************************************************-->
-    <!-- End of: Three groups of nighly tests -->
+    <!-- End of: Four groups of nighly tests -->
     <!--******************************************************************************************-->
 
 
