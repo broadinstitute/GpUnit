@@ -500,34 +500,6 @@
         />
     </target>
 
-    <!-- Regression tests in Jenkins for IU -->
-    <target name="short-nightly-tests-iu" depends="init-test-suite, clone-hcl_v6">
-        <union id="short.tests.iu">
-            <resources refid="ShortComparativeMarkerSelectionTests" />
-            <!-- resources refid="ShortCoxRegressionTests" / -->
-            <resources refid="ShortExpressionFileCreatorTests" />
-            <resources refid="ShortHeatMapImageTests" />
-            <resources refid="ShortHeatMapViewerTests" />
-            <resources refid="ShortHierarchicalClusteringTests" />
-            <resources refid="ShortHierarchicalClusteringImageTests" />
-            <resources refid="ShortNearestTemplatePredictionTests" />
-            <resources refid="ShortTopHatTests" />
-            <resources refid="nightlyMergeHTSeqCountsTests" />
-            <resources refid="nightlyPreprocessDatasetTests" />
-            <resources refid="nightlyVoomNormalizeTests" />
-        </union>
-        <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
-        <!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
-        <!-- with ";" as the separator on both platforms (!). The pathconvert task transforms the fileset -->
-        <!-- to one with a delimiter that properly matches what the code expects. -->
-        <pathconvert property="short.nightly.tests" refid="short.tests.iu" />
-        <run-tests
-            testcases="${short.nightly.tests}"
-            numThreads="5"
-            shutdownTimeout="${gpunit.shutdownTimeout}"
-        />
-    </target>
-
     <!-- Regression tests in broad servers -->
     <target name="short-nightly-tests-broad" depends="init-test-suite, clone-hcl_v6">
         <union id="short.tests.broad">
