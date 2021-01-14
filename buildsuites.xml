@@ -60,21 +60,21 @@
             <include name="*.yaml" />
         </fileset>
 
-        <!-- Hisat2Indexer -->
+        <!-- HISAT2Indexer -->
         <fileset id="ShortHisat2IndexerTests" dir="${git.parentdir}/Hisat2Indexer/gpunit" >
-            <!-- Hisat2Indexer - v0.2 -->
+            <!-- HISAT2Indexer - v0.2 -->
             <include name="Hisat2Indexer_twofile_test.yaml" />
         </fileset>
 
-        <!-- Hisat2Aligner -->
+        <!-- HISAT2Aligner -->
         <fileset id="ShortHisat2AlignerTests" dir="${git.parentdir}/Hisat2Aligner/gpunit" >
-            <!-- Hisat2Aligner - v0.2 -->
+            <!-- HISAT2Aligner - v0.2 -->
             <include name="Hisat2Aligner_single_zip_phred64_test.yaml" />
         </fileset>
 
         <!-- igv.js -->
         <fileset id="nightlyIGVjsTests" dir="${git.parentdir}/igv.js/gpunit" >
-            <!-- Hisat2Aligner - v0.2 -->
+            <!-- igv.js -->
             <include name="nightly*.yaml" />
         </fileset>
 
@@ -165,8 +165,8 @@
         <clone-repo git.repo.name="HeatMapViewer" />
         <clone-repo git.repo.name="HierarchicalClustering" />
         <clone-repo git.repo.name="HierarchicalClusteringImage" />
-        <clone-repo git.repo.name="Hisat2Indexer" />
-        <clone-repo git.repo.name="Hisat2Aligner" />
+        <clone-repo git.repo.name="HISAT2Indexer" />
+        <clone-repo git.repo.name="HISAT2Aligner" />
         <clone-repo git.repo.name="MergeHTSeqCounts" />
         <clone-repo git.repo.name="MutPanning" />
         <clone-repo git.repo.name="NearestTemplatePrediction" />
@@ -282,7 +282,7 @@
     </target>
 
     <target name="short-hisatindex-tests" depends="init-test-suite">
-        <pathconvert property="short.nightly.tests" refid="ShortHisat2IndexerTests" />
+        <pathconvert property="short.nightly.tests" refid="ShortHISAT2IndexerTests" />
         <run-tests
             testcases="${short.nightly.tests}"
             numThreads="5"
@@ -291,7 +291,7 @@
     </target>
 
     <target name="short-hisatalign-tests" depends="init-test-suite">
-        <pathconvert property="short.nightly.tests" refid="ShortHisat2AlignerTests" />
+        <pathconvert property="short.nightly.tests" refid="ShortHISAT2AlignerTests" />
         <run-tests
             testcases="${short.nightly.tests}"
             numThreads="5"
@@ -435,8 +435,8 @@
             <resources refid="ShortHeatMapViewerTests" />
             <resources refid="ShortHierarchicalClusteringTests" />
             <resources refid="ShortHierarchicalClusteringImageTests" />
-            <resources refid="ShortHisat2IndexerTests" />
-            <resources refid="ShortHisat2AlignerTests" />
+            <resources refid="ShortHISAT2IndexerTests" />
+            <resources refid="ShortHISAT2AlignerTests" />
             <resources refid="ShortNearestTemplatePredictionTests" />
             <resources refid="ShortTopHatTests" />
             <resources refid="Shorttxt2odfTests" />
@@ -472,8 +472,8 @@
             <resources refid="ShortHeatMapViewerTests" />
             <resources refid="ShortHierarchicalClusteringTests" />
             <resources refid="ShortHierarchicalClusteringImageTests" />
-            <resources refid="ShortHisat2IndexerTests" />
-            <resources refid="ShortHisat2AlignerTests" />
+            <resources refid="ShortHISAT2IndexerTests" />
+            <resources refid="ShortHISAT2AlignerTests" />
             <resources refid="ShortNearestTemplatePredictionTests" />
             <resources refid="ShortTopHatTests" />
             <resources refid="Shorttxt2odfTests" />
@@ -530,7 +530,7 @@
     </target>
 
     <!--******************************************************************************************-->
-    <!-- End of: Four groups of nighly tests -->
+    <!-- End of: Four groups of nightly tests -->
     <!--******************************************************************************************-->
 
 
