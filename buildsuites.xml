@@ -61,15 +61,15 @@
         </fileset>
 
         <!-- HISAT2Indexer -->
-        <fileset id="ShortHISAT2IndexerTests" dir="${git.parentdir}/Hisat2Indexer/gpunit" >
+        <fileset id="ShortHISAT2IndexerTests" dir="${git.parentdir}/HISAT2Indexer/gpunit" >
             <!-- HISAT2Indexer - v0.2 -->
             <include name="Hisat2Indexer_twofile_test.yaml" />
         </fileset>
 
         <!-- HISAT2Aligner -->
-        <fileset id="ShortHISAT2AlignerTests" dir="${git.parentdir}/Hisat2Aligner/gpunit" >
+        <fileset id="ShortHISAT2AlignerTests" dir="${git.parentdir}/HISAT2Aligner/gpunit" >
             <!-- HISAT2Aligner - v0.2 -->
-            <include name="Hisat2Aligner_single_zip_phred64_test.yaml" />
+            <include name="HISAT2Aligner_single_zip_phred64_test.yaml" />
         </fileset>
 
         <!-- igv.js -->
