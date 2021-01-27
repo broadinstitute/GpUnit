@@ -1,9 +1,11 @@
 package org.genepattern.gpunit.exec.rest;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -22,13 +24,18 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.RedirectStrategy;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.FileEntity;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.LaxRedirectStrategy;
 import org.genepattern.gpunit.BatchProperties;
 import org.genepattern.gpunit.GpUnitException;
 import org.genepattern.gpunit.ModuleTestObject;
@@ -42,6 +49,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+
 
 /**
  * Run a job on a GP server, using the REST API.
@@ -475,7 +483,14 @@ public class JobRunnerRest {
     }
     
     public void downloadFile(final URL from, final File toFile) throws Exception {
-        final HttpClient client = HttpClients.createDefault();
+    	System.out.println("Download " + from.toString() + " to " + toFile.getAbsolutePath());
+        
+    	GpUnitRedirectStrategy redirstrat = new GpUnitRedirectStrategy();
+        
+        //final HttpClient client = HttpClients.createDefault();
+        CloseableHttpClient client = HttpClients.custom()
+                .setRedirectStrategy(redirstrat)
+                .build();
         HttpGet get = new HttpGet(from.toExternalForm());
         get = restClient.setAuthHeaders(get);
         //HACK: in order to by-pass the GP login page, and use Http Basic Authentication,
@@ -483,13 +498,26 @@ public class JobRunnerRest {
         get.setHeader("User-Agent", "GenePatternRest");
         
         HttpResponse response=client.execute(get);
-        final int statusCode=response.getStatusLine().getStatusCode();
+        int statusCode=response.getStatusLine().getStatusCode();
         final boolean success;
         if (statusCode >= 200 && statusCode < 300) {
             success=true;
         }
         else {
-            success=false;
+        	System.out.println("Status - " + response.getStatusLine());
+            System.out.println("Response - " + response.toString());
+            System.out.println("redirect - " + redirstrat.lastRedirectLocation);
+            
+            // retry without the basic auth to the last location
+            get = new HttpGet(redirstrat.lastRedirectLocation);
+        	 response=client.execute(get);
+             statusCode=response.getStatusLine().getStatusCode();
+             if (statusCode >= 200 && statusCode < 300) {
+                 success=true;
+             } else {
+             success=false;
+   
+             }
         }
         
         if (!success) {
@@ -553,4 +581,33 @@ public class JobRunnerRest {
         }
     }
 
+}
+
+class GpUnitRedirectStrategy implements RedirectStrategy {
+    
+    public String lastRedirectLocation = null;
+    
+    public boolean isRedirected(org.apache.http.HttpRequest request,
+            org.apache.http.HttpResponse response,
+            org.apache.http.protocol.HttpContext context)
+            throws org.apache.http.ProtocolException {
+        request.removeHeaders("Authorization");
+        int statusCode = response.getStatusLine().getStatusCode() ;
+        
+        if (statusCode >= 300 && statusCode < 400) return true;
+        return false;
+    }
+    
+    public HttpUriRequest getRedirect(org.apache.http.HttpRequest request,
+            org.apache.http.HttpResponse response,
+            org.apache.http.protocol.HttpContext context)
+            throws org.apache.http.ProtocolException{
+   
+        if (response.getFirstHeader("Location") != null){
+            lastRedirectLocation = (response.getFirstHeader("Location")).getValue();
+            return new HttpGet(lastRedirectLocation);
+        } else {
+            return new HttpGet(lastRedirectLocation);
+        }
+    }
 }
