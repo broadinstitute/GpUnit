@@ -60,21 +60,21 @@
             <include name="*.yaml" />
         </fileset>
 
-        <!-- Hisat2Indexer -->
-        <fileset id="ShortHisat2IndexerTests" dir="${git.parentdir}/Hisat2Indexer/gpunit" >
-            <!-- Hisat2Indexer - v0.2 -->
+        <!-- HISAT2Indexer -->
+        <fileset id="ShortHISAT2IndexerTests" dir="${git.parentdir}/HISAT2Indexer/gpunit" >
+            <!-- HISAT2Indexer - v0.2 -->
             <include name="Hisat2Indexer_twofile_test.yaml" />
         </fileset>
 
-        <!-- Hisat2Aligner -->
-        <fileset id="ShortHisat2AlignerTests" dir="${git.parentdir}/Hisat2Aligner/gpunit" >
-            <!-- Hisat2Aligner - v0.2 -->
-            <include name="Hisat2Aligner_single_zip_phred64_test.yaml" />
+        <!-- HISAT2Aligner -->
+        <fileset id="ShortHISAT2AlignerTests" dir="${git.parentdir}/HISAT2Aligner/gpunit" >
+            <!-- HISAT2Aligner - v0.2 -->
+            <include name="HISAT2Aligner_single_zip_phred64_test.yaml" />
         </fileset>
 
         <!-- igv.js -->
         <fileset id="nightlyIGVjsTests" dir="${git.parentdir}/igv.js/gpunit" >
-            <!-- Hisat2Aligner - v0.2 -->
+            <!-- igv.js -->
             <include name="nightly*.yaml" />
         </fileset>
 
@@ -165,8 +165,8 @@
         <clone-repo git.repo.name="HeatMapViewer" />
         <clone-repo git.repo.name="HierarchicalClustering" />
         <clone-repo git.repo.name="HierarchicalClusteringImage" />
-        <clone-repo git.repo.name="Hisat2Indexer" />
-        <clone-repo git.repo.name="Hisat2Aligner" />
+        <clone-repo git.repo.name="HISAT2Indexer" />
+        <clone-repo git.repo.name="HISAT2Aligner" />
         <clone-repo git.repo.name="MergeHTSeqCounts" />
         <clone-repo git.repo.name="MutPanning" />
         <clone-repo git.repo.name="NearestTemplatePrediction" />
@@ -282,7 +282,7 @@
     </target>
 
     <target name="short-hisatindex-tests" depends="init-test-suite">
-        <pathconvert property="short.nightly.tests" refid="ShortHisat2IndexerTests" />
+        <pathconvert property="short.nightly.tests" refid="ShortHISAT2IndexerTests" />
         <run-tests
             testcases="${short.nightly.tests}"
             numThreads="5"
@@ -291,7 +291,7 @@
     </target>
 
     <target name="short-hisatalign-tests" depends="init-test-suite">
-        <pathconvert property="short.nightly.tests" refid="ShortHisat2AlignerTests" />
+        <pathconvert property="short.nightly.tests" refid="ShortHISAT2AlignerTests" />
         <run-tests
             testcases="${short.nightly.tests}"
             numThreads="5"
@@ -422,12 +422,12 @@
     <!--******************************************************************************************-->
 
     <!--******************************************************************************************-->
-    <!-- Begin of: Three groups of nighly tests -->
+    <!-- Begin of: Four groups of nighly tests -->
     <!--******************************************************************************************-->
 
-    <!-- Regression tests in cloud.gp.org and beta.gp.org -->
-    <target name="short-nightly-tests" depends="init-test-suite">
-        <union id="short.tests">
+    <!-- Regression tests against cloud.gp.org -->
+    <target name="short-nightly-tests-cloud" depends="init-test-suite">
+        <union id="short.tests.cloud">
             <resources refid="ShortComparativeMarkerSelectionTests" />
             <resources refid="ShortCoxRegressionTests" />
             <resources refid="ShortExpressionFileCreatorTests" />
@@ -435,8 +435,45 @@
             <resources refid="ShortHeatMapViewerTests" />
             <resources refid="ShortHierarchicalClusteringTests" />
             <resources refid="ShortHierarchicalClusteringImageTests" />
-            <resources refid="ShortHisat2IndexerTests" />
-            <resources refid="ShortHisat2AlignerTests" />
+            <resources refid="ShortHISAT2IndexerTests" />
+            <resources refid="ShortHISAT2AlignerTests" />
+            <resources refid="ShortNearestTemplatePredictionTests" />
+            <resources refid="ShortTopHatTests" />
+            <resources refid="Shorttxt2odfTests" />
+            <resources refid="nightlyMergeHTSeqCountsTests" />
+            <resources refid="nightlyPreprocessDatasetTests" />
+            <resources refid="nightlyVoomNormalizeTests" />
+            <resources refid="ShortTCGAImporterTests" />
+            <resources refid="ShortMethylationCNVAnalysisTests" />
+            <resources refid="ShortCellFieTests" />
+            <resources refid="ShortOpenCRAVATTests" />
+            <resources refid="ShortESPPredictorTests" />
+            <resources refid="nightlyIGVjsTests" />
+        </union>
+        <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
+    	<!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
+    	<!-- with ";" as the separator on both platforms (!). The pathconvert task transforms the fileset -->
+    	<!-- to one with a delimiter that properly matches what the code expects. -->
+        <pathconvert property="short.nightly.tests" refid="short.tests.cloud" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+    
+     <!-- Regression tests against beta.gp.org -->
+    <target name="short-nightly-tests-beta" depends="init-test-suite">
+        <union id="short.tests.beta">
+            <resources refid="ShortComparativeMarkerSelectionTests" />
+            <resources refid="ShortCoxRegressionTests" />
+            <resources refid="ShortExpressionFileCreatorTests" />
+            <resources refid="ShortHeatMapImageTests" />
+            <resources refid="ShortHeatMapViewerTests" />
+            <resources refid="ShortHierarchicalClusteringTests" />
+            <resources refid="ShortHierarchicalClusteringImageTests" />
+            <resources refid="ShortHISAT2IndexerTests" />
+            <resources refid="ShortHISAT2AlignerTests" />
             <resources refid="ShortNearestTemplatePredictionTests" />
             <resources refid="ShortTopHatTests" />
             <resources refid="Shorttxt2odfTests" />
@@ -455,35 +492,7 @@
     	<!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
     	<!-- with ";" as the separator on both platforms (!). The pathconvert task transforms the fileset -->
     	<!-- to one with a delimiter that properly matches what the code expects. -->
-        <pathconvert property="short.nightly.tests" refid="short.tests" />
-        <run-tests
-            testcases="${short.nightly.tests}"
-            numThreads="5"
-            shutdownTimeout="${gpunit.shutdownTimeout}"
-        />
-    </target>
-
-    <!-- Regression tests in Jenkins for IU -->
-    <target name="short-nightly-tests-iu" depends="init-test-suite, clone-hcl_v6">
-        <union id="short.tests.iu">
-            <resources refid="ShortComparativeMarkerSelectionTests" />
-            <!-- resources refid="ShortCoxRegressionTests" / -->
-            <resources refid="ShortExpressionFileCreatorTests" />
-            <resources refid="ShortHeatMapImageTests" />
-            <resources refid="ShortHeatMapViewerTests" />
-            <resources refid="ShortHierarchicalClusteringTests" />
-            <resources refid="ShortHierarchicalClusteringImageTests" />
-            <resources refid="ShortNearestTemplatePredictionTests" />
-            <resources refid="ShortTopHatTests" />
-            <resources refid="nightlyMergeHTSeqCountsTests" />
-            <resources refid="nightlyPreprocessDatasetTests" />
-            <resources refid="nightlyVoomNormalizeTests" />
-        </union>
-        <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
-        <!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
-        <!-- with ";" as the separator on both platforms (!). The pathconvert task transforms the fileset -->
-        <!-- to one with a delimiter that properly matches what the code expects. -->
-        <pathconvert property="short.nightly.tests" refid="short.tests.iu" />
+        <pathconvert property="short.nightly.tests" refid="short.tests.beta" />
         <run-tests
             testcases="${short.nightly.tests}"
             numThreads="5"
@@ -521,7 +530,7 @@
     </target>
 
     <!--******************************************************************************************-->
-    <!-- End of: Three groups of nighly tests -->
+    <!-- End of: Four groups of nightly tests -->
     <!--******************************************************************************************-->
 
 
