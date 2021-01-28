@@ -483,8 +483,7 @@ public class JobRunnerRest {
     }
     
     public void downloadFile(final URL from, final File toFile) throws Exception {
-    	System.out.println("Download " + from.toString() + " to " + toFile.getAbsolutePath());
-        
+    	 
     	GpUnitRedirectStrategy redirstrat = new GpUnitRedirectStrategy();
         
         //final HttpClient client = HttpClients.createDefault();
@@ -504,10 +503,7 @@ public class JobRunnerRest {
             success=true;
         }
         else {
-        	System.out.println("Status - " + response.getStatusLine());
-            System.out.println("Response - " + response.toString());
-            System.out.println("redirect - " + redirstrat.lastRedirectLocation);
-            
+           
             // retry without the basic auth to the last location
             get = new HttpGet(redirstrat.lastRedirectLocation);
         	 response=client.execute(get);
