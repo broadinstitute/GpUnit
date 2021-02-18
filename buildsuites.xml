@@ -36,6 +36,11 @@
             <include name="nightly*.yaml" />
         </fileset>
 
+        <!-- GEOImporter -->
+        <fileset id="ShortGEOImporterTests" dir="${git.parentdir}/GEOImporter/gpunit" >
+            <!-- GEOImporter - latest -->
+            <include name="GEOImporter*.yaml" />
+        </fileset>
 
         <!-- HeatMapImage -->
         <fileset id="ShortHeatMapImageTests" dir="${git.parentdir}/HeatMapImage/gpunit" >
@@ -182,6 +187,7 @@
         <clone-repo git.repo.name="OpenCRAVAT" />
         <clone-repo git.repo.name="ESPPredictor" />
         <clone-repo git.repo.name="igv.js" />
+        <clone-repo git.repo.name="GEOImporter" />
     </target>
 
     <!--
@@ -238,6 +244,15 @@
 
     <target name="short-esp-tests" depends="init-test-suite">
         <pathconvert property="short.nightly.tests" refid="ShortESPPredictorTests" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
+    <target name="short-geoimporter-tests" depends="init-test-suite">
+        <pathconvert property="short.nightly.tests" refid="ShortGEOImporterTests" />
         <run-tests
             testcases="${short.nightly.tests}"
             numThreads="5"
@@ -449,6 +464,7 @@
             <resources refid="ShortOpenCRAVATTests" />
             <resources refid="ShortESPPredictorTests" />
             <resources refid="nightlyIGVjsTests" />
+            <resources refid="ShortGEOImporterTests" />
         </union>
         <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
     	<!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
@@ -487,6 +503,7 @@
             <resources refid="ShortOpenCRAVATTests" />
             <resources refid="ShortESPPredictorTests" />
             <resources refid="nightlyIGVjsTests" />
+            <resources refid="ShortGEOImporterTests" />
         </union>
         <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
     	<!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
