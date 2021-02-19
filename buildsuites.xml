@@ -39,7 +39,7 @@
         <!-- GEOImporter -->
         <fileset id="ShortGEOImporterTests" dir="${git.parentdir}/GEOImporter/gpunit" >
             <!-- GEOImporter - latest -->
-            <include name="GEOImporter*.yaml" />
+            <include name="*.yaml" />
         </fileset>
 
         <!-- HeatMapImage -->
@@ -187,7 +187,8 @@
         <clone-repo git.repo.name="OpenCRAVAT" />
         <clone-repo git.repo.name="ESPPredictor" />
         <clone-repo git.repo.name="igv.js" />
-        <clone-repo git.repo.name="GEOImporter" />
+        <!-- Note that by default this is looking for the master branch and new repos will now be using main -->
+        <clone-repo git.repo.name="GEOImporter" git.branch.name="main"/>
     </target>
 
     <!--
