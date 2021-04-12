@@ -150,6 +150,13 @@
             <!-- OpenCRAVAT - v1 -->
             <include name="nightly*.yml" />
         </fileset>
+        
+        <!-- Seurat.BatchCorrection -->
+        <fileset id="ShortSeuratBatchCorrectionTests" dir="${git.parentdir}/Seurat.BatchCorrection/gpunit" >
+            <!-- Seurat.BatchCorrection - v3 -->
+            <include name="nightly*.yml" />
+        </fileset>
+        
     </target>
 
     <!--******************************************************************************************-->
@@ -189,6 +196,7 @@
         <clone-repo git.repo.name="igv.js" />
         <!-- Note that by default this is looking for the master branch and new repos will now be using main -->
         <clone-repo git.repo.name="GEOImporter" git.branch.name="main"/>
+        <clone-repo git.repo.name="Seurat.BatchCorrection" git.branch.name="main"/>
     </target>
 
     <!--
@@ -431,6 +439,15 @@
             shutdownTimeout="${gpunit.shutdownTimeout}"
         />
     </target>
+    
+    <target name="nightly-SeuratBatchCorrection-test" depends="init-test-suite">
+        <pathconvert property="short.nightly.tests" refid="ShortSeuratBatchCorrectionTests" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
 
 
     <!--******************************************************************************************-->
@@ -466,6 +483,8 @@
             <resources refid="ShortESPPredictorTests" />
             <resources refid="nightlyIGVjsTests" />
             <resources refid="ShortGEOImporterTests" />
+            <resources refid="ShortSeuratBatchCorrectionTests" />
+            
         </union>
         <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
     	<!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
@@ -505,6 +524,7 @@
             <resources refid="ShortESPPredictorTests" />
             <resources refid="nightlyIGVjsTests" />
             <resources refid="ShortGEOImporterTests" />
+            <resources refid="ShortSeuratBatchCorrectionTests" />
         </union>
         <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
     	<!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
