@@ -11,6 +11,12 @@
             <include name="v2/Weekly/*.yml" />
         </fileset>
 
+        <!-- AffySTExpressionFileCreator -->
+        <fileset id="weeklyAffySTEFCTests" dir="${git.parentdir}/AffySTExpressionFileCreator/gpunit" >
+            <!--AffySTEFC v2 -->
+            <include name="weekly*.yaml" />
+        </fileset>
+
         <!-- ComparativeMarkerSelection -->
         <fileset id="ShortComparativeMarkerSelectionTests" dir="${git.parentdir}/ComparativeMarkerSelection/gpunit" >
             <!-- ComparativeMarkerSelection v10 -->
@@ -169,6 +175,7 @@
 
     <target name="clone-test-repos" unless="noclonetests" depends="package, init-git.parentdir"
         description="make a local copy (git clone) of each GenePattern module GitHub repository" >
+        <!-- We should separate out the weekly from the nightly here -->
         <clone-repo git.repo.name="ABSOLUTE" />
         <clone-repo git.repo.name="ComparativeMarkerSelection" />
         <clone-repo git.repo.name="CoxRegression" /> <!-- tests '<R>' substitution -->
@@ -195,8 +202,9 @@
         <clone-repo git.repo.name="ESPPredictor" />
         <clone-repo git.repo.name="igv.js" />
         <!-- Note that by default this is looking for the master branch and new repos will now be using main -->
-        <clone-repo git.repo.name="GEOImporter" git.branch.name="main"/>
-        <clone-repo git.repo.name="Seurat.BatchCorrection" git.branch.name="main"/>
+        <clone-repo git.repo.name="GEOImporter" git.branch.name="main" />
+        <clone-repo git.repo.name="Seurat.BatchCorrection" git.branch.name="main" />
+        <clone-repo git.repo.name="AffySTExpressionFileCreator" git.branch.name="main" />
     </target>
 
     <!--
@@ -226,6 +234,15 @@
 
     <target name="weekly-absolute-tests" depends="init-test-suite" >
         <pathconvert property="weekly.tests" refid="weeklyABSOLUTETests" />
+        <run-tests
+                testcases="${weekly.tests}"
+                numThreads="5"
+                shutdownTimeout="${gpunit.shutdownTimeout}"
+                />
+    </target>
+
+    <target name="weekly-affystefc-tests" depends="init-test-suite" >
+        <pathconvert property="weekly.tests" refid="weeklyAffySTEFCTests" />
         <run-tests
                 testcases="${weekly.tests}"
                 numThreads="5"
@@ -484,6 +501,7 @@
             <resources refid="nightlyIGVjsTests" />
             <resources refid="ShortGEOImporterTests" />
             <resources refid="ShortSeuratBatchCorrectionTests" />
+            <resources refid="weeklyAffySTEFCTests" />
             
         </union>
         <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
@@ -525,6 +543,7 @@
             <resources refid="nightlyIGVjsTests" />
             <resources refid="ShortGEOImporterTests" />
             <resources refid="ShortSeuratBatchCorrectionTests" />
+            <resources refid="weeklyAffySTEFCTests" />
         </union>
         <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
     	<!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
