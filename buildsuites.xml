@@ -110,6 +110,12 @@
             <include name="smoke*.yml" />
         </fileset>
 
+        <!-- TCGA.SampleSelection -->
+        <fileset id="weeklyTCGA_SampleSelectionTests" dir="${git.parentdir}/ABSOLUTE/gpunit" >
+            <!--TCGA.SampleSelection v0.10 -->
+            <include name="weekly*.yaml" />
+        </fileset>
+
         <!-- TopHat -->
         <fileset id="ShortTopHatTests" dir="${git.parentdir}/TopHat/gpunit/" >
             <!-- TopHat v9 -->
@@ -205,6 +211,7 @@
         <clone-repo git.repo.name="GEOImporter" git.branch.name="main" />
         <clone-repo git.repo.name="Seurat.BatchCorrection" git.branch.name="main" />
         <clone-repo git.repo.name="AffySTExpressionFileCreator" git.branch.name="main" />
+        <clone-repo git.repo.name="TCGA.SampleSelection" git.branch.name="main" />
     </target>
 
     <!--
@@ -403,6 +410,15 @@
         />
     </target>
 
+    <target name="weekly-tcga_sampleselection-tests" depends="init-test-suite">
+        <pathconvert property="weekly.tests" refid="weeklyTCGA_SampleSelectionTests" />
+        <run-tests
+                testcases="${weekly.tests}"
+                numThreads="5"
+                shutdownTimeout="${gpunit.shutdownTimeout}"
+                />
+    </target>
+
     <target name="short-tophat-tests" depends="init-test-suite">
         <pathconvert property=":" refid="ShortTopHatTests" />
         <run-tests
@@ -502,6 +518,7 @@
             <resources refid="ShortGEOImporterTests" />
             <resources refid="ShortSeuratBatchCorrectionTests" />
             <resources refid="weeklyAffySTEFCTests" />
+            <resources refid="weeklyTCGA_SampleSelectionTests" />
             
         </union>
         <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
@@ -544,6 +561,7 @@
             <resources refid="ShortGEOImporterTests" />
             <resources refid="ShortSeuratBatchCorrectionTests" />
             <resources refid="weeklyAffySTEFCTests" />
+            <resources refid="weeklyTCGA_SampleSelectionTests" />
         </union>
         <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
     	<!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
