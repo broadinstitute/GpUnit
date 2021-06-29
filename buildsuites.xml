@@ -129,9 +129,9 @@
             <include name="*.yml" />
         </fileset>
 
-        <!-- ABasicModule -->
-        <fileset id="ShortABasicModuleTests" dir="${git.parentdir}/ABasicModule/gpunit" >
-            <!-- ABasicModule - v2.x -->
+        <!-- ExampleModule -->
+        <fileset id="ShortExampleModuleTests" dir="${git.parentdir}/ExampleModule/gpunit" >
+            <!-- ExampleModule - v2 -->
             <include name="*.yml" />
         </fileset>
 
@@ -201,7 +201,6 @@
         <clone-repo git.repo.name="txt2odf" />
         <clone-repo git.repo.name="TCGAImporter" />
         <!-- Starting to add chronologically rather than alphabetically -->
-        <clone-repo git.repo.name="ABasicModule" />
         <clone-repo git.repo.name="MethylationCNVAnalysis" />
         <clone-repo git.repo.name="CellFie" />
         <clone-repo git.repo.name="OpenCRAVAT" />
@@ -212,6 +211,7 @@
         <clone-repo git.repo.name="Seurat.BatchCorrection" git.branch.name="main" />
         <clone-repo git.repo.name="AffySTExpressionFileCreator" git.branch.name="main" />
         <clone-repo git.repo.name="TCGA.SampleSelection" git.branch.name="main" />
+        <clone-repo git.repo.name="ExampleModule" git.branch.name="main"/>
     </target>
 
     <!--
@@ -446,8 +446,8 @@
         />
     </target>
 
-    <target name="short-ABasicModule-tests" depends="init-test-suite">
-        <pathconvert property="short.nightly.tests" refid="ShortABasicModuleTests" />
+    <target name="short-ExampleModule-tests" depends="init-test-suite">
+        <pathconvert property="short.nightly.tests" refid="ShortExampleModuleTests" />
         <run-tests
             testcases="${short.nightly.tests}"
             numThreads="5"
@@ -552,7 +552,7 @@
             <resources refid="nightlyPreprocessDatasetTests" />
             <resources refid="nightlyVoomNormalizeTests" />
             <resources refid="ShortTCGAImporterTests" />
-            <resources refid="ShortABasicModuleTests" />
+            <resources refid="ShortExampleModuleTests" />
             <resources refid="ShortMethylationCNVAnalysisTests" />
             <resources refid="ShortCellFieTests" />
             <resources refid="ShortOpenCRAVATTests" />
