@@ -154,7 +154,7 @@
         <!-- CellFie -->
         <fileset id="ShortCellFieTests" dir="${git.parentdir}/CellFie/gpunit" >
             <!-- CellFie - v3.x -->
-            <include name="nightly*.yml" />
+            <include name="*nightly*.yml" />
         </fileset>
 
         <!-- OpenCRAVAT -->
