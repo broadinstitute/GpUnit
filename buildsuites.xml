@@ -184,7 +184,6 @@
         <!-- We should separate out the weekly from the nightly here -->
         <clone-repo git.repo.name="ABSOLUTE" />
         <clone-repo git.repo.name="ComparativeMarkerSelection" />
-        <clone-repo git.repo.name="CoxRegression" /> <!-- tests '<R>' substitution -->
         <clone-repo git.repo.name="ExpressionFileCreator" />
         <clone-repo git.repo.name="HeatMapImage" />
         <clone-repo git.repo.name="HeatMapViewer" />
@@ -211,7 +210,8 @@
         <clone-repo git.repo.name="Seurat.BatchCorrection" git.branch.name="main" />
         <clone-repo git.repo.name="AffySTExpressionFileCreator" git.branch.name="main" />
         <clone-repo git.repo.name="TCGA.SampleSelection" git.branch.name="main" />
-        <clone-repo git.repo.name="ExampleModule" git.branch.name="main"/>
+        <clone-repo git.repo.name="ExampleModule" git.branch.name="main" />
+        <clone-repo git.repo.name="CoxRegression" git.branch.name="main" /> <!-- tests '<R>' substitution -->
     </target>
 
     <!--
