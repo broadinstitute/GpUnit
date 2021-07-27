@@ -19,7 +19,7 @@
 
         <!-- ComparativeMarkerSelection -->
         <fileset id="ShortComparativeMarkerSelectionTests" dir="${git.parentdir}/ComparativeMarkerSelection/gpunit" >
-            <!-- ComparativeMarkerSelection v10 -->
+            <!-- ComparativeMarkerSelection v11 -->
             <include name="DefaultSmokeTest_Protocol/*.yml" />
         </fileset>
 
@@ -183,7 +183,6 @@
         description="make a local copy (git clone) of each GenePattern module GitHub repository" >
         <!-- We should separate out the weekly from the nightly here -->
         <clone-repo git.repo.name="ABSOLUTE" />
-        <clone-repo git.repo.name="ComparativeMarkerSelection" />
         <clone-repo git.repo.name="ExpressionFileCreator" />
         <clone-repo git.repo.name="HeatMapImage" />
         <clone-repo git.repo.name="HeatMapViewer" />
@@ -210,8 +209,10 @@
         <clone-repo git.repo.name="Seurat.BatchCorrection" git.branch.name="main" />
         <clone-repo git.repo.name="AffySTExpressionFileCreator" git.branch.name="main" />
         <clone-repo git.repo.name="TCGA.SampleSelection" git.branch.name="main" />
+        <clone-repo git.repo.name="CellFie" git.branch.name="main" />
         <clone-repo git.repo.name="ExampleModule" git.branch.name="main" />
         <clone-repo git.repo.name="CoxRegression" git.branch.name="main" /> <!-- tests '<R>' substitution -->
+        <clone-repo git.repo.name="ComparativeMarkerSelection" git.branch.name="main" />
     </target>
 
     <!--
