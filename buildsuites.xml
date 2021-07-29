@@ -111,8 +111,8 @@
         </fileset>
 
         <!-- TCGA.SampleSelection -->
-        <fileset id="weeklyTCGA_SampleSelectionTests" dir="${git.parentdir}/ABSOLUTE/gpunit" >
-            <!--TCGA.SampleSelection v0.10 -->
+        <fileset id="weeklyTCGA_SampleSelectionTests" dir="${git.parentdir}/TCGA.SampleSelection/gpunit" >
+            <!--TCGA.SampleSelection v0.12 -->
             <include name="weekly*.yaml" />
         </fileset>
 
