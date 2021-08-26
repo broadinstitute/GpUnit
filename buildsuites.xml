@@ -168,6 +168,24 @@
             <!-- Seurat.BatchCorrection - v3 -->
             <include name="nightly*.yml" />
         </fileset>
+
+        <!-- Salmon.Indexer -->
+        <fileset id="ShortSalmonIndexerTests" dir="${git.parentdir}/Salmon.Indexer/gpunit" >
+            <!-- Salmon.Indexer v0.4 -->
+            <include name="*.yml" />
+        </fileset>
+
+        <!-- Salmon.Quant -->
+        <fileset id="ShortSalmonQuantTests" dir="${git.parentdir}/Salmon.Quant/gpunit" >
+            <!-- Salmon.Quant v0.7 -->
+            <include name="*.yml" />
+        </fileset>
+
+        <!-- Salmon.Alevin.Quant -->
+<!--        <fileset id="ShortSeuratBatchCorrectionTests" dir="${git.parentdir}/Seurat.BatchCorrection/gpunit" >-->
+<!--            <!-- Salmon.Alevin.Quant v0.6 - waits on ability to run with module specific gpunit.properties - index takes too long to download-->
+<!--            <include name="*.yml" />-->
+<!--        </fileset>-->
         
     </target>
 
@@ -213,6 +231,8 @@
         <clone-repo git.repo.name="ExampleModule" git.branch.name="main" />
         <clone-repo git.repo.name="CoxRegression" git.branch.name="main" /> <!-- tests '<R>' substitution -->
         <clone-repo git.repo.name="ComparativeMarkerSelection" git.branch.name="main" />
+        <clone-repo git.repo.name="Salmon.Indexer" git.branch.name="main" />
+        <clone-repo git.repo.name="Salmon.Quant" git.branch.name="main" />
     </target>
 
     <!--
@@ -483,6 +503,24 @@
         />
     </target>
 
+    <target name="nightly-SalmonIndexer-test" depends="init-test-suite">
+        <pathconvert property="short.nightly.tests" refid="ShortSalmonIndexerTests" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
+    <target name="nightly-SalmonQuant-test" depends="init-test-suite">
+        <pathconvert property="short.nightly.tests" refid="ShortSalmonQuantTests" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
 
     <!--******************************************************************************************-->
     <!-- Aggregate test suite target definitions. Set "noclonetests" to skip the git phase. -->
@@ -520,6 +558,8 @@
             <resources refid="ShortSeuratBatchCorrectionTests" />
             <resources refid="weeklyAffySTEFCTests" />
             <resources refid="weeklyTCGA_SampleSelectionTests" />
+            <resources refid="ShortSalmonIndexerTests" />
+            <resources refid="ShortSalmonQuantTests" />
             
         </union>
         <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
@@ -563,6 +603,8 @@
             <resources refid="ShortSeuratBatchCorrectionTests" />
             <resources refid="weeklyAffySTEFCTests" />
             <resources refid="weeklyTCGA_SampleSelectionTests" />
+            <resources refid="ShortSalmonIndexerTests" />
+            <resources refid="ShortSalmonQuantTests" />
         </union>
         <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
     	<!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
