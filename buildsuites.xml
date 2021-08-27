@@ -180,12 +180,6 @@
             <!-- Salmon.Quant v0.7 -->
             <include name="*.yml" />
         </fileset>
-
-        <!-- Salmon.Alevin.Quant -->
-<!--        <fileset id="ShortSeuratBatchCorrectionTests" dir="${git.parentdir}/Seurat.BatchCorrection/gpunit" >-->
-<!--            <!-- Salmon.Alevin.Quant v0.6 - waits on ability to run with module specific gpunit.properties - index takes too long to download-->
-<!--            <include name="*.yml" />-->
-<!--        </fileset>-->
         
     </target>
 
