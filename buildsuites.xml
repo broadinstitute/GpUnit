@@ -568,7 +568,25 @@
         />
     </target>
     
-     <!-- Regression tests against beta.gp.org -->
+    <!-- Regression tests against beta.gp.org -->
+    <target name="short-nightly-tests-beta-debug" depends="init-test-suite">
+        <union id="short.tests.beta">
+            <resources refid="ShortComparativeMarkerSelectionTests" />
+            <resources refid="Shorttxt2odfTests" />
+        </union>
+        <!-- The GpUnit code parses filesets using the value returned by a call to File.pathSeparator() -->
+    	<!-- as the delimiter. This returns ";" on Windows and ":" on Linux. However, ant creates filesets -->
+    	<!-- with ";" as the separator on both platforms (!). The pathconvert task transforms the fileset -->
+    	<!-- to one with a delimiter that properly matches what the code expects. -->
+        <pathconvert property="short.nightly.tests" refid="short.tests.beta" />
+        <run-tests
+            testcases="${short.nightly.tests}"
+            numThreads="5"
+            shutdownTimeout="${gpunit.shutdownTimeout}"
+        />
+    </target>
+
+    <!-- Regression tests against beta.gp.org -->
     <target name="short-nightly-tests-beta" depends="init-test-suite">
         <union id="short.tests.beta">
             <resources refid="ShortComparativeMarkerSelectionTests" />
