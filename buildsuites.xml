@@ -599,7 +599,7 @@
             <resources refid="ShortHISAT2IndexerTests" />
             <resources refid="ShortHISAT2AlignerTests" />
             <resources refid="ShortNearestTemplatePredictionTests" />
-            <resources refid="ShortTopHatTests" />
+            <!-- GP-8929 resources refid="ShortTopHatTests" / -->
             <resources refid="Shorttxt2odfTests" />
             <resources refid="nightlyMergeHTSeqCountsTests" />
             <resources refid="nightlyPreprocessDatasetTests" />
