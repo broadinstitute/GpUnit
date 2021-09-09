@@ -569,7 +569,7 @@
     </target>
     
     <!-- Regression tests against beta.gp.org -->
-    <target name="short-nightly-tests-beta-debug" depends="init-test-suite">
+    <target name="short-nightly-tests-debug" depends="init-test-suite">
         <union id="short.tests.beta">
             <resources refid="ShortComparativeMarkerSelectionTests" />
             <resources refid="Shorttxt2odfTests" />
