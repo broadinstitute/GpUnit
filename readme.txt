@@ -1,3 +1,5 @@
+**ARCHIVED - active repository now in the GenePattern GitHub org - https://github.com/genepattern/GPUnit **
+
 GpUnit: A testing framework for GenePattern Modules.
 
 --------------------
