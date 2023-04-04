@@ -171,7 +171,7 @@
         <has-value pname="gpunit.trustStore" />
         <has-value pname="gpunit.trustStorePassword" />
         
-        <property name="gpunit.testData" value="ftp://gpftp.broadinstitute.org" />
+        <property name="gpunit.testData" value="https://datasets.genepattern.org/gpftp" />
         <property name="gpunit.gpData" value="ftp://ftp.broadinstitute.org/pub/genepattern/datasets" />
     </target>
 
